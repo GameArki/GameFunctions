@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using Unity.CodeEditor;
-using VSCodeEditor;
 
 namespace GameArki.MenuTool {
 
@@ -21,12 +20,7 @@ namespace GameArki.MenuTool {
             Debug.Log("消除 CSProj 成功: " + files.Count.ToString());
 
             IExternalCodeEditor codeEditor = CodeEditor.CurrentEditor;
-            VSCodeScriptEditor vSCodeScriptEditor = codeEditor as VSCodeScriptEditor;
-            vSCodeScriptEditor.SyncAll();
-
-            FieldInfo info = vSCodeScriptEditor.GetType().GetField("m_ProjectGeneration", BindingFlags.NonPublic | BindingFlags.Instance);
-            IGenerator generator = info.GetValue(vSCodeScriptEditor) as IGenerator;
-            generator.Sync();
+            codeEditor.SyncAll();
 
             Debug.Log("重新生成了 CSProj");
         }
