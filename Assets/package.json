@@ -1,0 +1,21 @@
+{
+  "name": "com.gamearki.gamefunctions",
+  "version": "0.1.0",
+  "description": "游戏函数库",
+  "displayName": "GameArki.GameFunctions",
+  "unity": "2019.4",
+  "author": {
+    "name": "GameArki",
+    "email": "chenwansal1@163.com",
+    "url": "https://www.github.com/gamearki"
+  },
+  "changelogUrl": "",
+  "dependencies": {},
+  "documentationUrl": "",
+  "hideInEditor": false,
+  "keywords": [],
+  "license": "",
+  "licensesUrl": "",
+  "samples": [],
+  "unityRelease": "16f1"
+}
