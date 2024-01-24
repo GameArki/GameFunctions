@@ -1,11 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace GameFunctions.PathfindingInternal {
 
     [StructLayout(LayoutKind.Explicit)]
-    public struct GFCell : IEquatable<GFCell>, IComparable<GFCell> {
+    public struct GFCell : IEquatable<GFCell>, IComparable<GFCell>, IComparer<GFCell> {
 
         [FieldOffset(0)]
         public Vector2Int pos;
@@ -26,26 +27,42 @@ namespace GameFunctions.PathfindingInternal {
             this.parent = parent;
         }
 
-        public bool Equals(GFCell other) {
-            return pos.Equals(other.pos);
+        bool IEquatable<GFCell>.Equals(GFCell other) {
+            return key == other.key;
         }
 
-        public int CompareTo(GFCell other) {
+        int IComparable<GFCell>.CompareTo(GFCell other) {
             if (fCost < other.fCost) {
                 return -1;
             } else if (fCost > other.fCost) {
                 return 1;
             } else {
-                return 0;
+                if (gCost < other.gCost) {
+                    return -1;
+                } else if (gCost > other.gCost) {
+                    return 1;
+                } else {
+                    return 0;
+                }
             }
         }
 
         public override bool Equals(object obj) {
-            return obj is GFCell other && Equals(other);
+            return obj is GFCell other && (other.key == key);
         }
 
         public override int GetHashCode() {
-            return pos.GetHashCode();
+            return key.GetHashCode();
+        }
+
+        int IComparer<GFCell>.Compare(GFCell x, GFCell y) {
+            if (x.fCost < y.fCost) {
+                return -1;
+            } else if (x.fCost > y.fCost) {
+                return 1;
+            } else {
+                return 0;
+            }
         }
 
         public static bool operator ==(GFCell left, GFCell right) {
