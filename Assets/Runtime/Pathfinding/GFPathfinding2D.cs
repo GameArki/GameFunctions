@@ -32,7 +32,7 @@ namespace GameFunctions {
             closedSetKey.Clear();
             posToCell.Clear();
 
-            float G_COST = 100;
+            float G_COST = 20;
 
             GFCell startCell = new GFCell(start, 0, G_COST, new I32I32_U64(start));
             openSet.Add(startCell);

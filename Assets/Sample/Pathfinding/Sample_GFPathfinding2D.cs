@@ -10,34 +10,10 @@ namespace GameFunctions.Sample {
         HashSet<Vector2Int> blockSet = new HashSet<Vector2Int>();
         Vector2Int startPos;
 
-        public SortedSet<GFCell> closedSet = new SortedSet<GFCell>();
-
         Vector2Int[] result = new Vector2Int[10000];
         int resultCount = 0;
 
         void Start() {
-            GFCell c1 = new GFCell(new Vector2Int(0, 1), 1000, 0, new I32I32_U64(0, 0));
-            GFCell c2 = new GFCell(new Vector2Int(0, 2), 1000, 140, new I32I32_U64(0, 0));
-            GFCell c3 = new GFCell(new Vector2Int(0, 3), 8, 140, new I32I32_U64(0, 0));
-            GFCell c4 = new GFCell(new Vector2Int(0, 4), 6, 140, new I32I32_U64(0, 0));
-            GFCell c5 = new GFCell(new Vector2Int(0, 5), 15, 140, new I32I32_U64(0, 0));
-            GFCell c6 = new GFCell(new Vector2Int(0, 6), 9999, 140, new I32I32_U64(0, 0));
-            GFCell c7 = new GFCell(new Vector2Int(0, 7), 3025, 140, new I32I32_U64(0, 0));
-            bool exist = closedSet.Add(c2);
-            exist &= closedSet.Add(c1);
-            exist &= closedSet.Add(c3);
-            exist &= closedSet.Add(c4);
-            exist &= closedSet.Add(c5);
-            exist &= closedSet.Add(c6);
-            exist &= closedSet.Add(c7);
-
-            Debug.Log(closedSet.Min.fCost);
-            Debug.Log(closedSet.Count + " " + exist);
-
-            ulong a = ulong.MaxValue - 2;
-            ulong b = ulong.MaxValue - 2;
-            Debug.Log(a.GetHashCode());
-            Debug.Log(b.GetHashCode());
         }
 
         void Update() {
