@@ -2,6 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using UnityEngine;
+using GameFunctions.ConfinSpaceInternal;
 
 namespace GameFunctions {
 

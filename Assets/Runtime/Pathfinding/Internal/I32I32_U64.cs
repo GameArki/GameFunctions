@@ -1,10 +1,10 @@
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace GameFunctions.ConfinSpaceInternal {
+namespace GameFunctions.PathfindingInternal {
 
     [StructLayout(LayoutKind.Explicit)]
-    internal struct I32I32_U64 {
+    public struct I32I32_U64 {
 
         [FieldOffset(0)] public int i32_0;
         [FieldOffset(4)] public int i32_1;
