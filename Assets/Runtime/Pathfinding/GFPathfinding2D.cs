@@ -8,10 +8,20 @@ namespace GameFunctions {
 
     public static class GFPathfinding2D {
 
+#if UNITY_EDITOR
         [ThreadStatic] public static SortedSet<GFCell> openSet = new SortedSet<GFCell>();
-        [ThreadStatic] public static Dictionary<I32I32_U64, GFCell> openSetKey = new Dictionary<I32I32_U64, GFCell>(10000);
+#else
+        [ThreadStatic] internal static SortedSet<GFCell> openSet = new SortedSet<GFCell>();
+#endif
+
+#if UNITY_EDITOR
         [ThreadStatic] public static SortedSet<GFCell> closedSet = new SortedSet<GFCell>();
-        [ThreadStatic] public static HashSet<I32I32_U64> closedSetKey = new HashSet<I32I32_U64>(10000);
+#else
+        [ThreadStatic] internal static SortedSet<GFCell> closedSet = new SortedSet<GFCell>();
+#endif
+
+        [ThreadStatic] internal static Dictionary<I32I32_U64, GFCell> openSetKey = new Dictionary<I32I32_U64, GFCell>(10000);
+        [ThreadStatic] internal static HashSet<I32I32_U64> closedSetKey = new HashSet<I32I32_U64>(10000);
         [ThreadStatic] static Stack<GFCell> pool = new Stack<GFCell>(10000);
 
         const float G_COST = 10;
@@ -55,7 +65,7 @@ namespace GameFunctions {
             }
 
             while (openSet.Count > 0) {
-                bool isDone = Process(ref visited, ref resultCount, limitedCount, start, end, isWalkable, result, out _);
+                bool isDone = ManualProcess(ref visited, ref resultCount, limitedCount, start, end, isWalkable, result, out _);
                 if (isDone) {
                     return resultCount;
                 }
@@ -65,7 +75,7 @@ namespace GameFunctions {
 
         }
 
-        public static bool Process(ref int visited, ref int count, int limitedCount, Vector2Int start, Vector2Int end, Predicate<Vector2Int> isWalkable, Vector2Int[] result, out Vector2Int cur) {
+        public static bool ManualProcess(ref int visited, ref int count, int limitedCount, Vector2Int start, Vector2Int end, Predicate<Vector2Int> isWalkable, Vector2Int[] result, out Vector2Int cur) {
 
             GFCell q = openSet.Min;
             cur = q.pos;
@@ -100,7 +110,7 @@ namespace GameFunctions {
                     return true;
                 }
 
-                float gCost = q.gCost + Vector2.Distance(q.pos, neighborPos);
+                float gCost = G_COST;
                 float hCost = H_Manhattan(neighborPos, end);
                 float fCost = gCost + hCost;
                 GFCell neighborCell;

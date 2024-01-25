@@ -19,9 +19,7 @@ namespace GameFunctions.Sample {
 
         void Start() {
             GFPathfinding2D.openSet?.Clear();
-            GFPathfinding2D.openSetKey?.Clear();
             GFPathfinding2D.closedSet?.Clear();
-            GFPathfinding2D.closedSetKey?.Clear();
         }
 
         void Update() {
@@ -38,7 +36,7 @@ namespace GameFunctions.Sample {
                     return !blockSet.Contains(new I32I32_U64(pos));
                 }, result, true);
             } else if (Input.GetKeyDown(KeyCode.Space)) {
-                bool hasResult = GFPathfinding2D.Process(ref visited, ref resultCount, 5000, startPos, endPos, (pos) => {
+                bool hasResult = GFPathfinding2D.ManualProcess(ref visited, ref resultCount, 5000, startPos, endPos, (pos) => {
                     return !blockSet.Contains(new I32I32_U64(pos));
                 }, result, out curPos);
                 if (hasResult) {
