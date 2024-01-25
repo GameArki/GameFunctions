@@ -33,6 +33,8 @@ namespace GameFunctions.PathfindingInternal {
         public override int GetHashCode() => this.u64.GetHashCode();
         public static bool operator ==(I32I32_U64 a, I32I32_U64 b) => a.u64 == b.u64;
         public static bool operator !=(I32I32_U64 a, I32I32_U64 b) => a.u64 != b.u64;
+        public static bool operator <(I32I32_U64 a, I32I32_U64 b) => a.u64 < b.u64;
+        public static bool operator >(I32I32_U64 a, I32I32_U64 b) => a.u64 > b.u64;
 
     }
 

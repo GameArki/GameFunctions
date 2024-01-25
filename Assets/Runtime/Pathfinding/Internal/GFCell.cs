@@ -5,25 +5,23 @@ using UnityEngine;
 
 namespace GameFunctions.PathfindingInternal {
 
-    [StructLayout(LayoutKind.Explicit)]
-    public struct GFCell : IEquatable<GFCell>, IComparable<GFCell>, IComparer<GFCell> {
+    public class GFCell : IEquatable<GFCell>, IComparable<GFCell> {
 
-        [FieldOffset(0)]
         public Vector2Int pos;
-        [FieldOffset(0)]
         public I32I32_U64 key;
-        [FieldOffset(8)]
         public float fCost;
-        [FieldOffset(12)]
         public float gCost;
-        [FieldOffset(16)]
-        public I32I32_U64 parent;
+        public float hCost;
+        public GFCell parent;
 
-        public GFCell(Vector2Int pos, float fCost, float gCost, I32I32_U64 parent) {
-            this.key = new I32I32_U64();
+        public GFCell() {}
+
+        public void Init(Vector2Int pos, float fCost, float gCost, float hCost, GFCell parent) {
             this.pos = pos;
+            this.key = new I32I32_U64(pos);
             this.fCost = fCost;
             this.gCost = gCost;
+            this.hCost = hCost;
             this.parent = parent;
         }
 
@@ -31,46 +29,41 @@ namespace GameFunctions.PathfindingInternal {
             return key == other.key;
         }
 
-        int IComparable<GFCell>.CompareTo(GFCell other) {
-            if (fCost < other.fCost) {
-                return -1;
-            } else if (fCost > other.fCost) {
-                return 1;
-            } else {
-                if (gCost < other.gCost) {
-                    return -1;
-                } else if (gCost > other.gCost) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            }
-        }
-
         public override bool Equals(object obj) {
-            return obj is GFCell other && (other.key == key);
+            GFCell other = obj as GFCell;
+            Debug.Log("Equals: " + key + " " + other.key);
+            if (other != null) {
+                return key == other.key;
+            }
+            return false;
         }
 
         public override int GetHashCode() {
+            Debug.Log(" GetHashCode: " + key.GetHashCode());
             return key.GetHashCode();
         }
 
-        int IComparer<GFCell>.Compare(GFCell x, GFCell y) {
-            if (x.fCost < y.fCost) {
+        int IComparable<GFCell>.CompareTo(GFCell other) {
+
+            Bit128 fKey = new Bit128();
+            fKey.i32_0 = pos.y;
+            fKey.i32_1 = pos.x;
+            fKey.f32_2 = hCost;
+            fKey.f32_3 = fCost;
+
+            Bit128 otherFKey = new Bit128();
+            otherFKey.i32_0 = other.pos.y;
+            otherFKey.i32_1 = other.pos.x;
+            otherFKey.f32_2 = other.hCost;
+            otherFKey.f32_3 = other.fCost;
+
+            if (fKey < otherFKey) {
                 return -1;
-            } else if (x.fCost > y.fCost) {
+            } else if (fKey > otherFKey) {
                 return 1;
             } else {
                 return 0;
             }
-        }
-
-        public static bool operator ==(GFCell left, GFCell right) {
-            return left.key == right.key;
-        }
-
-        public static bool operator !=(GFCell left, GFCell right) {
-            return !(left.key == right.key);
         }
 
     }

@@ -7,28 +7,42 @@ namespace GameFunctions.Sample {
 
     public class Sample_GFPathfinding2D : MonoBehaviour {
 
-        HashSet<Vector2Int> blockSet = new HashSet<Vector2Int>();
+        HashSet<I32I32_U64> blockSet = new HashSet<I32I32_U64>();
         Vector2Int startPos;
+        Vector2Int endPos;
+        Vector2Int curPos;
 
         Vector2Int[] result = new Vector2Int[10000];
         int resultCount = 0;
 
+        int visited = 0;
+
         void Start() {
+            GFPathfinding2D.openSet?.Clear();
+            GFPathfinding2D.openSetKey?.Clear();
+            GFPathfinding2D.closedSet?.Clear();
+            GFPathfinding2D.closedSetKey?.Clear();
         }
 
         void Update() {
             Vector2Int mouseGridPos = MouseGridPos();
             if (Input.GetMouseButton(0)) {
-                blockSet.Add(mouseGridPos);
+                blockSet.Add(new I32I32_U64(mouseGridPos));
             } else if (Input.GetMouseButtonUp(1)) {
                 startPos = mouseGridPos;
             } else if (Input.GetMouseButtonUp(2)) {
-                Vector2Int endPos = mouseGridPos;
-                resultCount = GFPathfinding2D.AStar(startPos, endPos, 5000, (pos) => {
-                    return !blockSet.Contains(pos);
-                }, result);
-                if (resultCount < 0) {
-                    Debug.LogError("No Result" + resultCount);
+                endPos = mouseGridPos;
+                visited = 0;
+                resultCount = 0;
+                GFPathfinding2D.AStar(startPos, endPos, 5000, (pos) => {
+                    return !blockSet.Contains(new I32I32_U64(pos));
+                }, result, true);
+            } else if (Input.GetKeyDown(KeyCode.Space)) {
+                bool hasResult = GFPathfinding2D.Process(ref visited, ref resultCount, 5000, startPos, endPos, (pos) => {
+                    return !blockSet.Contains(new I32I32_U64(pos));
+                }, result, out curPos);
+                if (hasResult) {
+                    Debug.Log("Res: " + resultCount);
                 }
             }
         }
@@ -44,8 +58,8 @@ namespace GameFunctions.Sample {
 
             // Draw Block
             Gizmos.color = Color.red;
-            foreach (Vector2Int pos in blockSet) {
-                Gizmos.DrawCube(new Vector3(pos.x, pos.y, 0), Vector3.one);
+            foreach (I32I32_U64 pos in blockSet) {
+                Gizmos.DrawCube(new Vector3(pos.i32_0, pos.i32_1, 0), Vector3.one);
             }
 
             // Draw CloseSet
@@ -77,6 +91,14 @@ namespace GameFunctions.Sample {
             // Draw Start
             Gizmos.color = Color.green;
             Gizmos.DrawCube(new Vector3(startPos.x, startPos.y, 0), Vector3.one);
+
+            // Draw End
+            Gizmos.color = Color.magenta;
+            Gizmos.DrawCube(new Vector3(endPos.x, endPos.y, 0), Vector3.one);
+
+            // Draw Cur
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawCube(new Vector3(curPos.x, curPos.y, 0), Vector3.one);
 
         }
 
