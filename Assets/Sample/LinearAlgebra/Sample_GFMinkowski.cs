@@ -5,7 +5,7 @@ using UnityEngine;
 namespace GameFunctions.Sample {
 
     [ExecuteInEditMode]
-    public class Sample_FPMinkowski : MonoBehaviour {
+    public class Sample_GFMinkowski : MonoBehaviour {
 
         [SerializeField] Vector2[] aVectors;
         [SerializeField] Vector2[] bVectors;
