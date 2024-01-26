@@ -35,7 +35,7 @@ namespace GameFunctions.Sample {
                 Gizmos.DrawLine(aStart, aEnd);
                 Gizmos.DrawLine(bStart, bEnd);
                 Gizmos.color = Color.yellow;
-                Gizmos.DrawCube(intersection, Vector3.one);
+                Gizmos.DrawSphere(intersection, 0.1f);
             }
         }
 
