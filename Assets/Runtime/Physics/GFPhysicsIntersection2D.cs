@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -80,6 +81,46 @@ namespace GameFunctions {
         public static bool IsCircleXCircle(Vector2 aCenter, float aRadius, Vector2 bCenter, float bRadius) {
             float radiusSum = aRadius + bRadius;
             return Vector2.SqrMagnitude(aCenter - bCenter) <= (radiusSum * radiusSum);
+        }
+
+        /// <summary> returns -1: not intersect, 1: intersect, 2: tangent, 3: inside  </summary>
+        public static int IsCircleXCircleOutPoints(Vector2 aCenter, float aRadius, Vector2 bCenter, float bRadius, out Vector2 p1, out Vector2 p2) {
+            // 求两圆的交点
+            float radiusSum = aRadius + bRadius;
+            float radiusDiff = Mathf.Abs(aRadius - bRadius);
+            float centerDist = Vector2.Distance(aCenter, bCenter);
+            if (centerDist > radiusSum) {
+                p1 = Vector2.zero;
+                p2 = Vector2.zero;
+                return -1;
+            }
+
+            if (centerDist == radiusSum) {
+                p1 = aCenter + (bCenter - aCenter).normalized * aRadius;
+                p2 = Vector2.zero;
+                return 2;
+            }
+
+            // is a inside
+            if (centerDist < radiusDiff) {
+                p1 = Vector2.zero;
+                p2 = Vector2.zero;
+                return 3;
+            }
+
+            float a = (aRadius * aRadius - bRadius * bRadius + centerDist * centerDist) / (2 * centerDist);
+            float h = Mathf.Sqrt(aRadius * aRadius - a * a);
+            Vector2 p = aCenter + a * (bCenter - aCenter) / centerDist;
+            p1 = new Vector2(
+                p.x + h * (bCenter.y - aCenter.y) / centerDist,
+                p.y - h * (bCenter.x - aCenter.x) / centerDist
+            );
+            p2 = new Vector2(
+                p.x - h * (bCenter.y - aCenter.y) / centerDist,
+                p.y + h * (bCenter.x - aCenter.x) / centerDist
+            );
+            return 1;
+
         }
 
         // ==== CIRCLE X RECT ====
