@@ -16,16 +16,13 @@ namespace GameFunctions.Sample {
 
         bool isGenerated;
 
+        const int VALUE_EMPTY = 0;
+        const int VALUE_SEA = 1;
+
+        [SerializeField] Color color_empty;
+        [SerializeField] Color color_sea;
+
         void OnGUI() {
-
-            seed = EditorGUILayout.IntField("Seed", seed);
-            seedTimes = EditorGUILayout.IntField("SeedTimes", seedTimes);
-            width = EditorGUILayout.IntField("Width", width);
-            height = EditorGUILayout.IntField("Height", height);
-            cellSize = EditorGUILayout.Slider(cellSize, 0, 1);
-            cellGap = EditorGUILayout.Slider(cellGap, 0, 0.2f);
-            seaCount = EditorGUILayout.IntField("SeaCount", seaCount);
-
             if (isGenerated) {
                 if (GUILayout.Button("Clear")) {
                     cells = null;
@@ -44,7 +41,7 @@ namespace GameFunctions.Sample {
                 rd.Next();
             }
             cells = GFCellGenerator.NewCells(width, height);
-            GFCellGenerator.Gen_Sea(cells, rd, width, seaCount, 0, 0, 0, 0, 0);
+            GFCellGenerator.Gen_Sea(cells, rd, VALUE_SEA, width, seaCount, GFCellGenerator.DIR_FROM_TOP);
             isGenerated = true;
         }
 
@@ -57,8 +54,14 @@ namespace GameFunctions.Sample {
             for (int i = 0; i < cells.Length; i++) {
                 int x = i % width;
                 int y = i / width;
-                if (cells[i] == 0) {
-                    Gizmos.color = Color.black;
+                int value = cells[i];
+                if (value == VALUE_EMPTY) {
+                    Gizmos.color = color_empty;
+                } else if (value == VALUE_SEA) {
+                    Gizmos.color = color_sea;
+                } else {
+                    // Error
+                    Gizmos.color = Color.red;
                 }
                 // Draw cell
                 Gizmos.DrawCube(new Vector3(x * (cellSize + cellGap), y * (cellSize + cellGap)), new Vector3(cellSize, cellSize));

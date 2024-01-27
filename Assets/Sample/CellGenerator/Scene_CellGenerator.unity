@@ -234,7 +234,9 @@ MonoBehaviour:
   height: 256
   cellSize: 1
   cellGap: 0
-  seaCount: 10
+  seaCount: 100
+  color_empty: {r: 0.92941177, g: 0.92941177, b: 0.92941177, a: 1}
+  color_sea: {r: 0, g: 0.34628177, b: 0.5660378, a: 1}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
