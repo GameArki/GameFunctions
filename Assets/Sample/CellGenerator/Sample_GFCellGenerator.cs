@@ -13,6 +13,8 @@ namespace GameFunctions.Sample {
         public float cellSize;
         public float cellGap;
         public int seaCount;
+        [Range(0, 4)]
+        public int sea_fromDir;
 
         bool isGenerated;
 
@@ -41,7 +43,7 @@ namespace GameFunctions.Sample {
                 rd.Next();
             }
             cells = GFCellGenerator.NewCells(width, height);
-            GFCellGenerator.Gen_Sea(cells, rd, VALUE_SEA, width, seaCount, GFCellGenerator.DIR_FROM_TOP);
+            GFCellGenerator.Gen_Sea(cells, rd, VALUE_SEA, width, seaCount, sea_fromDir);
             isGenerated = true;
         }
 
