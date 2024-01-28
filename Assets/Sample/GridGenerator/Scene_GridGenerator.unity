@@ -245,13 +245,13 @@ MonoBehaviour:
       TYPE: 1
     lakeOption:
       lakeValue: 3
-      lakeCount: 500
-      awayFromSea: 30
+      lakeCount: 800
+      awayFromSea: 10
       TYPE: 1
   color_empty: {r: 0.92941177, g: 0.92941177, b: 0.92941177, a: 1}
   color_land_grass: {r: 0.07186719, g: 0.8018868, b: 0.24476661, a: 1}
-  color_land_lake: {r: 0.30210927, g: 0.6536505, b: 0.8773585, a: 1}
-  color_sea: {r: 0, g: 0.34628177, b: 0.5660378, a: 1}
+  color_land_lake: {r: 0, g: 0.34628177, b: 0.5660378, a: 1}
+  color_sea: {r: 0, g: 0.07989821, b: 0.16037738, a: 1}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

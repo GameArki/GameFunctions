@@ -20,10 +20,14 @@ namespace GameFunctions {
         public const int DIR_LEFT = 3;
         public const int DIR_COUNT = 4;
 
-        [ThreadStatic] static HashSet<int> cells_land_grass_index_set;
-        [ThreadStatic] static int[] cells_land_grass_indices;
-        [ThreadStatic] static int[] cells_sea_indices;
-        [ThreadStatic] static int cells_sea_count;
+        [ThreadStatic] static HashSet<int> CELLS_land_grass_index_set;
+        [ThreadStatic] static int[] CELLS_land_grass_indices;
+
+        [ThreadStatic] static int[] CELLS_land_lake_indices;
+        [ThreadStatic] static int CELLS_land_lake_count;
+
+        [ThreadStatic] static int[] CELLS_sea_indices;
+        [ThreadStatic] static int CELLS_sea_count;
 
         // ==== Land Init ====
         public static int[] GenAll(GFGenGridOption gridOption, GFGenSeaOption seaOption, GFGenLakeOption lakeOption) {
@@ -42,16 +46,21 @@ namespace GameFunctions {
             }
 
             // Cache: Land(default) 
-            cells_land_grass_index_set = new HashSet<int>(cells.Length);
-            cells_land_grass_indices = new int[cells.Length];
+            CELLS_land_grass_index_set = new HashSet<int>(cells.Length);
+            CELLS_land_grass_indices = new int[cells.Length];
             for (int i = 0; i < cells.Length; i++) {
-                cells_land_grass_index_set.Add(i);
+                CELLS_land_grass_index_set.Add(i);
             }
-            cells_land_grass_index_set.CopyTo(cells_land_grass_indices);
+            CELLS_land_grass_index_set.CopyTo(CELLS_land_grass_indices);
+
+            // Cache: Land - Lake
+            if (CELLS_land_lake_indices == null || CELLS_land_lake_indices.Length < cells.Length) {
+                CELLS_land_lake_indices = new int[cells.Length];
+            }
 
             // Cache: Sea
-            if (cells_sea_indices == null || cells_sea_indices.Length < cells.Length) {
-                cells_sea_indices = new int[cells.Length];
+            if (CELLS_sea_indices == null || CELLS_sea_indices.Length < cells.Length) {
+                CELLS_sea_indices = new int[cells.Length];
             }
 
             // Gen: Sea
@@ -62,9 +71,9 @@ namespace GameFunctions {
 
             // Cache Update: Land
             // remove sea cells from land cells
-            for (int i = 0; i < cells_sea_count; i += 1) {
-                int seaIndex = cells_sea_indices[i];
-                cells_land_grass_index_set.Remove(seaIndex);
+            for (int i = 0; i < CELLS_sea_count; i += 1) {
+                int seaIndex = CELLS_sea_indices[i];
+                CELLS_land_grass_index_set.Remove(seaIndex);
             }
 
             // Gen: Land - Lake
@@ -80,7 +89,7 @@ namespace GameFunctions {
         // ==== Sea ====
         // cells[index] = seaValue
         public static bool Gen_Sea(int[] cells, RD random, int width, int height, GFGenSeaOption option) {
-            cells_sea_count = 0;
+            CELLS_sea_count = 0;
             option.DIR = Math.Abs(option.DIR) % DIR_COUNT;
             if (option.TYPE == GFGenSeaOption.TYPE_NORMAL) {
                 return Gen_Sea_Normal(cells, random, width, height, option);
@@ -121,11 +130,12 @@ namespace GameFunctions {
             int startSeaIndex = Index_GetByPos(start_x, start_y, width);
             cells[startSeaIndex] = seaValue;
             seaCount--;
-            cells_sea_indices[cells_sea_count++] = startSeaIndex;
+            CELLS_sea_indices[CELLS_sea_count++] = startSeaIndex;
 
-            return Algorithm_Erode(cells, random, width, height, seaCount, option.erodeRate, seaValue, option.DIR, (int index) => {
+            // Erode: sea
+            return Algorithm_Erode(cells, CELLS_sea_indices, ref CELLS_sea_count, random, width, height, seaCount, option.erodeRate, seaValue, option.DIR, (int index) => {
                 cells[index] = seaValue;
-                cells_sea_indices[cells_sea_count++] = index;
+                CELLS_sea_indices[CELLS_sea_count++] = index;
             });
 
         }
@@ -133,6 +143,7 @@ namespace GameFunctions {
         // ==== Land-Lake ====
         // cells[index] = landValue
         public static bool Gen_Land_Lake(int[] cells, RD random, int width, int height, int seaValue, GFGenLakeOption option) {
+            CELLS_land_lake_count = 0;
             if (option.TYPE == GFGenLakeOption.TYPE_FLOOD) {
                 return Gen_Land_Lake_Normal(cells, random, width, height, seaValue, option);
             } else {
@@ -149,9 +160,11 @@ namespace GameFunctions {
             int lakeValue = option.lakeValue;
             int awayFromSea = option.awayFromSea;
 
+            // Gen: start lake cell
             GFVector4Int edgeOffset = new GFVector4Int();
             int start_x = 0;
             int start_y = 0;
+            int start_index = 0;
             do {
                 failedTimes--;
                 if (failedTimes <= 0) {
@@ -159,7 +172,8 @@ namespace GameFunctions {
                 }
                 start_x = random.Next(width);
                 start_y = random.Next(height);
-                int value = cells[Index_GetByPos(start_x, start_y, width)];
+                start_index = Index_GetByPos(start_x, start_y, width);
+                int value = cells[start_index];
                 if (value == seaValue) {
                     continue;
                 }
@@ -171,9 +185,14 @@ namespace GameFunctions {
                 return false;
             }
 
-            cells[Index_GetByPos(start_x, start_y, width)] = lakeValue;
+            cells[start_index] = lakeValue;
+            CELLS_land_lake_indices[CELLS_land_lake_count++] = start_index;
 
-            return true;
+            // Flood: lake
+            return Algorithm_Flood(cells, CELLS_land_lake_indices, ref CELLS_land_lake_count, random, width, height, lakeCount, lakeValue, (int index) => {
+                cells[index] = lakeValue;
+                CELLS_land_lake_indices[CELLS_land_lake_count++] = index;
+            });
 
         }
 
@@ -184,7 +203,7 @@ namespace GameFunctions {
         // 0 0 0 0 0 0  ==> 0 0 0 0 0 0 ==> 0 0 0 1 0 0
         // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 0 0 0
         // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 0 0 0
-        static bool Algorithm_Erode(int[] cells, RD random, int width, int height, int erodeCount, int erodeRate, int erodeValue, int erodeFromDir, Action<int> onErode) {
+        static bool Algorithm_Erode(int[] cells, int[] cells_value_index, ref int cells_value_count, RD random, int width, int height, int erodeCount, int erodeRate, int erodeValue, int erodeFromDir, Action<int> onErode) {
 
             if (erodeRate <= 0) {
                 erodeRate = 9;
@@ -200,7 +219,7 @@ namespace GameFunctions {
             int dir_from = erodeFromDir;
             int d0 = Dir_Reverse(dir_from);
             int d1, d2;
-            Dir_Prefer(d0, out d1, out d2);
+            Dir_ErodePrefer(d0, out d1, out d2);
 
             // d0 + d1 + d2 = 100
             int d0Rate = erodeRate;
@@ -219,8 +238,8 @@ namespace GameFunctions {
             }
 
             while (erodeCount > 0) {
-                for (int i = 0; i < cells_sea_count; i += 1) {
-                    int seaIndex = cells_sea_indices[i];
+                for (int i = 0; i < cells_value_count; ++i) {
+                    int seaIndex = cells_value_index[i];
                     int x = seaIndex % width;
                     int y = seaIndex / width;
 
@@ -228,7 +247,7 @@ namespace GameFunctions {
                     int reverseDirIndex = Index_GetByPos(x, y, width, height, dir_from);
                     if (reverseDirIndex != -1 && cells[reverseDirIndex] != erodeValue) {
                         onErode.Invoke(reverseDirIndex);
-                        erodeCount--;
+                        --erodeCount;
                         continue;
                     }
 
@@ -237,7 +256,7 @@ namespace GameFunctions {
                     int nextDirIndex = Index_GetByPos(x, y, width, height, nextDir);
                     if (nextDirIndex != -1 && cells[nextDirIndex] != erodeValue) {
                         onErode.Invoke(nextDirIndex);
-                        erodeCount--;
+                        --erodeCount;
                         continue;
                     }
                 }
@@ -267,8 +286,37 @@ namespace GameFunctions {
         // 0 0 0 1 0 0  ==> 0 0 0 1 1 0 ==> 0 0 1 1 1 0
         // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 1 0 0
         // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 0 0 0
-        static bool Algorithm_Flood(int[] cells, RD random, int width, int height, int floodCount, int floodValue, int floodFromDir, Action<int> onFlood) {
-            throw new NotImplementedException();
+        static bool Algorithm_Flood(int[] cells, int[] cells_value_indices, ref int cells_value_count, RD random, int width, int height, int floodCount, int floodValue, Action<int> onFlood) {
+
+            int failedTimes = width * height * 100;
+
+            Span<int> prefer = stackalloc int[DIR_COUNT];
+            for (int i = 0; i < DIR_COUNT; i += 1) {
+                prefer[i] = i;
+            }
+
+            while (floodCount > 0) {
+                for (int i = 0; i < cells_value_count; i += 1) {
+                    int seaIndex = cells_value_indices[i];
+                    int x = seaIndex % width;
+                    int y = seaIndex / width;
+
+                    // fill prefer direction
+                    int nextDir = prefer[random.Next(DIR_COUNT)];
+                    int nextDirIndex = Index_GetByPos(x, y, width, height, nextDir);
+                    if (nextDirIndex != -1 && cells[nextDirIndex] != floodValue) {
+                        onFlood.Invoke(nextDirIndex);
+                        --floodCount;
+                        continue;
+                    }
+                }
+                --failedTimes;
+                if (failedTimes <= 0) {
+                    Debug.LogError("Algorithm_Flood failed");
+                    return false;
+                }
+            }
+            return true;
         }
 
         // ==== Generics ====
@@ -278,7 +326,7 @@ namespace GameFunctions {
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static void Dir_Prefer(int DIR, out int prefer1, out int prefer2) {
+        static void Dir_ErodePrefer(int DIR, out int prefer1, out int prefer2) {
             prefer1 = (DIR + 1) % DIR_COUNT;
             prefer2 = (DIR + 3) % DIR_COUNT;
         }
