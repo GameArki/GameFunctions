@@ -5,15 +5,10 @@ namespace GameFunctions.Sample {
 
     [Serializable]
     internal class GeneratorSetting {
-        public int seed;
-        public int seedTimes;
-        public int width;
-        public int height;
         public float cellSize;
         public float cellGap;
-        public int seaCount;
-        [Range(0, 4)]
-        public int sea_fromDir;
+        public GFGenCellOption cellOption;
+        public GFGenSeaOption seaOption;
     }
 
     public class Sample_GFCellGenerator : MonoBehaviour {
@@ -24,11 +19,11 @@ namespace GameFunctions.Sample {
         bool isGenerated;
 
         const int VALUE_EMPTY = 0;
-        const int VALUE_LAND = 1;
+        const int VALUE_LAND_GRASS = 1;
         const int VALUE_SEA = 2;
 
         [SerializeField] Color color_empty;
-        [SerializeField] Color color_land;
+        [SerializeField] Color color_land_grass;
         [SerializeField] Color color_sea;
 
         void OnGUI() {
@@ -53,13 +48,11 @@ namespace GameFunctions.Sample {
         }
 
         void Gen() {
-            System.Random rd = new System.Random(setting.seed);
-            for (int i = 0; i < setting.seedTimes; i++) {
-                rd.Next();
-            }
-            cells = GFCellGenerator.NewCells(setting.width, setting.height, VALUE_LAND);
-            GFCellGenerator.Gen_Sea(cells, rd, VALUE_SEA, setting.width, setting.seaCount, setting.sea_fromDir);
+
+            cells = GFCellGenerator.GenAll(setting.cellOption, setting.seaOption);
+
             isGenerated = true;
+
         }
 
         void OnDrawGizmos() {
@@ -68,14 +61,17 @@ namespace GameFunctions.Sample {
             }
 
             // Draw cells
+            int width = setting.cellOption.width;
+            float cellSize = setting.cellSize;
+            float cellGap = setting.cellGap;
             for (int i = 0; i < cells.Length; i++) {
-                int x = i % setting.width;
-                int y = i / setting.width;
+                int x = i % width;
+                int y = i / width;
                 int value = cells[i];
                 if (value == VALUE_EMPTY) {
                     Gizmos.color = color_empty;
-                } else if (value == VALUE_LAND) {
-                    Gizmos.color = color_land;
+                } else if (value == VALUE_LAND_GRASS) {
+                    Gizmos.color = color_land_grass;
                 } else if (value == VALUE_SEA) {
                     Gizmos.color = color_sea;
                 } else {
@@ -83,7 +79,7 @@ namespace GameFunctions.Sample {
                     Gizmos.color = Color.red;
                 }
                 // Draw cell
-                Gizmos.DrawCube(new Vector3(x * (setting.cellSize + setting.cellGap), y * (setting.cellSize + setting.cellGap)), new Vector3(setting.cellSize, setting.cellSize));
+                Gizmos.DrawCube(new Vector3(x * (cellSize + cellGap), y * (cellSize + cellGap)), new Vector3(cellSize, cellSize));
             }
 
         }

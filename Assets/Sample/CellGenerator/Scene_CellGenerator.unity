@@ -229,16 +229,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   setting:
-    seed: 876
-    seedTimes: 34
-    width: 256
-    height: 256
     cellSize: 1
     cellGap: 0
-    seaCount: 100
-    sea_fromDir: 0
+    cellOption:
+      seed: 1010
+      seedTimes: 10
+      width: 256
+      height: 256
+      defaultLandValue: 1
+    seaOption:
+      seaValue: 2
+      seaCount: 5120
+      DIR: 1
+      TYPE: 1
   color_empty: {r: 0.92941177, g: 0.92941177, b: 0.92941177, a: 1}
-  color_land: {r: 0.8996117, g: 0.9339623, b: 0.6123621, a: 1}
+  color_land_grass: {r: 0.07186719, g: 0.8018868, b: 0.24476661, a: 1}
   color_sea: {r: 0, g: 0.34628177, b: 0.5660378, a: 1}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
