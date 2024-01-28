@@ -189,6 +189,9 @@ namespace GameFunctions {
             if (erodeRate <= 0) {
                 erodeRate = 9;
                 Debug.LogWarning($"erodeRate <= 0, use default: {erodeRate}");
+            } else if (erodeRate >= 99) {
+                erodeRate = 98;
+                Debug.LogWarning($"erodeRate > 100, use default: {erodeRate}");
             }
 
             int failedTimes = width * height * 100;
