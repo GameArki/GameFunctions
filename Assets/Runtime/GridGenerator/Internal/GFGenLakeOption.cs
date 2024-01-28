@@ -5,7 +5,7 @@ namespace GameFunctions {
     [Serializable]
     public struct GFGenLakeOption {
 
-        public const int TYPE_NORMAL = 1;
+        public const int TYPE_FLOOD = 1; // 扁平
 
         public int lakeValue;
         public int lakeCount;

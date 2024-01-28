@@ -5,6 +5,11 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 using RD = System.Random;
 
+// 算法:
+// Rewrite: 侵蚀算法(Erode)
+// Rewrite: 描边算法(Outline)
+// Rewrite: 洪泛算法(Flood)
+// Rewrite: 散播算法(Scatter)
 namespace GameFunctions {
 
     public static class GFGridGenerator {
@@ -50,7 +55,10 @@ namespace GameFunctions {
             }
 
             // Gen: Sea
-            Gen_Sea(cells, rd, gridOption.width, gridOption.height, seaOption);
+            bool succ_sea = Gen_Sea(cells, rd, gridOption.width, gridOption.height, seaOption);
+            if (!succ_sea) {
+                Debug.LogError("Gen_Sea failed");
+            }
 
             // Cache Update: Land
             // remove sea cells from land cells
@@ -60,21 +68,27 @@ namespace GameFunctions {
             }
 
             // Gen: Land - Lake
-            Gen_Land_Lake(cells, rd, gridOption.width, gridOption.height, seaOption.seaValue, lakeOption);
+            bool succ_lake = Gen_Land_Lake(cells, rd, gridOption.width, gridOption.height, seaOption.seaValue, lakeOption);
+            if (!succ_lake) {
+                Debug.LogError("Gen_Land_Lake failed");
+            }
 
             return cells;
+
         }
 
         // ==== Sea ====
         // cells[index] = seaValue
-        public static void Gen_Sea(int[] cells, RD random, int width, int height, GFGenSeaOption option) {
+        public static bool Gen_Sea(int[] cells, RD random, int width, int height, GFGenSeaOption option) {
             cells_sea_count = 0;
             option.DIR = Math.Abs(option.DIR) % DIR_COUNT;
             if (option.TYPE == GFGenSeaOption.TYPE_NORMAL) {
-                Gen_Sea_Normal(cells, random, width, height, option);
+                return Gen_Sea_Normal(cells, random, width, height, option);
+            } else if (option.TYPE == GFGenSeaOption.TYPE_SHARP) {
+                return Gen_Sea_Normal(cells, random, width, height, option);
             } else {
                 Debug.LogWarning("Unknown type: " + option.TYPE);
-                Gen_Sea_Normal(cells, random, width, height, option);
+                return Gen_Sea_Normal(cells, random, width, height, option);
             }
         }
 
@@ -90,13 +104,14 @@ namespace GameFunctions {
         // or: 1 0 = 1 1
         // or: 1   = 1
         //     0     1
-        static void Gen_Sea_Normal(int[] cells, RD random, int width, int height, GFGenSeaOption option) {
+        static bool Gen_Sea_Normal(int[] cells, RD random, int width, int height, GFGenSeaOption option) {
 
             int seaCount = option.seaCount;
             int seaValue = option.seaValue;
 
             if (seaCount >= cells.Length) {
-                throw new System.Exception("seaCount >= cells.Length");
+                Debug.LogError("seaCount >= cells.Length");
+                return false;
             }
 
             // Gen: start sea cell
@@ -108,62 +123,17 @@ namespace GameFunctions {
             seaCount--;
             cells_sea_indices[cells_sea_count++] = startSeaIndex;
 
-            // Prepare: prefer direction
-            int dir_from = option.DIR;
-            int d0 = Dir_Reverse(dir_from);
-            int d1, d2;
-            Dir_Prefer(d0, out d1, out d2);
-
-            // d0: 10% d1: 45%, d2: 45% = 100%
-            // d0: 2%  d1: 9%,  d2: 9%  = 20%
-            int d0Rate = 2;
-            int d1Rate = 9;
-            int d2Rate = 9;
-            int preferCount = d0Rate + d1Rate + d2Rate;
-            Span<int> prefer = stackalloc int[preferCount];
-            for (int i = 0; i < preferCount; i += 1) {
-                if (i < d0Rate) {
-                    prefer[i] = d0;
-                } else if (i < d0Rate + d1Rate) {
-                    prefer[i] = d1;
-                } else if (i < d0Rate + d1Rate + d2Rate) {
-                    prefer[i] = d2;
-                }
-            }
-
-            while (seaCount > 0) {
-                for (int i = 0; i < cells_sea_count; i += 1) {
-                    int seaIndex = cells_sea_indices[i];
-                    int x = seaIndex % width;
-                    int y = seaIndex / width;
-
-                    // fill reverse direction
-                    int reverseDirIndex = Index_GetByPos(x, y, width, height, dir_from);
-                    if (reverseDirIndex != -1 && cells[reverseDirIndex] != seaValue) {
-                        cells[reverseDirIndex] = seaValue;
-                        cells_sea_indices[cells_sea_count++] = reverseDirIndex;
-                        seaCount--;
-                        continue;
-                    }
-
-                    // fill prefer direction
-                    int nextDir = prefer[random.Next(preferCount)];
-                    int nextDirIndex = Index_GetByPos(x, y, width, height, nextDir);
-                    if (nextDirIndex != -1 && cells[nextDirIndex] != seaValue) {
-                        cells[nextDirIndex] = seaValue;
-                        cells_sea_indices[cells_sea_count++] = nextDirIndex;
-                        seaCount--;
-                        continue;
-                    }
-                }
-            }
+            return Algorithm_Erode(cells, random, width, height, seaCount, seaValue, option.DIR, (int index) => {
+                cells[index] = seaValue;
+                cells_sea_indices[cells_sea_count++] = index;
+            });
 
         }
 
         // ==== Land-Lake ====
         // cells[index] = landValue
         public static bool Gen_Land_Lake(int[] cells, RD random, int width, int height, int seaValue, GFGenLakeOption option) {
-            if (option.TYPE == GFGenLakeOption.TYPE_NORMAL) {
+            if (option.TYPE == GFGenLakeOption.TYPE_FLOOD) {
                 return Gen_Land_Lake_Normal(cells, random, width, height, seaValue, option);
             } else {
                 Debug.LogWarning("Unknown type: " + option.TYPE);
@@ -173,7 +143,7 @@ namespace GameFunctions {
 
         static bool Gen_Land_Lake_Normal(int[] cells, RD random, int width, int height, int seaValue, GFGenLakeOption option) {
 
-            int failedTimes = 10000;
+            int failedTimes = width * height * 10;
 
             int lakeCount = option.lakeCount;
             int lakeValue = option.lakeValue;
@@ -203,6 +173,73 @@ namespace GameFunctions {
 
             cells[Index_GetByPos(start_x, start_y, width)] = lakeValue;
 
+            return true;
+
+        }
+
+        // ==== Algorithm ====
+        // 侵蚀算法
+        // 0 1 1 1 1 0
+        // 0 0 1 1 1 0
+        // 0 0 1 1 0 0
+        // 0 0 1 0 0 0
+        static bool Algorithm_Erode(int[] cells, RD random, int width, int height, int erodeCount, int erodeValue, int erodeFromDir, Action<int> onErode) {
+
+            int failedTimes = width * height * 10;
+
+            // Prepare: prefer direction
+            int dir_from = erodeFromDir;
+            int d0 = Dir_Reverse(dir_from);
+            int d1, d2;
+            Dir_Prefer(d0, out d1, out d2);
+
+            // d0: 10% d1: 45%, d2: 45% = 100%
+            // d0: 2%  d1: 9%,  d2: 9%  = 20%
+            int d0Rate = 2;
+            int d1Rate = 9;
+            int d2Rate = 9;
+            int preferCount = d0Rate + d1Rate + d2Rate;
+            Span<int> prefer = stackalloc int[preferCount];
+            for (int i = 0; i < preferCount; i += 1) {
+                if (i < d0Rate) {
+                    prefer[i] = d0;
+                } else if (i < d0Rate + d1Rate) {
+                    prefer[i] = d1;
+                } else if (i < d0Rate + d1Rate + d2Rate) {
+                    prefer[i] = d2;
+                }
+            }
+
+            while (erodeCount > 0) {
+                for (int i = 0; i < cells_sea_count; i += 1) {
+                    int seaIndex = cells_sea_indices[i];
+                    int x = seaIndex % width;
+                    int y = seaIndex / width;
+
+                    // fill reverse direction
+                    int reverseDirIndex = Index_GetByPos(x, y, width, height, dir_from);
+                    if (reverseDirIndex != -1 && cells[reverseDirIndex] != erodeValue) {
+                        onErode.Invoke(reverseDirIndex);
+                        erodeCount--;
+                        continue;
+                    }
+
+                    // fill prefer direction
+                    int nextDir = prefer[random.Next(preferCount)];
+                    int nextDirIndex = Index_GetByPos(x, y, width, height, nextDir);
+                    if (nextDirIndex != -1 && cells[nextDirIndex] != erodeValue) {
+                        onErode.Invoke(nextDirIndex);
+                        erodeCount--;
+                        continue;
+                    }
+
+                    --failedTimes;
+                    if (failedTimes <= 0) {
+                        Debug.LogError("Algorithm_Erode failed");
+                        return false;
+                    }
+                }
+            }
             return true;
         }
 
