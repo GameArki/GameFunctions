@@ -5,11 +5,14 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 using RD = System.Random;
 
-// 算法:
-// Rewrite: 侵蚀算法(Erode)
-// Rewrite: 描边算法(Outline)
-// Rewrite: 洪泛算法(Flood)
-// Rewrite: 散播算法(Scatter)
+// Rewrite 算法:
+// 侵蚀算法(Erode)
+// 描边算法(Outline)
+// 洪泛算法(Flood)
+// 播种算法(Scatter)
+// 平滑算法(Smooth)
+// 河流算法(River)
+// 点缀算法(Decorate)
 namespace GameFunctions {
 
     public static class GFGridGenerator {
