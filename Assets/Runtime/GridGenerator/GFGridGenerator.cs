@@ -15,8 +15,6 @@ namespace GameFunctions {
         public const int DIR_LEFT = 3;
         public const int DIR_COUNT = 4;
 
-        public const int TYPE_LAND_LAKE_NORMAL = 1;
-
         [ThreadStatic] static HashSet<int> cells_land_grass_index_set;
         [ThreadStatic] static int[] cells_land_grass_indices;
         [ThreadStatic] static int[] cells_sea_indices;
@@ -49,11 +47,10 @@ namespace GameFunctions {
             // Cache: Sea
             if (cells_sea_indices == null || cells_sea_indices.Length < cells.Length) {
                 cells_sea_indices = new int[cells.Length];
-                cells_sea_count = 0;
             }
 
             // Gen: Sea
-            Gen_Sea(cells, rd, gridOption.width, seaOption);
+            Gen_Sea(cells, rd, gridOption.width, gridOption.height, seaOption);
 
             // Cache Update: Land
             // remove sea cells from land cells
@@ -63,21 +60,21 @@ namespace GameFunctions {
             }
 
             // Gen: Land - Lake
-            // Gen_Land_Lake(cells, rd, cellOption.width, lakeOption);
+            Gen_Land_Lake(cells, rd, gridOption.width, gridOption.height, seaOption.seaValue, lakeOption);
 
             return cells;
         }
 
         // ==== Sea ====
         // cells[index] = seaValue
-        public static bool Gen_Sea(int[] cells, RD random, int width, GFGenSeaOption option) {
+        public static void Gen_Sea(int[] cells, RD random, int width, int height, GFGenSeaOption option) {
             cells_sea_count = 0;
             option.DIR = Math.Abs(option.DIR) % DIR_COUNT;
-            if (option.TYPE == 1) {
-                return Gen_Sea_Type1(cells, random, width, option);
+            if (option.TYPE == GFGenSeaOption.TYPE_NORMAL) {
+                Gen_Sea_Normal(cells, random, width, height, option);
             } else {
                 Debug.LogWarning("Unknown type: " + option.TYPE);
-                return Gen_Sea_Type1(cells, random, width, option);
+                Gen_Sea_Normal(cells, random, width, height, option);
             }
         }
 
@@ -93,33 +90,25 @@ namespace GameFunctions {
         // or: 1 0 = 1 1
         // or: 1   = 1
         //     0     1
-        static bool Gen_Sea_Type1(int[] cells, RD random, int width, GFGenSeaOption option) {
-            // cells is a 2D array, but we use 1D array to store it
-            int height = cells.Length / width;
-
-            // Gen sea cells
-            int start_x;
-            int start_y;
-            Pos_GetOnEdge(random, width, height, option.DIR, out start_x, out start_y);
-            int seaIndex = Index_GetByPos(start_x, start_y, width);
-            cells[seaIndex] = option.seaValue;
-            option.seaCount--;
-            cells_sea_indices[cells_sea_count++] = seaIndex;
-            Gen_Sea_Rewrite(cells, random, width, option);
-            return true;
-        }
-
-        static void Gen_Sea_Rewrite(int[] cells, RD random, int width, GFGenSeaOption option) {
+        static void Gen_Sea_Normal(int[] cells, RD random, int width, int height, GFGenSeaOption option) {
 
             int seaCount = option.seaCount;
-            if (seaCount >= cells.Length || cells_sea_count <= 0) {
+            int seaValue = option.seaValue;
+
+            if (seaCount >= cells.Length) {
                 throw new System.Exception("seaCount >= cells.Length");
             }
 
-            int seaValue = option.seaValue;
+            // Gen: start sea cell
+            int start_x;
+            int start_y;
+            Pos_GetOnEdge(random, width, height, option.DIR, out start_x, out start_y);
+            int startSeaIndex = Index_GetByPos(start_x, start_y, width);
+            cells[startSeaIndex] = seaValue;
+            seaCount--;
+            cells_sea_indices[cells_sea_count++] = startSeaIndex;
 
-            int height = cells.Length / width;
-
+            // Prepare: prefer direction
             int dir_from = option.DIR;
             int d0 = Dir_Reverse(dir_from);
             int d1, d2;
@@ -173,8 +162,48 @@ namespace GameFunctions {
 
         // ==== Land-Lake ====
         // cells[index] = landValue
-        public static bool Gen_Land_Lake(int[] cells, RD random, int width, GFGenLakeOption option) {
-            throw new System.NotImplementedException();
+        public static bool Gen_Land_Lake(int[] cells, RD random, int width, int height, int seaValue, GFGenLakeOption option) {
+            if (option.TYPE == GFGenLakeOption.TYPE_NORMAL) {
+                return Gen_Land_Lake_Normal(cells, random, width, height, seaValue, option);
+            } else {
+                Debug.LogWarning("Unknown type: " + option.TYPE);
+                return Gen_Land_Lake_Normal(cells, random, width, height, seaValue, option);
+            }
+        }
+
+        static bool Gen_Land_Lake_Normal(int[] cells, RD random, int width, int height, int seaValue, GFGenLakeOption option) {
+
+            int failedTimes = 10000;
+
+            int lakeCount = option.lakeCount;
+            int lakeValue = option.lakeValue;
+            int awayFromSea = option.awayFromSea;
+
+            GFVector4Int edgeOffset = new GFVector4Int();
+            int start_x = 0;
+            int start_y = 0;
+            do {
+                failedTimes--;
+                if (failedTimes <= 0) {
+                    break;
+                }
+                start_x = random.Next(width);
+                start_y = random.Next(height);
+                int value = cells[Index_GetByPos(start_x, start_y, width)];
+                if (value == seaValue) {
+                    continue;
+                }
+                edgeOffset = Pos_DetectAwayFrom(cells, width, height, start_x, start_y, seaValue, awayFromSea);
+            } while (edgeOffset.Min() < option.awayFromSea);
+
+            if (failedTimes <= 0) {
+                Debug.LogError("Gen_Land_Lake_Normal failed");
+                return false;
+            }
+
+            cells[Index_GetByPos(start_x, start_y, width)] = lakeValue;
+
+            return true;
         }
 
         // ==== Generics ====
@@ -210,7 +239,72 @@ namespace GameFunctions {
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static int Index_GetByPos(int x, int y, int width) {
-            return y * width + x;
+            int index = y * width + x;
+            if (index < 0 || index >= width * width) {
+                return -1;
+            }
+            return index;
+        }
+
+        static GFVector4Int Pos_DetectAwayFrom(int[] cells, int width, int height, int x, int y, int awayValue, int awayFromSize) {
+            // up down left right, walk awayFromSize steps
+            // if found awayValue, return awayFromSize
+            bool findLeft, findRight, findTop, findBottom;
+            findTop = false; // x
+            findRight = false; // y
+            findBottom = false; // w
+            findLeft = false; // z
+            GFVector4Int edgeOffset = new GFVector4Int();
+            for (int i = 0; i <= awayFromSize; i += 1) {
+                if (!findTop) {
+                    int upIndex = Index_GetByPos(x, y + i, width);
+                    if (upIndex != -1 && cells[upIndex] == awayValue) {
+                        edgeOffset.x = i;
+                        findTop = true;
+                    }
+                }
+
+                if (!findRight) {
+                    int rightIndex = Index_GetByPos(x + i, y, width);
+                    if (rightIndex != -1 && cells[rightIndex] == awayValue) {
+                        edgeOffset.y = i;
+                        findRight = true;
+                    }
+                }
+
+                if (!findBottom) {
+                    int downIndex = Index_GetByPos(x, y - i, width);
+                    if (downIndex != -1 && cells[downIndex] == awayValue) {
+                        edgeOffset.w = i;
+                        findBottom = true;
+                    }
+                }
+
+                if (!findLeft) {
+                    int leftIndex = Index_GetByPos(x - i, y, width);
+                    if (leftIndex != -1 && cells[leftIndex] == awayValue) {
+                        edgeOffset.z = i;
+                        findLeft = true;
+                    }
+                }
+
+                if (findTop && findRight && findBottom && findLeft) {
+                    break;
+                }
+            }
+            if (!findTop) {
+                edgeOffset.x = awayFromSize;
+            }
+            if (!findRight) {
+                edgeOffset.y = awayFromSize;
+            }
+            if (!findBottom) {
+                edgeOffset.w = awayFromSize;
+            }
+            if (!findLeft) {
+                edgeOffset.z = awayFromSize;
+            }
+            return edgeOffset;
         }
 
         static void Pos_GetOnEdge(RD random, int width, int height, int DIR, out int x, out int y) {

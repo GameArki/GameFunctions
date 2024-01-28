@@ -1,3 +1,5 @@
+using System;
+
 namespace GameFunctions {
 
     public struct GFVector4Int {
@@ -12,6 +14,10 @@ namespace GameFunctions {
             this.y = y;
             this.z = z;
             this.w = w;
+        }
+
+        public int Min() {
+            return Math.Min(Math.Min(x, y), Math.Min(z, w));
         }
 
         public static GFVector4Int operator +(GFVector4Int a, GFVector4Int b) {
@@ -86,6 +92,10 @@ namespace GameFunctions {
 
         public override int GetHashCode() {
             return x.GetHashCode() ^ y.GetHashCode() ^ z.GetHashCode() ^ w.GetHashCode();
+        }
+
+        public override string ToString() {
+            return string.Format("({0}, {1}, {2}, {3})", x, y, z, w);
         }
 
     }
