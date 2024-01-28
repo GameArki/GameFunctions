@@ -228,13 +228,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 610130a6f6eacca49b953ca422294223, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  seed: 1010
-  seedTimes: 1
-  width: 256
-  height: 256
-  cellSize: 1
-  cellGap: 0
-  seaCount: 100
+  setting:
+    seed: 876
+    seedTimes: 34
+    width: 256
+    height: 256
+    cellSize: 1
+    cellGap: 0
+    seaCount: 5120
+    sea_fromDir: 2
   color_empty: {r: 0.92941177, g: 0.92941177, b: 0.92941177, a: 1}
   color_sea: {r: 0, g: 0.34628177, b: 0.5660378, a: 1}
 --- !u!1660057539 &9223372036854775807

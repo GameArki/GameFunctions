@@ -1,11 +1,10 @@
+using System;
 using UnityEngine;
-using UnityEditor;
 
 namespace GameFunctions.Sample {
 
-    public class Sample_GFCellGenerator : MonoBehaviour {
-
-        int[] cells;
+    [Serializable]
+    internal class GeneratorSetting {
         public int seed;
         public int seedTimes;
         public int width;
@@ -15,6 +14,12 @@ namespace GameFunctions.Sample {
         public int seaCount;
         [Range(0, 4)]
         public int sea_fromDir;
+    }
+
+    public class Sample_GFCellGenerator : MonoBehaviour {
+
+        int[] cells;
+        [SerializeField] GeneratorSetting setting;
 
         bool isGenerated;
 
@@ -37,13 +42,21 @@ namespace GameFunctions.Sample {
             }
         }
 
+        void Update() {
+            if (this.gameObject.transform.hasChanged) {
+                cells = null;
+                isGenerated = false;
+                Gen();
+            }
+        }
+
         void Gen() {
-            System.Random rd = new System.Random(seed);
-            for (int i = 0; i < seedTimes; i++) {
+            System.Random rd = new System.Random(setting.seed);
+            for (int i = 0; i < setting.seedTimes; i++) {
                 rd.Next();
             }
-            cells = GFCellGenerator.NewCells(width, height);
-            GFCellGenerator.Gen_Sea(cells, rd, VALUE_SEA, width, seaCount, sea_fromDir);
+            cells = GFCellGenerator.NewCells(setting.width, setting.height);
+            GFCellGenerator.Gen_Sea(cells, rd, VALUE_SEA, setting.width, setting.seaCount, setting.sea_fromDir);
             isGenerated = true;
         }
 
@@ -54,8 +67,8 @@ namespace GameFunctions.Sample {
 
             // Draw cells
             for (int i = 0; i < cells.Length; i++) {
-                int x = i % width;
-                int y = i / width;
+                int x = i % setting.width;
+                int y = i / setting.width;
                 int value = cells[i];
                 if (value == VALUE_EMPTY) {
                     Gizmos.color = color_empty;
@@ -66,7 +79,7 @@ namespace GameFunctions.Sample {
                     Gizmos.color = Color.red;
                 }
                 // Draw cell
-                Gizmos.DrawCube(new Vector3(x * (cellSize + cellGap), y * (cellSize + cellGap)), new Vector3(cellSize, cellSize));
+                Gizmos.DrawCube(new Vector3(x * (setting.cellSize + setting.cellGap), y * (setting.cellSize + setting.cellGap)), new Vector3(setting.cellSize, setting.cellSize));
             }
 
         }
