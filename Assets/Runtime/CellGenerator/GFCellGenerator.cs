@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using RD = System.Random;
 
@@ -6,10 +7,10 @@ namespace GameFunctions {
 
     public static class GFCellGenerator {
 
-        public const int DIR_FROM_TOP = 0;
-        public const int DIR_FROM_RIGHT = 1;
-        public const int DIR_FROM_BOTTOM = 2;
-        public const int DIR_FROM_LEFT = 3;
+        public const int DIR_TOP = 0;
+        public const int DIR_RIGHT = 1;
+        public const int DIR_BOTTOM = 2;
+        public const int DIR_LEFT = 3;
         public const int DRI_COUNT = 4;
 
         public static int[] NewCells(int width, int height, int landValue) {
@@ -48,16 +49,16 @@ namespace GameFunctions {
             // Gen sea cells
             int start_x;
             int start_y;
-            if (DIR == DIR_FROM_TOP) {
+            if (DIR == DIR_TOP) {
                 start_x = random.Next(width);
                 start_y = height - 1;
-            } else if (DIR == DIR_FROM_RIGHT) {
+            } else if (DIR == DIR_RIGHT) {
                 start_x = width - 1;
                 start_y = random.Next(height);
-            } else if (DIR == DIR_FROM_BOTTOM) {
+            } else if (DIR == DIR_BOTTOM) {
                 start_x = random.Next(width);
                 start_y = 0;
-            } else if (DIR == DIR_FROM_LEFT) {
+            } else if (DIR == DIR_LEFT) {
                 start_x = 0;
                 start_y = random.Next(height);
             } else {
@@ -69,38 +70,38 @@ namespace GameFunctions {
         }
 
         static int Dir_Reverse(int DIR) {
-            if (DIR == DIR_FROM_TOP) {
-                return DIR_FROM_BOTTOM;
-            } else if (DIR == DIR_FROM_RIGHT) {
-                return DIR_FROM_LEFT;
-            } else if (DIR == DIR_FROM_BOTTOM) {
-                return DIR_FROM_TOP;
-            } else if (DIR == DIR_FROM_LEFT) {
-                return DIR_FROM_RIGHT;
+            if (DIR == DIR_TOP) {
+                return DIR_BOTTOM;
+            } else if (DIR == DIR_RIGHT) {
+                return DIR_LEFT;
+            } else if (DIR == DIR_BOTTOM) {
+                return DIR_TOP;
+            } else if (DIR == DIR_LEFT) {
+                return DIR_RIGHT;
             } else {
                 throw new System.Exception("Unknown DIR: " + DIR);
             }
         }
 
         static void Dir_Prefer(int DIR, out int prefer1, out int prefer2) {
-            if (DIR == DIR_FROM_TOP) {
-                prefer1 = DIR_FROM_LEFT;
-                prefer2 = DIR_FROM_RIGHT;
-            } else if (DIR == DIR_FROM_RIGHT) {
-                prefer1 = DIR_FROM_TOP;
-                prefer2 = DIR_FROM_BOTTOM;
-            } else if (DIR == DIR_FROM_BOTTOM) {
-                prefer1 = DIR_FROM_RIGHT;
-                prefer2 = DIR_FROM_LEFT;
-            } else if (DIR == DIR_FROM_LEFT) {
-                prefer1 = DIR_FROM_BOTTOM;
-                prefer2 = DIR_FROM_TOP;
+            if (DIR == DIR_TOP) {
+                prefer1 = DIR_LEFT;
+                prefer2 = DIR_RIGHT;
+            } else if (DIR == DIR_RIGHT) {
+                prefer1 = DIR_TOP;
+                prefer2 = DIR_BOTTOM;
+            } else if (DIR == DIR_BOTTOM) {
+                prefer1 = DIR_RIGHT;
+                prefer2 = DIR_LEFT;
+            } else if (DIR == DIR_LEFT) {
+                prefer1 = DIR_BOTTOM;
+                prefer2 = DIR_TOP;
             } else {
                 throw new System.Exception("Unknown DIR: " + DIR);
             }
         }
 
-        static void Sea_Rewrite(int[] cells, RD random, int seaValue, int width, int seaCount, int DIR) {
+        static void Sea_Rewrite(int[] cells, RD random, int seaValue, int width, int seaCount, int DIR_FROM) {
 
             if (seaCount >= cells.Length) {
                 throw new System.Exception("seaCount >= cells.Length");
@@ -108,28 +109,25 @@ namespace GameFunctions {
 
             int height = cells.Length / width;
 
-            int r = Dir_Reverse(DIR);
+            int d0 = Dir_Reverse(DIR_FROM);
             int d1, d2;
-            Dir_Prefer(DIR, out d1, out d2);
+            Dir_Prefer(d0, out d1, out d2);
 
-            // DIR: 10% d1: 45%, d2: 45%, r: 0%
-            Span<int> prefer = stackalloc int[100];
-            for (int i = 0; i < 100; i += 1) {
-                if (i < 10) {
-                    prefer[i] = DIR;
-                } else if (i < 55) {
+            // d0: 10% d1: 45%, d2: 45%, r: 0% = 100%
+            // d0: 2%  d1: 9%,  d2: 9%,  r: 0% = 20%
+            int d0Rate = 2;
+            int d1Rate = 9;
+            int d2Rate = 9;
+            int preferCount = d0Rate + d1Rate + d2Rate;
+            Span<int> prefer = stackalloc int[preferCount];
+            for (int i = 0; i < preferCount; i += 1) {
+                if (i < d0Rate) {
+                    prefer[i] = d0;
+                } else if (i < d0Rate + d1Rate) {
                     prefer[i] = d1;
-                } else if (i < 100) {
+                } else if (i < d0Rate + d1Rate + d2Rate) {
                     prefer[i] = d2;
                 }
-            }
-
-            // Shuffle
-            for (int i = 0; i < 100; i += 1) {
-                int j = random.Next(100);
-                int t = prefer[i];
-                prefer[i] = prefer[j];
-                prefer[j] = t;
             }
 
             while (seaCount > 0) {
@@ -139,52 +137,23 @@ namespace GameFunctions {
                     int y = i / width;
                     if (cells[i] == seaValue) {
                         hasSea = true;
-                        if (DIR == DIR_FROM_TOP) {
-                            // 0  =  1
-                            // 1     1
-                            if (y + 1 < height) {
-                                cells[GetIndex(x, y + 1, width)] = seaValue;
-                            }
-                        } else if (DIR == DIR_FROM_RIGHT) {
-                            // 1 0 = 1 1
-                            if (x + 1 < width) {
-                                cells[GetIndex(x + 1, y, width)] = seaValue;
-                            }
-                        } else if (DIR == DIR_FROM_BOTTOM) {
-                            // 1     1
-                            // 0  =  1
-                            if (y - 1 >= 0) {
-                                cells[GetIndex(x, y - 1, width)] = seaValue;
-                            }
-                        } else if (DIR == DIR_FROM_LEFT) {
-                            // 0 1 = 1 1
-                            if (x - 1 >= 0) {
-                                cells[GetIndex(x - 1, y, width)] = seaValue;
-                            }
-                        } else {
-                            throw new System.Exception("Unknown DIR: " + DIR);
+
+                        // fill reverse direction
+                        int reverseDirIndex = GetIndexByDir(x, y, width, height, DIR_FROM);
+                        if (reverseDirIndex != -1) {
+                            cells[reverseDirIndex] = seaValue;
+                            seaCount--;
                         }
 
-                        int nextDir = prefer[random.Next(100)];
-                        int nx = x;
-                        int ny = y;
-                        if (nextDir == DIR_FROM_TOP) {
-                            ny -= 1;
-                        } else if (nextDir == DIR_FROM_RIGHT) {
-                            nx -= 1;
-                        } else if (nextDir == DIR_FROM_BOTTOM) {
-                            ny += 1;
-                        } else if (nextDir == DIR_FROM_LEFT) {
-                            nx += 1;
-                        } else {
-                            throw new System.Exception("Unknown DIR: " + nextDir);
-                        }
-                        if (nx < 0 || nx >= width || ny < 0 || ny >= height) {
+                        // fill prefer direction
+                        int nextDir = prefer[random.Next(preferCount)];
+                        int nextDirIndex = GetIndexByDir(x, y, width, height, nextDir);
+                        if (nextDirIndex == -1) {
                             continue;
                         }
-                        int nextIndex = GetIndex(nx, ny, width);
-                        if (cells[nextIndex] != seaValue) {
-                            cells[nextIndex] = seaValue;
+
+                        if (cells[nextDirIndex] != seaValue) {
+                            cells[nextDirIndex] = seaValue;
                             seaCount--;
                         }
                     }
@@ -196,6 +165,26 @@ namespace GameFunctions {
 
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static int GetIndexByDir(int x, int y, int width, int height, int DIR) {
+            if (DIR == DIR_TOP) {
+                y += 1;
+            } else if (DIR == DIR_RIGHT) {
+                x += 1;
+            } else if (DIR == DIR_BOTTOM) {
+                y -= 1;
+            } else if (DIR == DIR_LEFT) {
+                x -= 1;
+            } else {
+                throw new System.Exception("Unknown DIR: " + DIR);
+            }
+            if (x < 0 || x >= width || y < 0 || y >= height) {
+                return -1;
+            }
+            return GetIndex(x, y, width);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static int GetIndex(int x, int y, int width) {
             return y * width + x;
         }
