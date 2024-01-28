@@ -3,7 +3,7 @@ using System;
 namespace GameFunctions {
 
     [Serializable]
-    public struct GFGenCellOption {
+    public struct GFGenGridOption {
         public int seed;
         public int seedTimes;
         public int width;

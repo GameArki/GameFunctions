@@ -7,7 +7,7 @@ using RD = System.Random;
 
 namespace GameFunctions {
 
-    public static class GFCellGenerator {
+    public static class GFGridGenerator {
 
         public const int DIR_TOP = 0;
         public const int DIR_RIGHT = 1;
@@ -23,29 +23,47 @@ namespace GameFunctions {
         [ThreadStatic] static int cells_sea_count;
 
         // ==== Land Init ====
-        public static int[] GenAll(GFGenCellOption cellOption, GFGenSeaOption seaOption) {
+        public static int[] GenAll(GFGenGridOption gridOption, GFGenSeaOption seaOption, GFGenLakeOption lakeOption) {
 
-            RD rd = new RD(cellOption.seed);
-            for (int i = 0; i < cellOption.seedTimes; i++) {
+            // Random
+            RD rd = new RD(gridOption.seed);
+            for (int i = 0; i < gridOption.seedTimes; i++) {
                 rd.Next();
             }
 
-            int[] cells = new int[cellOption.width * cellOption.height];
+            int[] cells = new int[gridOption.width * gridOption.height];
+
+            // Gen: Land(default)
+            for (int i = 0; i < cells.Length; i++) {
+                cells[i] = gridOption.defaultLandValue;
+            }
+
+            // Cache: Land(default) 
             cells_land_grass_index_set = new HashSet<int>(cells.Length);
             cells_land_grass_indices = new int[cells.Length];
             for (int i = 0; i < cells.Length; i++) {
-                cells[i] = cellOption.defaultLandValue;
                 cells_land_grass_index_set.Add(i);
             }
-
             cells_land_grass_index_set.CopyTo(cells_land_grass_indices);
+
+            // Cache: Sea
             if (cells_sea_indices == null || cells_sea_indices.Length < cells.Length) {
                 cells_sea_indices = new int[cells.Length];
                 cells_sea_count = 0;
             }
 
-            // Sea
-            Gen_Sea(cells, rd, cellOption.width, seaOption);
+            // Gen: Sea
+            Gen_Sea(cells, rd, gridOption.width, seaOption);
+
+            // Cache Update: Land
+            // remove sea cells from land cells
+            for (int i = 0; i < cells_sea_count; i += 1) {
+                int seaIndex = cells_sea_indices[i];
+                cells_land_grass_index_set.Remove(seaIndex);
+            }
+
+            // Gen: Land - Lake
+            // Gen_Land_Lake(cells, rd, cellOption.width, lakeOption);
 
             return cells;
         }
@@ -54,21 +72,13 @@ namespace GameFunctions {
         // cells[index] = seaValue
         public static bool Gen_Sea(int[] cells, RD random, int width, GFGenSeaOption option) {
             cells_sea_count = 0;
-            bool succ = false;
             option.DIR = Math.Abs(option.DIR) % DIR_COUNT;
             if (option.TYPE == 1) {
-                succ = Gen_Sea_Type1(cells, random, width, option);
+                return Gen_Sea_Type1(cells, random, width, option);
             } else {
-                succ = Gen_Sea_Type1(cells, random, width, option);
-                Debug.LogError("Unknown type: " + option.TYPE);
+                Debug.LogWarning("Unknown type: " + option.TYPE);
+                return Gen_Sea_Type1(cells, random, width, option);
             }
-
-            // remove sea cells from land cells
-            for (int i = 0; i < cells_sea_count; i += 1) {
-                int seaIndex = cells_sea_indices[i];
-                cells_land_grass_index_set.Remove(seaIndex);
-            }
-            return succ;
         }
 
         // implement by rewrite:
@@ -90,22 +100,7 @@ namespace GameFunctions {
             // Gen sea cells
             int start_x;
             int start_y;
-            int fromDir = option.DIR;
-            if (fromDir == DIR_TOP) {
-                start_x = random.Next(width);
-                start_y = height - 1;
-            } else if (fromDir == DIR_RIGHT) {
-                start_x = width - 1;
-                start_y = random.Next(height);
-            } else if (fromDir == DIR_BOTTOM) {
-                start_x = random.Next(width);
-                start_y = 0;
-            } else if (fromDir == DIR_LEFT) {
-                start_x = 0;
-                start_y = random.Next(height);
-            } else {
-                throw new System.Exception("Unknown DIR: " + fromDir);
-            }
+            Pos_GetOnEdge(random, width, height, option.DIR, out start_x, out start_y);
             int seaIndex = Index_GetByPos(start_x, start_y, width);
             cells[seaIndex] = option.seaValue;
             option.seaCount--;
@@ -178,43 +173,20 @@ namespace GameFunctions {
 
         // ==== Land-Lake ====
         // cells[index] = landValue
-        public static bool Gen_Land_Lake(int[] cells, RD random, int landValue, int width, int lakeCount, int preferRadius, int TYPE = TYPE_LAND_LAKE_NORMAL) {
+        public static bool Gen_Land_Lake(int[] cells, RD random, int width, GFGenLakeOption option) {
             throw new System.NotImplementedException();
         }
 
         // ==== Generics ====
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static int Dir_Reverse(int DIR) {
-            if (DIR == DIR_TOP) {
-                return DIR_BOTTOM;
-            } else if (DIR == DIR_RIGHT) {
-                return DIR_LEFT;
-            } else if (DIR == DIR_BOTTOM) {
-                return DIR_TOP;
-            } else if (DIR == DIR_LEFT) {
-                return DIR_RIGHT;
-            } else {
-                throw new System.Exception("Unknown DIR: " + DIR);
-            }
+            return (DIR + 2) % DIR_COUNT;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void Dir_Prefer(int DIR, out int prefer1, out int prefer2) {
-            if (DIR == DIR_TOP) {
-                prefer1 = DIR_LEFT;
-                prefer2 = DIR_RIGHT;
-            } else if (DIR == DIR_RIGHT) {
-                prefer1 = DIR_TOP;
-                prefer2 = DIR_BOTTOM;
-            } else if (DIR == DIR_BOTTOM) {
-                prefer1 = DIR_RIGHT;
-                prefer2 = DIR_LEFT;
-            } else if (DIR == DIR_LEFT) {
-                prefer1 = DIR_BOTTOM;
-                prefer2 = DIR_TOP;
-            } else {
-                throw new System.Exception("Unknown DIR: " + DIR);
-            }
+            prefer1 = (DIR + 1) % DIR_COUNT;
+            prefer2 = (DIR + 3) % DIR_COUNT;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -239,6 +211,24 @@ namespace GameFunctions {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static int Index_GetByPos(int x, int y, int width) {
             return y * width + x;
+        }
+
+        static void Pos_GetOnEdge(RD random, int width, int height, int DIR, out int x, out int y) {
+            if (DIR == DIR_TOP) {
+                x = random.Next(width);
+                y = height - 1;
+            } else if (DIR == DIR_RIGHT) {
+                x = width - 1;
+                y = random.Next(height);
+            } else if (DIR == DIR_BOTTOM) {
+                x = random.Next(width);
+                y = 0;
+            } else if (DIR == DIR_LEFT) {
+                x = 0;
+                y = random.Next(height);
+            } else {
+                throw new System.Exception("Unknown DIR: " + DIR);
+            }
         }
 
     }

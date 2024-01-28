@@ -7,16 +7,15 @@ namespace GameFunctions.Sample {
     internal class GeneratorSetting {
         public float cellSize;
         public float cellGap;
-        public GFGenCellOption cellOption;
+        public GFGenGridOption gridOption;
         public GFGenSeaOption seaOption;
+        public GFGenLakeOption lakeOption;
     }
 
-    public class Sample_GFCellGenerator : MonoBehaviour {
+    public class Sample_GFGridGenerator : MonoBehaviour {
 
         int[] cells;
         [SerializeField] GeneratorSetting setting;
-
-        bool isGenerated;
 
         const int VALUE_EMPTY = 0;
         const int VALUE_LAND_GRASS = 1;
@@ -26,33 +25,14 @@ namespace GameFunctions.Sample {
         [SerializeField] Color color_land_grass;
         [SerializeField] Color color_sea;
 
-        void OnGUI() {
-            if (isGenerated) {
-                if (GUILayout.Button("Clear")) {
-                    cells = null;
-                    isGenerated = false;
-                }
-            } else {
-                if (GUILayout.Button("Gen")) {
-                    Gen();
-                }
-            }
-        }
-
         void Update() {
             if (this.gameObject.transform.hasChanged) {
-                cells = null;
-                isGenerated = false;
                 Gen();
             }
         }
 
         void Gen() {
-
-            cells = GFCellGenerator.GenAll(setting.cellOption, setting.seaOption);
-
-            isGenerated = true;
-
+            cells = GFGridGenerator.GenAll(setting.gridOption, setting.seaOption, setting.lakeOption);
         }
 
         void OnDrawGizmos() {
@@ -61,7 +41,7 @@ namespace GameFunctions.Sample {
             }
 
             // Draw cells
-            int width = setting.cellOption.width;
+            int width = setting.gridOption.width;
             float cellSize = setting.cellSize;
             float cellGap = setting.cellGap;
             for (int i = 0; i < cells.Length; i++) {
