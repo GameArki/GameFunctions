@@ -12,8 +12,12 @@ namespace GameFunctions {
         public const int DIR_FROM_LEFT = 3;
         public const int DRI_COUNT = 4;
 
-        public static int[] NewCells(int width, int height) {
-            return new int[width * height];
+        public static int[] NewCells(int width, int height, int landValue) {
+            int[] cells = new int[width * height];
+            for (int i = 0; i < cells.Length; i++) {
+                cells[i] = landValue;
+            }
+            return cells;
         }
 
         // cells[index] = seaValue
@@ -27,7 +31,7 @@ namespace GameFunctions {
 
         // implement by rewrite:
         // 0 0 0 0
-        // 0 0 0 0
+        // 0 1 0 0
         // 0 0 0 0
         // 0 0 0 0
         // 1. Find a random 0 => 1
@@ -134,6 +138,7 @@ namespace GameFunctions {
                     int x = i % width;
                     int y = i / width;
                     if (cells[i] == seaValue) {
+                        hasSea = true;
                         if (DIR == DIR_FROM_TOP) {
                             // 0  =  1
                             // 1     1
@@ -182,11 +187,10 @@ namespace GameFunctions {
                             cells[nextIndex] = seaValue;
                             seaCount--;
                         }
-                        hasSea = true;
                     }
                 }
                 if (!hasSea) {
-                    throw new System.Exception("No sea");
+                    Debug.LogError("No sea");
                 }
             }
 

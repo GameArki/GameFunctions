@@ -24,9 +24,11 @@ namespace GameFunctions.Sample {
         bool isGenerated;
 
         const int VALUE_EMPTY = 0;
-        const int VALUE_SEA = 1;
+        const int VALUE_LAND = 1;
+        const int VALUE_SEA = 2;
 
         [SerializeField] Color color_empty;
+        [SerializeField] Color color_land;
         [SerializeField] Color color_sea;
 
         void OnGUI() {
@@ -55,7 +57,7 @@ namespace GameFunctions.Sample {
             for (int i = 0; i < setting.seedTimes; i++) {
                 rd.Next();
             }
-            cells = GFCellGenerator.NewCells(setting.width, setting.height);
+            cells = GFCellGenerator.NewCells(setting.width, setting.height, VALUE_LAND);
             GFCellGenerator.Gen_Sea(cells, rd, VALUE_SEA, setting.width, setting.seaCount, setting.sea_fromDir);
             isGenerated = true;
         }
@@ -72,6 +74,8 @@ namespace GameFunctions.Sample {
                 int value = cells[i];
                 if (value == VALUE_EMPTY) {
                     Gizmos.color = color_empty;
+                } else if (value == VALUE_LAND) {
+                    Gizmos.color = color_land;
                 } else if (value == VALUE_SEA) {
                     Gizmos.color = color_sea;
                 } else {

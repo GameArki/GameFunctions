@@ -238,6 +238,7 @@ MonoBehaviour:
     seaCount: 5120
     sea_fromDir: 2
   color_empty: {r: 0.92941177, g: 0.92941177, b: 0.92941177, a: 1}
+  color_land: {r: 0.8996117, g: 0.9339623, b: 0.6123621, a: 1}
   color_sea: {r: 0, g: 0.34628177, b: 0.5660378, a: 1}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
