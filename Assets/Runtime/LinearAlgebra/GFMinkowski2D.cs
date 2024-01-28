@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -49,6 +50,7 @@ namespace GameFunctions {
             return Sum_CulledPolygon(aVectors, bReversed, culledPolygon);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static float Cross(Vector2 a, Vector2 b) {
             return a.x * b.y - a.y * b.x;
         }
