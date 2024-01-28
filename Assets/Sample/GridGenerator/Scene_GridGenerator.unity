@@ -240,6 +240,7 @@ MonoBehaviour:
     seaOption:
       seaValue: 2
       seaCount: 5120
+      erodeRate: 20
       DIR: 1
       TYPE: 1
     lakeOption:

@@ -10,6 +10,7 @@ namespace GameFunctions {
 
         public int seaValue;
         public int seaCount;
+        public int erodeRate;
         public int DIR;
         public int TYPE;
     }

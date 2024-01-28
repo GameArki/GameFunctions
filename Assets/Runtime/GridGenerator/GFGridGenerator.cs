@@ -123,7 +123,7 @@ namespace GameFunctions {
             seaCount--;
             cells_sea_indices[cells_sea_count++] = startSeaIndex;
 
-            return Algorithm_Erode(cells, random, width, height, seaCount, seaValue, option.DIR, (int index) => {
+            return Algorithm_Erode(cells, random, width, height, seaCount, option.erodeRate, seaValue, option.DIR, (int index) => {
                 cells[index] = seaValue;
                 cells_sea_indices[cells_sea_count++] = index;
             });
@@ -178,14 +178,20 @@ namespace GameFunctions {
         }
 
         // ==== Algorithm ====
-        // 侵蚀算法
-        // 0 1 1 1 1 0
-        // 0 0 1 1 1 0
-        // 0 0 1 1 0 0
-        // 0 0 1 0 0 0
-        static bool Algorithm_Erode(int[] cells, RD random, int width, int height, int erodeCount, int erodeValue, int erodeFromDir, Action<int> onErode) {
+        // 侵蚀算法: 0 1 = 1 1
+        // 0 0 1 0 0 0      0 1 1 1 0 0     0 1 1 1 1 0
+        // 0 0 0 0 0 0      0 0 1 0 0 0     0 0 1 1 0 0
+        // 0 0 0 0 0 0  ==> 0 0 0 0 0 0 ==> 0 0 0 1 0 0
+        // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 0 0 0
+        // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 0 0 0
+        static bool Algorithm_Erode(int[] cells, RD random, int width, int height, int erodeCount, int erodeRate, int erodeValue, int erodeFromDir, Action<int> onErode) {
 
-            int failedTimes = width * height * 10;
+            if (erodeRate <= 0) {
+                erodeRate = 9;
+                Debug.LogWarning($"erodeRate <= 0, use default: {erodeRate}");
+            }
+
+            int failedTimes = width * height * 100;
 
             // Prepare: prefer direction
             int dir_from = erodeFromDir;
@@ -193,11 +199,10 @@ namespace GameFunctions {
             int d1, d2;
             Dir_Prefer(d0, out d1, out d2);
 
-            // d0: 10% d1: 45%, d2: 45% = 100%
-            // d0: 2%  d1: 9%,  d2: 9%  = 20%
-            int d0Rate = 2;
-            int d1Rate = 9;
-            int d2Rate = 9;
+            // d0 + d1 + d2 = 100
+            int d0Rate = erodeRate;
+            int d1Rate = (100 - erodeRate) / 2;
+            int d2Rate = (100 - erodeRate) / 2;
             int preferCount = d0Rate + d1Rate + d2Rate;
             Span<int> prefer = stackalloc int[preferCount];
             for (int i = 0; i < preferCount; i += 1) {
@@ -232,15 +237,35 @@ namespace GameFunctions {
                         erodeCount--;
                         continue;
                     }
-
-                    --failedTimes;
-                    if (failedTimes <= 0) {
-                        Debug.LogError("Algorithm_Erode failed");
-                        return false;
-                    }
+                }
+                --failedTimes;
+                if (failedTimes <= 0) {
+                    Debug.LogError("Algorithm_Erode failed");
+                    return false;
                 }
             }
             return true;
+        }
+
+        // 描边算法: 0 0 1 = 0 2 1
+        // 0 0 0 0 0 0          0 0 0 0 0 0
+        // 0 1 1 1 1 0          0 2 2 2 2 0
+        // 0 1 1 1 1 0   ==>    0 2 1 1 2 0
+        // 0 1 1 1 1 0   ==>    0 2 1 1 2 0
+        // 0 1 1 1 1 0          0 2 2 2 2 0
+        // 0 0 0 0 0 0          0 0 0 0 0 0
+        static bool Algorithm_Outline(int[] cells, RD random, int width, int height, int outlineCount, int outlineValue, int outlineFromDir, Action<int> onOutline) {
+            throw new NotImplementedException();
+        }
+
+        // 洪泛算法: 0 1 0 = 0 1 1
+        // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 1 0 0
+        // 0 0 0 0 0 0      0 0 0 1 0 0     0 0 1 1 1 0
+        // 0 0 0 1 0 0  ==> 0 0 0 1 1 0 ==> 0 0 1 1 1 0
+        // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 1 0 0
+        // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 0 0 0
+        static bool Algorithm_Flood(int[] cells, RD random, int width, int height, int floodCount, int floodValue, int floodFromDir, Action<int> onFlood) {
+            throw new NotImplementedException();
         }
 
         // ==== Generics ====
