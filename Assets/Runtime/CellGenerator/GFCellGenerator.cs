@@ -11,22 +11,33 @@ namespace GameFunctions {
         public const int DIR_RIGHT = 1;
         public const int DIR_BOTTOM = 2;
         public const int DIR_LEFT = 3;
-        public const int DRI_COUNT = 4;
 
+        public const int TYPE_SEA_NORMAL = 1;
+
+        [ThreadStatic] static int[] cells_sea_indices;
+        [ThreadStatic] static int seaIndexExistCount;
+
+        // ==== Land ====
         public static int[] NewCells(int width, int height, int landValue) {
             int[] cells = new int[width * height];
             for (int i = 0; i < cells.Length; i++) {
                 cells[i] = landValue;
             }
+            if (cells_sea_indices == null || cells_sea_indices.Length < cells.Length) {
+                cells_sea_indices = new int[cells.Length];
+                seaIndexExistCount = 0;
+            }
             return cells;
         }
 
+        // ==== Sea ====
         // cells[index] = seaValue
-        public static bool Gen_Sea(int[] cells, RD random, int seaValue, int width, int seaCount, int DIR, int type = 1) {
-            if (type == 1) {
+        public static bool Gen_Sea(int[] cells, RD random, int seaValue, int width, int seaCount, int DIR, int TYPE = TYPE_SEA_NORMAL) {
+            seaIndexExistCount = 0;
+            if (TYPE == 1) {
                 return Gen_Sea_Type1(cells, random, seaValue, width, seaCount, DIR);
             } else {
-                throw new System.Exception("Unknown type: " + type);
+                throw new System.Exception("Unknown type: " + TYPE);
             }
         }
 
@@ -64,11 +75,72 @@ namespace GameFunctions {
             } else {
                 throw new System.Exception("Unknown DIR: " + DIR);
             }
-            cells[GetIndex(start_x, start_y, width)] = seaValue;
-            Sea_Rewrite(cells, random, seaValue, width, seaCount, DIR);
+            int seaIndex = GetIndex(start_x, start_y, width);
+            cells[seaIndex] = seaValue;
+            cells_sea_indices[seaIndexExistCount++] = seaIndex;
+            Sea_Rewrite(cells, random, seaValue, width, seaCount - 1, DIR);
             return true;
         }
 
+        static void Sea_Rewrite(int[] cells, RD random, int seaValue, int width, int seaCount, int DIR_FROM) {
+
+            if (seaCount >= cells.Length || seaIndexExistCount <= 0) {
+                throw new System.Exception("seaCount >= cells.Length");
+            }
+
+            int height = cells.Length / width;
+
+            int d0 = Dir_Reverse(DIR_FROM);
+            int d1, d2;
+            Dir_Prefer(d0, out d1, out d2);
+
+            // d0: 10% d1: 45%, d2: 45% = 100%
+            // d0: 2%  d1: 9%,  d2: 9%  = 20%
+            int d0Rate = 2;
+            int d1Rate = 9;
+            int d2Rate = 9;
+            int preferCount = d0Rate + d1Rate + d2Rate;
+            Span<int> prefer = stackalloc int[preferCount];
+            for (int i = 0; i < preferCount; i += 1) {
+                if (i < d0Rate) {
+                    prefer[i] = d0;
+                } else if (i < d0Rate + d1Rate) {
+                    prefer[i] = d1;
+                } else if (i < d0Rate + d1Rate + d2Rate) {
+                    prefer[i] = d2;
+                }
+            }
+
+            while (seaCount > 0) {
+                for (int i = 0; i < seaIndexExistCount; i += 1) {
+                    int seaIndex = cells_sea_indices[i];
+                    int x = seaIndex % width;
+                    int y = seaIndex / width;
+
+                    // fill reverse direction
+                    int reverseDirIndex = GetIndexByDir(x, y, width, height, DIR_FROM);
+                    if (reverseDirIndex != -1 && cells[reverseDirIndex] != seaValue) {
+                        cells[reverseDirIndex] = seaValue;
+                        cells_sea_indices[seaIndexExistCount++] = reverseDirIndex;
+                        seaCount--;
+                        continue;
+                    }
+
+                    // fill prefer direction
+                    int nextDir = prefer[random.Next(preferCount)];
+                    int nextDirIndex = GetIndexByDir(x, y, width, height, nextDir);
+                    if (nextDirIndex != -1 && cells[nextDirIndex] != seaValue) {
+                        cells[nextDirIndex] = seaValue;
+                        cells_sea_indices[seaIndexExistCount++] = nextDirIndex;
+                        seaCount--;
+                        continue;
+                    }
+                }
+            }
+
+        }
+
+        // ==== Generics ====
         static int Dir_Reverse(int DIR) {
             if (DIR == DIR_TOP) {
                 return DIR_BOTTOM;
@@ -99,70 +171,6 @@ namespace GameFunctions {
             } else {
                 throw new System.Exception("Unknown DIR: " + DIR);
             }
-        }
-
-        static void Sea_Rewrite(int[] cells, RD random, int seaValue, int width, int seaCount, int DIR_FROM) {
-
-            if (seaCount >= cells.Length) {
-                throw new System.Exception("seaCount >= cells.Length");
-            }
-
-            int height = cells.Length / width;
-
-            int d0 = Dir_Reverse(DIR_FROM);
-            int d1, d2;
-            Dir_Prefer(d0, out d1, out d2);
-
-            // d0: 10% d1: 45%, d2: 45%, r: 0% = 100%
-            // d0: 2%  d1: 9%,  d2: 9%,  r: 0% = 20%
-            int d0Rate = 2;
-            int d1Rate = 9;
-            int d2Rate = 9;
-            int preferCount = d0Rate + d1Rate + d2Rate;
-            Span<int> prefer = stackalloc int[preferCount];
-            for (int i = 0; i < preferCount; i += 1) {
-                if (i < d0Rate) {
-                    prefer[i] = d0;
-                } else if (i < d0Rate + d1Rate) {
-                    prefer[i] = d1;
-                } else if (i < d0Rate + d1Rate + d2Rate) {
-                    prefer[i] = d2;
-                }
-            }
-
-            while (seaCount > 0) {
-                bool hasSea = false;
-                for (int i = 0; i < cells.Length; i++) {
-                    int x = i % width;
-                    int y = i / width;
-                    if (cells[i] == seaValue) {
-                        hasSea = true;
-
-                        // fill reverse direction
-                        int reverseDirIndex = GetIndexByDir(x, y, width, height, DIR_FROM);
-                        if (reverseDirIndex != -1) {
-                            cells[reverseDirIndex] = seaValue;
-                            seaCount--;
-                        }
-
-                        // fill prefer direction
-                        int nextDir = prefer[random.Next(preferCount)];
-                        int nextDirIndex = GetIndexByDir(x, y, width, height, nextDir);
-                        if (nextDirIndex == -1) {
-                            continue;
-                        }
-
-                        if (cells[nextDirIndex] != seaValue) {
-                            cells[nextDirIndex] = seaValue;
-                            seaCount--;
-                        }
-                    }
-                }
-                if (!hasSea) {
-                    Debug.LogError("No sea");
-                }
-            }
-
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
