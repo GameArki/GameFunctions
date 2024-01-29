@@ -55,5 +55,6 @@
         "UserSettings/": true,
         "temp/": true,
         "Temp/": true
-    }
+    },
+    "dotnet.defaultSolution": "GameFunctions.sln"
 }
