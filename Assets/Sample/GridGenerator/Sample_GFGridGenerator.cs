@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using GameFunctions.GridGeneratorInternal;
 
 namespace GameFunctions.Sample {
 
@@ -7,9 +8,8 @@ namespace GameFunctions.Sample {
     internal class GeneratorSetting {
         public float cellSize;
         public float cellGap;
-        public GFGenGridOption gridOption;
-        public GFGenSeaOption seaOption;
-        public GFGenLakeOption lakeOption;
+        public GridOption gridOption;
+        public AreaOption[] areaOptions;
     }
 
     public class Sample_GFGridGenerator : MonoBehaviour {
@@ -34,7 +34,7 @@ namespace GameFunctions.Sample {
         }
 
         void Gen() {
-            var ctx = GFGridGenerator.GenAll(setting.gridOption, setting.seaOption, setting.lakeOption);
+            var ctx = GFGridGenerator.GenAll(setting.gridOption, setting.areaOptions);
             cells = ctx.grid;
         }
 

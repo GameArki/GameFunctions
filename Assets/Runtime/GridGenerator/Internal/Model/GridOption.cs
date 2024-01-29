@@ -1,9 +1,9 @@
 using System;
 
-namespace GameFunctions {
+namespace GameFunctions.GridGeneratorInternal {
 
     [Serializable]
-    public struct GFGenGridOption {
+    public struct GridOption {
         public int seed;
         public int seedTimes;
         public int width;

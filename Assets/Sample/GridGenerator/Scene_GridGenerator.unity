@@ -237,17 +237,31 @@ MonoBehaviour:
       width: 256
       height: 256
       defaultLandValue: 1
-    seaOption:
-      seaValue: 2
-      seaCount: 5120
+    areaOptions:
+    - cellType: 2
+      baseOnCellType: 1
+      value: 2
+      count: 10000
+      FROM_DIR: 0
+      awayFromWater: 0
+      algorithmType: 1
       erodeRate: 20
-      DIR: 1
-      TYPE: 1
-    lakeOption:
-      lakeValue: 3
-      lakeCount: 800
+    - cellType: 4
+      baseOnCellType: 1
+      value: 3
+      count: 200
+      FROM_DIR: 0
+      awayFromWater: 10
+      algorithmType: 2
+      erodeRate: 0
+    - cellType: 4
+      baseOnCellType: 1
+      value: 3
+      count: 1000
+      FROM_DIR: 0
       awayFromWater: 20
-      TYPE: 1
+      algorithmType: 2
+      erodeRate: 0
   color_empty: {r: 0.92941177, g: 0.92941177, b: 0.92941177, a: 1}
   color_land_grass: {r: 0.07186719, g: 0.8018868, b: 0.24476661, a: 1}
   color_land_lake: {r: 0, g: 0.34628177, b: 0.5660378, a: 1}

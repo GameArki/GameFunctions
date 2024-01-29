@@ -4,9 +4,9 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 using RD = System.Random;
 
-namespace GameFunctions {
+namespace GameFunctions.GridGeneratorInternal {
 
-    public static class GFGenAlgorithm {
+    public static class Algorithm {
 
         public const int DIR_TOP = 0;
         public const int DIR_RIGHT = 1;
@@ -23,6 +23,18 @@ namespace GameFunctions {
         // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 0 0 0
         public static bool Alg_Erode(int[] cells, int[] erode_value_indices, HashSet<int> erode_index_set, RD random, int width, int height, int erodeCount, int erodeRate, int erodeValue, int erodeFromDir, Action<int> onErode) {
 
+            if (erodeCount >= cells.Length) {
+                return false;
+            }
+
+            // Erode: start cell
+            int value = erodeValue;
+            Algorithm.Pos_GetRandomPointOnEdge(random, width, height, erodeFromDir, out int start_x, out int start_y);
+            int startIndex = Algorithm.Index_GetByPos(start_x, start_y, width);
+            onErode.Invoke(startIndex);
+            --erodeCount;
+
+            // Erode: prefer direction
             if (erodeRate <= 0) {
                 erodeRate = 9;
                 Debug.LogWarning($"erodeRate <= 0, use default: {erodeRate}");
@@ -33,7 +45,6 @@ namespace GameFunctions {
 
             int failedTimes = width * height * 100;
 
-            // Prepare: prefer direction
             int dir_from = erodeFromDir;
             int d0 = Dir_Reverse(dir_from);
             int d1, d2;
@@ -55,6 +66,7 @@ namespace GameFunctions {
                 }
             }
 
+            // Erode: Loop
             while (erodeCount > 0) {
                 int count = erode_index_set.Count;
                 for (int i = 0; i < count; ++i) {
