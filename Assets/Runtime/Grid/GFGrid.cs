@@ -146,6 +146,51 @@ namespace GameFunctions {
             }
         }
 
+        // 斜线
+        public static int Slant_GetCells(Vector2 start, Vector2 end, Vector2Int[] result) {
+
+            Vector2 bottom = start.y < end.y ? start : end;
+            Vector2 top = start.y < end.y ? end : start;
+            Vector2 left = start.x < end.x ? start : end;
+            Vector2 right = start.x < end.x ? end : start;
+
+            Vector2 diff = right - left;
+            bool isReverse = false;
+            float tx;
+            float ty;
+            if (Math.Abs(diff.y) > Math.Abs(diff.x)) {
+                // y as x, bottom as start
+                isReverse = true;
+                diff = top - bottom;
+                Vector2Int diffInt = diff.RoundToVector2Int();
+                if (diff == Vector2.zero || diffInt == Vector2Int.zero) {
+                    return 0;
+                }
+                tx = diff.y;
+                ty = diff.x;
+            } else {
+                // x as x, left as start
+                tx = diff.x;
+                ty = diff.y;
+            }
+
+            int times = Mathf.RoundToInt(Math.Abs(tx));
+
+            int count = 0;
+            float k = ty / tx;
+            for (int i = 0; i < times; i += 1) {
+                if (isReverse) {
+                    Vector2 res = new Vector2(bottom.x + i * k, bottom.y + i);
+                    result[count++] = res.CeilToVector2Int();
+                } else {
+                    Vector2 res = new Vector2(left.x + i, left.y + i * k);
+                    result[count++] = res.CeilToVector2Int();
+                }
+            }
+
+            return count;
+        }
+
     }
 
 }

@@ -34,7 +34,8 @@ namespace GameFunctions.Sample {
         }
 
         void Gen() {
-            cells = GFGridGenerator.GenAll(setting.gridOption, setting.seaOption, setting.lakeOption);
+            var ctx = GFGridGenerator.GenAll(setting.gridOption, setting.seaOption, setting.lakeOption);
+            cells = ctx.grid;
         }
 
         void OnDrawGizmos() {

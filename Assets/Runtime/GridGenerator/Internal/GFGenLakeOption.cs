@@ -9,7 +9,7 @@ namespace GameFunctions {
 
         public int lakeValue;
         public int lakeCount;
-        public int awayFromSea;
+        public int awayFromWater;
         public int TYPE;
 
     }
