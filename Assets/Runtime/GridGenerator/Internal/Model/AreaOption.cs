@@ -14,7 +14,8 @@ namespace GameFunctions.GridGeneratorInternal {
 
         public int FROM_DIR;
 
-        public int awayFromWater;
+        public CellType awayFromCellType;
+        public int awayFromManhattanDis;
 
         public AlgorithmType algorithmType;
         public int erodeRate;

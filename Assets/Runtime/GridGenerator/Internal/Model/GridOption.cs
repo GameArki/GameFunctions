@@ -8,6 +8,5 @@ namespace GameFunctions.GridGeneratorInternal {
         public int seedTimes;
         public int width;
         public int height;
-        public int defaultLandValue;
     }
 }

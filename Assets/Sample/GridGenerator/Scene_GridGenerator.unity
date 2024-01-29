@@ -236,14 +236,23 @@ MonoBehaviour:
       seedTimes: 1010
       width: 256
       height: 256
-      defaultLandValue: 1
     areaOptions:
+    - cellType: 1
+      baseOnCellType: 0
+      value: 1
+      count: 0
+      FROM_DIR: 0
+      awayFromCellType: 0
+      awayFromManhattanDis: 0
+      algorithmType: 4
+      erodeRate: 0
     - cellType: 2
       baseOnCellType: 1
       value: 2
       count: 10000
       FROM_DIR: 0
-      awayFromWater: 0
+      awayFromCellType: 0
+      awayFromManhattanDis: 0
       algorithmType: 1
       erodeRate: 20
     - cellType: 4
@@ -251,7 +260,8 @@ MonoBehaviour:
       value: 3
       count: 200
       FROM_DIR: 0
-      awayFromWater: 10
+      awayFromCellType: 6
+      awayFromManhattanDis: 0
       algorithmType: 2
       erodeRate: 0
     - cellType: 4
@@ -259,7 +269,8 @@ MonoBehaviour:
       value: 3
       count: 1000
       FROM_DIR: 0
-      awayFromWater: 20
+      awayFromCellType: 6
+      awayFromManhattanDis: 0
       algorithmType: 2
       erodeRate: 0
   color_empty: {r: 0.92941177, g: 0.92941177, b: 0.92941177, a: 1}

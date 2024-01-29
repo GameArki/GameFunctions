@@ -25,10 +25,13 @@ namespace GameFunctions {
             CTX ctx = new CTX();
             ctx.Init(gridOption, options);
 
-            // Gen: Land(default)
-            for (int i = 0; i < ctx.grid.Length; i++) {
-                ctx.Land_Add(i, gridOption.defaultLandValue);
-            }
+            // Gen: Land
+            ctx.Land_Foreach(land => {
+                bool succ_land = Gen_Area(ctx, land);
+                if (!succ_land) {
+                    Debug.LogError("Gen_Land failed");
+                }
+            });
 
             // Gen: Sea
             ctx.Sea_Foreach(sea => {
@@ -76,7 +79,9 @@ namespace GameFunctions {
             var option = area.option;
             option.FROM_DIR = Math.Abs(option.FROM_DIR) % Algorithm.DIR_COUNT;
             AlgorithmType type = option.algorithmType;
-            if (type == AlgorithmType.Erode) {
+            if (type == AlgorithmType.FillAll) {
+                return Gen_Fill(ctx, area);
+            } else if (type == AlgorithmType.Erode) {
                 return Gen_Erode(ctx, area);
             } else if (type == AlgorithmType.Flood) {
                 return Gen_Flood(ctx, area);
@@ -86,11 +91,26 @@ namespace GameFunctions {
             }
         }
 
+        static bool Gen_Fill(CTX ctx, AreaEntity area) {
+
+            var option = area.option;
+            Action<int> onHandle = (int index) => {
+                ctx.Grid_Set(index, option.value);
+                area.Add(index);
+            };
+
+            // Fill: Loop
+            return Algorithm.Alg_FillAll(ctx.grid,
+                                        option.value,
+                                        onHandle);
+
+        }
+
         static bool Gen_Erode(CTX ctx, AreaEntity area) {
 
             var option = area.option;
             Action<int> onHandle = (int index) => {
-                ctx.grid[index] = option.value;
+                ctx.Grid_Set(index, option.value);
                 area.Add(index);
             };
 
@@ -115,14 +135,14 @@ namespace GameFunctions {
             int width = ctx.gridOption.width;
             int height = ctx.gridOption.height;
             RD random = ctx.random;
-            HashSet<int> waterValues = ctx.waterValues;
 
             int failedTimes = width * height * 10;
 
             var option = area.option;
             int count = option.count;
             int value = option.value;
-            int awayFromWater = option.awayFromWater;
+            int awayFromDis = option.awayFromManhattanDis;
+            HashSet<int> awayFromValues = ctx.GetAwayFromValues(option.awayFromCellType);
 
             // Flood: start cell
             GFVector4Int edgeOffset = new GFVector4Int();
@@ -137,20 +157,17 @@ namespace GameFunctions {
                 }
 
                 // Select a random land cell
-                int[] land_indices = ctx.grid_land_indices;
-                int land_count = ctx.grid_land_set.Count;
-                int land_index = random.Next(land_count);
-                start_index = land_indices[land_index];
-                if (waterValues.Contains(ctx.grid[start_index])) {
+                ctx.GetRandomCell(random, option.baseOnCellType, out start_index);
+                if (awayFromValues.Contains(ctx.grid[start_index])) {
                     continue;
                 }
 
                 start_x = start_index % width;
                 start_y = start_index / width;
 
-                edgeOffset = Algorithm.Pos_DetectAwayFrom(ctx.grid, width, height, start_x, start_y, waterValues, awayFromWater);
+                edgeOffset = Algorithm.Pos_DetectAwayFrom(ctx.grid, width, height, start_x, start_y, awayFromValues, awayFromDis);
 
-            } while (edgeOffset.Min() < option.awayFromWater);
+            } while (edgeOffset.Min() < option.awayFromManhattanDis);
 
             if (failedTimes <= 0) {
                 Debug.LogError("Gen_Land_Lake_Normal failed");
@@ -158,12 +175,12 @@ namespace GameFunctions {
             }
 
             area.Add(start_index);
-            ctx.grid[start_index] = value;
+            ctx.Grid_Set(start_index, value);
             --count;
 
             Action<int> onHandle = (int index) => {
                 area.Add(index);
-                ctx.grid[index] = value;
+                ctx.Grid_Set(index, value);
             };
 
             // Flood: loop

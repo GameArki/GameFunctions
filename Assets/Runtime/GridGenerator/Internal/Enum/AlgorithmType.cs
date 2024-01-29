@@ -5,5 +5,6 @@ namespace GameFunctions.GridGeneratorInternal {
         Erode,
         Flood,
         Scatter,
+        FillAll,
     }
 }

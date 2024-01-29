@@ -1,21 +1,21 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
+using RD = System.Random;
 
 namespace GameFunctions.GridGeneratorInternal {
 
     public class Context {
 
-        public Random random;
+        public RD random;
         public GridOption gridOption;
 
-        public HashSet<int> waterValues;
+        Dictionary<CellType, HashSet<int>> cellTypeValues;
 
         public int[] grid;
 
-        public HashSet<int> grid_land_set;
-        public int[] grid_land_indices;
-
         Dictionary<int, AreaEntity> all;
+        Dictionary<int, AreaEntity> landAreas;
         Dictionary<int, AreaEntity> seaAreas;
         Dictionary<int, AreaEntity> lakeAreas;
 
@@ -25,27 +25,40 @@ namespace GameFunctions.GridGeneratorInternal {
 
             this.gridOption = gridOption;
 
-            random = new Random(gridOption.seed);
+            random = new RD(gridOption.seed);
             for (int i = 0; i < gridOption.seedTimes; i++) {
                 random.Next();
             }
 
-            waterValues = new HashSet<int>();
+            cellTypeValues = new Dictionary<CellType, HashSet<int>>();
             for (int i = 0; i < options.Length; i++) {
-                CellType type = options[i].cellType;
-                if (type.IsWater()) {
-                    waterValues.Add(options[i].value);
+                var option = options[i];
+                CellType type = option.cellType;
+                if (!cellTypeValues.ContainsKey(type)) {
+                    cellTypeValues.Add(type, new HashSet<int>());
+                }
+                cellTypeValues[type].Add(option.value);
+
+                CellType waterFlag = CellType.Water;
+                if (waterFlag.HasFlag(type)) {
+                    if (!cellTypeValues.ContainsKey(waterFlag)) {
+                        cellTypeValues.Add(waterFlag, new HashSet<int>());
+                    }
+                    cellTypeValues[waterFlag].Add(option.value);
                 }
             }
 
             all = new Dictionary<int, AreaEntity>();
+            landAreas = new Dictionary<int, AreaEntity>();
             lakeAreas = new Dictionary<int, AreaEntity>();
             seaAreas = new Dictionary<int, AreaEntity>();
             for (int i = 0; i < options.Length; i++) {
                 var option = options[i];
                 CellType type = option.cellType;
                 AreaEntity entity = new AreaEntity(i, gridOption.width, gridOption.height, option);
-                if (type == CellType.Sea) {
+                if (type == CellType.Land) {
+                    landAreas.Add(i, entity);
+                } else if (type == CellType.Sea) {
                     seaAreas.Add(i, entity);
                 } else if (type == CellType.Lake) {
                     lakeAreas.Add(i, entity);
@@ -59,32 +72,28 @@ namespace GameFunctions.GridGeneratorInternal {
                 grid = new int[gridOption.width * gridOption.height];
             }
 
-            // Cache: Land
-            if (grid_land_set == null) {
-                grid_land_set = new HashSet<int>();
-            } else {
-                grid_land_set.Clear();
-            }
-            if (grid_land_indices == null || grid_land_indices.Length < grid.Length) {
-                grid_land_indices = new int[grid.Length];
-            }
-
         }
 
-        public void Land_Add(int index, int value) {
+        public void Grid_Set(int index, int value) {
             grid[index] = value;
-            bool succ = grid_land_set.Add(index);
-            if (succ) {
-                grid_land_indices[grid_land_set.Count - 1] = index;
-            }
         }
 
         public void Land_Remove(int index) {
-            grid_land_set.Remove(index);
+            foreach (var pair in landAreas) {
+                pair.Value.Remove(index);
+            }
         }
 
         public void Land_UpdateAll() {
-            grid_land_set.CopyTo(grid_land_indices);
+            foreach (var pair in landAreas) {
+                pair.Value.UpdateAll();
+            }
+        }
+
+        public void Land_Foreach(Action<AreaEntity> action) {
+            foreach (var pair in landAreas) {
+                action(pair.Value);
+            }
         }
 
         public void Sea_Foreach(Action<AreaEntity> action) {
@@ -97,6 +106,39 @@ namespace GameFunctions.GridGeneratorInternal {
             foreach (var pair in lakeAreas) {
                 action(pair.Value);
             }
+        }
+
+        public HashSet<int> GetAwayFromValues(CellType awayFromType) {
+            bool has = cellTypeValues.TryGetValue(awayFromType, out HashSet<int> values);
+            if (!has) {
+                Debug.LogError("No values for cell type: " + awayFromType);
+                return null;
+            }
+            return values;
+        }
+
+        public bool GetRandomCell(RD rd, CellType cellType, out int index) {
+            if (cellType == CellType.Land) {
+                return GetRandomCell(rd, landAreas, out index);
+            } else if (cellType == CellType.Sea) {
+                return GetRandomCell(rd, seaAreas, out index);
+            } else if (cellType == CellType.Lake) {
+                return GetRandomCell(rd, lakeAreas, out index);
+            } else {
+                throw new Exception("Unknown cell type: " + cellType);
+            }
+        }
+
+        bool GetRandomCell(RD rd, Dictionary<int, AreaEntity> areas, out int index) {
+            foreach (var pair in areas) {
+                var area = pair.Value;
+                if (area.set.Count > 0) {
+                    index = area.indices[rd.Next(0, area.set.Count)];
+                    return true;
+                }
+            }
+            index = -1;
+            return false;
         }
 
     }

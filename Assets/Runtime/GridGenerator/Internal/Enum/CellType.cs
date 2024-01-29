@@ -13,7 +13,7 @@ namespace GameFunctions.GridGeneratorInternal {
     public static class CellTypeExtension {
 
         public static bool IsWater(this CellType type) {
-            return (type & CellType.Water) != 0;
+            return (type & CellType.Water) == type;
         }
     }
 }

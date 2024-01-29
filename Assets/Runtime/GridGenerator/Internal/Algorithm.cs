@@ -14,6 +14,16 @@ namespace GameFunctions.GridGeneratorInternal {
         public const int DIR_LEFT = 3;
         public const int DIR_COUNT = 4;
 
+        public static bool Alg_FillAll(int[] cells, int fillValue, Action<int> onFill) {
+            for (int i = 0; i < cells.Length; i += 1) {
+                if (cells[i] == fillValue) {
+                    continue;
+                }
+                onFill.Invoke(i);
+            }
+            return true;
+        }
+
         // ==== Algorithm ====
         // 侵蚀算法: 0 1 = 1 1
         // 0 0 1 0 0 0      0 1 1 1 0 0     0 1 1 1 1 0
