@@ -18,6 +18,7 @@ namespace GameFunctions.GridGeneratorInternal {
         Dictionary<int, AreaEntity> landAreas;
         Dictionary<int, AreaEntity> seaAreas;
         Dictionary<int, AreaEntity> lakeAreas;
+        Dictionary<int, AreaEntity> forestAreas;
 
         public Context() { }
 
@@ -52,6 +53,7 @@ namespace GameFunctions.GridGeneratorInternal {
             landAreas = new Dictionary<int, AreaEntity>();
             lakeAreas = new Dictionary<int, AreaEntity>();
             seaAreas = new Dictionary<int, AreaEntity>();
+            forestAreas = new Dictionary<int, AreaEntity>();
             for (int i = 0; i < options.Length; i++) {
                 var option = options[i];
                 CellType type = option.cellType;
@@ -62,6 +64,8 @@ namespace GameFunctions.GridGeneratorInternal {
                     seaAreas.Add(i, entity);
                 } else if (type == CellType.Lake) {
                     lakeAreas.Add(i, entity);
+                } else if (type == CellType.Forest) {
+                    forestAreas.Add(i, entity);
                 } else {
                     throw new Exception("Unknown cell type: " + type);
                 }
@@ -108,6 +112,12 @@ namespace GameFunctions.GridGeneratorInternal {
             }
         }
 
+        public void Forest_Foreach(Action<AreaEntity> action) {
+            foreach (var pair in forestAreas) {
+                action(pair.Value);
+            }
+        }
+
         public HashSet<int> GetAwayFromValues(CellType awayFromType) {
             bool has = cellTypeValues.TryGetValue(awayFromType, out HashSet<int> values);
             if (!has) {
@@ -124,8 +134,11 @@ namespace GameFunctions.GridGeneratorInternal {
                 return GetRandomCell(rd, seaAreas, out index);
             } else if (cellType == CellType.Lake) {
                 return GetRandomCell(rd, lakeAreas, out index);
+            } else if (cellType == CellType.Forest) {
+                return GetRandomCell(rd, forestAreas, out index);
             } else {
-                throw new Exception("Unknown cell type: " + cellType);
+                index = rd.Next(0, grid.Length);
+                return true;
             }
         }
 

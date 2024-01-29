@@ -24,25 +24,17 @@ namespace GameFunctions.GridGeneratorInternal {
             return true;
         }
 
-        // ==== Algorithm ====
         // 侵蚀算法: 0 1 = 1 1
         // 0 0 1 0 0 0      0 1 1 1 0 0     0 1 1 1 1 0
         // 0 0 0 0 0 0      0 0 1 0 0 0     0 0 1 1 0 0
         // 0 0 0 0 0 0  ==> 0 0 0 0 0 0 ==> 0 0 0 1 0 0
         // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 0 0 0
         // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 0 0 0
-        public static bool Alg_Erode(int[] cells, int[] erode_value_indices, HashSet<int> erode_index_set, RD random, int width, int height, int erodeCount, int erodeRate, int erodeValue, int erodeFromDir, Action<int> onErode) {
+        public static bool Alg_Erode_Loop(int[] cells, int[] indices, HashSet<int> sets, RD random, int width, int height, int erodeCount, int erodeRate, int erodeValue, int fromDir, Action<int> onErode) {
 
             if (erodeCount >= cells.Length) {
                 return false;
             }
-
-            // Erode: start cell
-            int value = erodeValue;
-            Algorithm.Pos_GetRandomPointOnEdge(random, width, height, erodeFromDir, out int start_x, out int start_y);
-            int startIndex = Algorithm.Index_GetByPos(start_x, start_y, width);
-            onErode.Invoke(startIndex);
-            --erodeCount;
 
             // Erode: prefer direction
             if (erodeRate <= 0) {
@@ -55,7 +47,7 @@ namespace GameFunctions.GridGeneratorInternal {
 
             int failedTimes = width * height * 100;
 
-            int dir_from = erodeFromDir;
+            int dir_from = fromDir;
             int d0 = Dir_Reverse(dir_from);
             int d1, d2;
             Dir_ErodePrefer(d0, out d1, out d2);
@@ -78,9 +70,9 @@ namespace GameFunctions.GridGeneratorInternal {
 
             // Erode: Loop
             while (erodeCount > 0) {
-                int count = erode_index_set.Count;
+                int count = sets.Count;
                 for (int i = 0; i < count; ++i) {
-                    int seaIndex = erode_value_indices[i];
+                    int seaIndex = indices[i];
                     int x = seaIndex % width;
                     int y = seaIndex / width;
 
@@ -127,7 +119,7 @@ namespace GameFunctions.GridGeneratorInternal {
         // 0 0 0 1 0 0  ==> 0 0 0 1 1 0 ==> 0 0 1 1 1 0
         // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 1 0 0
         // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 0 0 0
-        public static bool Alg_Flood(int[] cells, int[] cells_value_indices, HashSet<int> cells_index_set, RD random, int width, int height, int floodCount, int floodValue, Action<int> onFlood) {
+        public static bool Alg_Flood_Loop(int[] cells, int[] indices, HashSet<int> sets, RD random, int width, int height, int floodCount, int floodValue, Action<int> onFlood) {
 
             int failedTimes = width * height * 100;
 
@@ -137,9 +129,9 @@ namespace GameFunctions.GridGeneratorInternal {
             }
 
             while (floodCount > 0) {
-                int count = cells_index_set.Count;
+                int count = sets.Count;
                 for (int i = 0; i < count; i += 1) {
-                    int index = cells_value_indices[i];
+                    int index = indices[i];
                     int x = index % width;
                     int y = index / width;
 
@@ -158,6 +150,42 @@ namespace GameFunctions.GridGeneratorInternal {
                     return false;
                 }
             }
+            return true;
+        }
+
+        // 播种算法(Scatter):   0100    = 0101
+        public static bool Alg_Scatter_Loop(int[] cells, int[] indices, HashSet<int> sets, RD random, int width, int height, int scatterCount, int scatterValue, Vector2Int scatterMinMax, Action<int> onScatter) {
+
+            int failedTimes = width * height * 100;
+
+            while (scatterCount > 0) {
+
+                int count = sets.Count;
+                for (int i = 0; i < count; i += 1) {
+                    int index = indices[i];
+                    int x = index % width;
+                    int y = index / width;
+
+                    int step = random.Next(scatterMinMax.x, scatterMinMax.y + 1);
+
+                    // fill random direction
+                    int nextDir = random.Next(DIR_COUNT);
+                    int nextDirIndex = Index_GetByPosStep(x, y, width, height, step, nextDir);
+                    if (nextDirIndex != -1 && cells[nextDirIndex] != scatterValue) {
+                        onScatter.Invoke(nextDirIndex);
+                        --scatterCount;
+                        continue;
+                    }
+                }
+
+                --failedTimes;
+                if (failedTimes <= 0) {
+                    Debug.LogError("Algorithm_Scatter failed");
+                    return false;
+                }
+
+            }
+
             return true;
         }
 
@@ -193,73 +221,31 @@ namespace GameFunctions.GridGeneratorInternal {
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int Index_GetByPosStep(int x, int y, int width, int height, int step, int DIR) {
+            if (DIR == DIR_TOP) {
+                y += step;
+            } else if (DIR == DIR_RIGHT) {
+                x += step;
+            } else if (DIR == DIR_BOTTOM) {
+                y -= step;
+            } else if (DIR == DIR_LEFT) {
+                x -= step;
+            } else {
+                throw new System.Exception("Unknown DIR: " + DIR);
+            }
+            if (x < 0 || x >= width || y < 0 || y >= height) {
+                return -1;
+            }
+            return Index_GetByPos(x, y, width);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Index_GetByPos(int x, int y, int width) {
             int index = y * width + x;
             if (index < 0 || index >= width * width) {
                 return -1;
             }
             return index;
-        }
-
-        public static GFVector4Int Pos_DetectAwayFrom(int[] cells, int width, int height, int x, int y, HashSet<int> awayValues, int awayFromSize) {
-            // up down left right, walk awayFromSize steps
-            // if found awayValue, return awayFromSize
-            bool findLeft, findRight, findTop, findBottom;
-            findTop = false; // x
-            findRight = false; // y
-            findBottom = false; // w
-            findLeft = false; // z
-            GFVector4Int edgeOffset = new GFVector4Int();
-            for (int i = 0; i <= awayFromSize; i += 1) {
-                if (!findTop) {
-                    int upIndex = Index_GetByPos(x, y + i, width);
-                    if (upIndex != -1 && awayValues.Contains(cells[upIndex])) {
-                        edgeOffset.x = i;
-                        findTop = true;
-                    }
-                }
-
-                if (!findRight) {
-                    int rightIndex = Index_GetByPos(x + i, y, width);
-                    if (rightIndex != -1 && awayValues.Contains(cells[rightIndex])) {
-                        edgeOffset.y = i;
-                        findRight = true;
-                    }
-                }
-
-                if (!findBottom) {
-                    int downIndex = Index_GetByPos(x, y - i, width);
-                    if (downIndex != -1 && awayValues.Contains(cells[downIndex])) {
-                        edgeOffset.w = i;
-                        findBottom = true;
-                    }
-                }
-
-                if (!findLeft) {
-                    int leftIndex = Index_GetByPos(x - i, y, width);
-                    if (leftIndex != -1 && awayValues.Contains(cells[leftIndex])) {
-                        edgeOffset.z = i;
-                        findLeft = true;
-                    }
-                }
-
-                if (findTop && findRight && findBottom && findLeft) {
-                    break;
-                }
-            }
-            if (!findTop) {
-                edgeOffset.x = awayFromSize;
-            }
-            if (!findRight) {
-                edgeOffset.y = awayFromSize;
-            }
-            if (!findBottom) {
-                edgeOffset.w = awayFromSize;
-            }
-            if (!findLeft) {
-                edgeOffset.z = awayFromSize;
-            }
-            return edgeOffset;
         }
 
         public static void Pos_GetRandomPointOnEdge(RD random, int width, int height, int DIR, out int x, out int y) {

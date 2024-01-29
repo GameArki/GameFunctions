@@ -21,11 +21,13 @@ namespace GameFunctions.Sample {
         const int VALUE_LAND_GRASS = 1;
         const int VALUE_SEA = 2;
         const int VALUE_LAKE = 3;
+        const int VALUE_FOREST = 4;
 
         [SerializeField] Color color_empty;
         [SerializeField] Color color_land_grass;
         [SerializeField] Color color_land_lake;
         [SerializeField] Color color_sea;
+        [SerializeField] Color color_forest;
 
         void Update() {
             if (this.gameObject.transform.hasChanged) {
@@ -59,6 +61,8 @@ namespace GameFunctions.Sample {
                     Gizmos.color = color_sea;
                 } else if (value == VALUE_LAKE) {
                     Gizmos.color = color_land_lake;
+                } else if (value == VALUE_FOREST) {
+                    Gizmos.color = color_forest;
                 } else {
                     // Error
                     Gizmos.color = Color.red;

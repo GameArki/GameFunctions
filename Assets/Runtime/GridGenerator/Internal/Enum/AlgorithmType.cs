@@ -2,7 +2,7 @@ namespace GameFunctions.GridGeneratorInternal {
 
     public enum AlgorithmType {
         None,
-        Erode,
+        ErodeFromEdge,
         Flood,
         Scatter,
         FillAll,

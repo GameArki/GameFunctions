@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace GameFunctions.GridGeneratorInternal {
 
@@ -19,6 +20,8 @@ namespace GameFunctions.GridGeneratorInternal {
 
         public AlgorithmType algorithmType;
         public int erodeRate;
+
+        public Vector2Int scatterMinMax;
 
     }
 

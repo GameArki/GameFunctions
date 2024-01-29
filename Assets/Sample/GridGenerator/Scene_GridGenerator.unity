@@ -246,6 +246,7 @@ MonoBehaviour:
       awayFromManhattanDis: 0
       algorithmType: 4
       erodeRate: 0
+      scatterMinMax: {x: 0, y: 0}
     - cellType: 2
       baseOnCellType: 1
       value: 2
@@ -255,6 +256,7 @@ MonoBehaviour:
       awayFromManhattanDis: 0
       algorithmType: 1
       erodeRate: 20
+      scatterMinMax: {x: 0, y: 0}
     - cellType: 4
       baseOnCellType: 1
       value: 3
@@ -264,6 +266,17 @@ MonoBehaviour:
       awayFromManhattanDis: 0
       algorithmType: 2
       erodeRate: 0
+      scatterMinMax: {x: 0, y: 0}
+    - cellType: 8
+      baseOnCellType: 1
+      value: 4
+      count: 500
+      FROM_DIR: 0
+      awayFromCellType: 6
+      awayFromManhattanDis: 20
+      algorithmType: 3
+      erodeRate: 0
+      scatterMinMax: {x: 2, y: 3}
     - cellType: 4
       baseOnCellType: 1
       value: 3
@@ -273,10 +286,12 @@ MonoBehaviour:
       awayFromManhattanDis: 0
       algorithmType: 2
       erodeRate: 0
+      scatterMinMax: {x: 0, y: 0}
   color_empty: {r: 0.92941177, g: 0.92941177, b: 0.92941177, a: 1}
   color_land_grass: {r: 0.07186719, g: 0.8018868, b: 0.24476661, a: 1}
   color_land_lake: {r: 0, g: 0.34628177, b: 0.5660378, a: 1}
   color_sea: {r: 0, g: 0.07989821, b: 0.16037738, a: 1}
+  color_forest: {r: 0.08525717, g: 0.4056604, b: 0, a: 1}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
