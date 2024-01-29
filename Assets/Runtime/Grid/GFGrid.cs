@@ -162,7 +162,7 @@ namespace GameFunctions {
                 // y as x, bottom as start
                 isReverse = true;
                 diff = top - bottom;
-                Vector2Int diffInt = diff.ToVector2Int();
+                Vector2Int diffInt = diff.RoundToVector2Int();
                 if (diff == Vector2.zero || diffInt == Vector2Int.zero) {
                     return 0;
                 }
@@ -181,10 +181,10 @@ namespace GameFunctions {
             for (int i = 0; i < times; i += 1) {
                 if (isReverse) {
                     Vector2 res = new Vector2(bottom.x + i * k, bottom.y + i);
-                    result[count++] = res.ToVector2Int();
+                    result[count++] = res.CeilToVector2Int();
                 } else {
                     Vector2 res = new Vector2(left.x + i, left.y + i * k);
-                    result[count++] = res.ToVector2Int();
+                    result[count++] = res.CeilToVector2Int();
                 }
             }
 
