@@ -76,8 +76,8 @@ namespace GameFunctions {
 
         }
 
-        public void Land_Add(int index) {
-            grid[index] = gridOption.defaultLandValue;
+        public void Land_Add(int index, int value) {
+            grid[index] = value;
             grid_land_indices[grid_land_set.Count] = index;
             grid_land_set.Add(index);
         }
@@ -90,8 +90,8 @@ namespace GameFunctions {
             grid_land_set.CopyTo(grid_land_indices);
         }
 
-        public void Sea_Add(int index) {
-            grid[index] = seaOption.seaValue;
+        public void Sea_Add(int index, int value) {
+            grid[index] = value;
             grid_sea_indices[grid_sea_set.Count] = index;
             grid_sea_set.Add(index);
         }
@@ -100,8 +100,8 @@ namespace GameFunctions {
             grid_sea_set.CopyTo(grid_sea_indices);
         }
 
-        public void Lake_Add(int index) {
-            grid[index] = lakeOption.lakeValue;
+        public void Lake_Add(int index, int value) {
+            grid[index] = value;
             grid_lake_indices[grid_lake_set.Count] = index;
             grid_lake_set.Add(index);
         }

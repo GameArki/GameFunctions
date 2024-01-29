@@ -7,13 +7,13 @@ using RD = System.Random;
 using CTX = GameFunctions.GFGridGeneratorContext;
 
 // Rewrite 算法:
-// 侵蚀算法(Erode)
-// 描边算法(Outline)
-// 洪泛算法(Flood)
-// 播种算法(Scatter)
-// 平滑算法(Smooth)
-// 河流算法(River)
-// 点缀算法(Decorate)
+// 侵蚀算法(Erode):     01      = 11
+// 描边算法(Outline):   011     = 211
+// 洪泛算法(Flood):     01      = 11
+// 播种算法(Scatter):   0100    = 0101
+// 平滑算法(Smooth):    101     = 111
+// 河流算法(River):     01000   = 01111
+// 点缀算法(Decorate):  01000   = 01001
 namespace GameFunctions {
 
     public static class GFGridGenerator {
@@ -24,17 +24,9 @@ namespace GameFunctions {
             CTX ctx = new CTX();
             ctx.Init(gridOption, seaOption, lakeOption);
 
-            // Random
-            RD rd = new RD(gridOption.seed);
-            for (int i = 0; i < gridOption.seedTimes; i++) {
-                rd.Next();
-            }
-
-            int[] cells = new int[gridOption.width * gridOption.height];
-
             // Gen: Land(default)
-            for (int i = 0; i < cells.Length; i++) {
-                ctx.Land_Add(i);
+            for (int i = 0; i < ctx.grid.Length; i++) {
+                ctx.Land_Add(i, gridOption.defaultLandValue);
             }
 
             // Gen: Sea
@@ -84,18 +76,6 @@ namespace GameFunctions {
             }
         }
 
-        // implement by rewrite:
-        // 0 0 0 0
-        // 0 1 0 0
-        // 0 0 0 0
-        // 0 0 0 0
-        // 1. Find a random 0 => 1
-        // or: 0 1 = 1 1
-        // or: 0   = 1
-        //     1     1
-        // or: 1 0 = 1 1
-        // or: 1   = 1
-        //     0     1
         static bool Gen_Sea_Normal(CTX ctx) {
 
             int[] cells = ctx.grid;
@@ -105,25 +85,34 @@ namespace GameFunctions {
             GFGenSeaOption option = ctx.seaOption;
 
             int seaCount = option.seaCount;
-            int seaValue = option.seaValue;
-
             if (seaCount >= cells.Length) {
                 Debug.LogError("seaCount >= cells.Length");
                 return false;
             }
 
             // Gen: start sea cell
-            int start_x;
-            int start_y;
-            GFGenAlgorithm.Pos_GetOnEdge(ctx.random, width, height, option.DIR, out start_x, out start_y);
+            int seaValue = option.seaValue;
+            GFGenAlgorithm.Pos_GetRandomPointOnEdge(ctx.random, width, height, option.DIR, out int start_x, out int start_y);
             int startSeaIndex = GFGenAlgorithm.Index_GetByPos(start_x, start_y, width);
-            ctx.Sea_Add(startSeaIndex);
+            ctx.Sea_Add(startSeaIndex, seaValue);
             --seaCount;
 
+            Action<int> onHandle = (int index) => {
+                ctx.Sea_Add(index, seaValue);
+            };
+
             // Erode: sea
-            return GFGenAlgorithm.Erode(cells, ctx.grid_sea_indices, ctx.grid_sea_set, ctx.random, width, height, seaCount, option.erodeRate, seaValue, option.DIR, (int index) => {
-                ctx.Sea_Add(index);
-            });
+            return GFGenAlgorithm.Alg_Erode(cells,
+                                        ctx.grid_sea_indices,
+                                        ctx.grid_sea_set,
+                                        ctx.random,
+                                        width,
+                                        height,
+                                        seaCount,
+                                        option.erodeRate,
+                                        seaValue,
+                                        option.DIR,
+                                        onHandle);
 
         }
 
@@ -158,21 +147,21 @@ namespace GameFunctions {
             int start_y = 0;
             int start_index = 0;
             do {
+
                 failedTimes--;
                 if (failedTimes <= 0) {
                     break;
                 }
+
+                // Select a random land cell
                 int[] cells_land_indices = ctx.grid_land_indices;
                 int cells_land_count = ctx.grid_land_set.Count;
                 start_index = cells_land_indices[random.Next(ctx.grid_land_set.Count)];
                 start_x = start_index % width;
                 start_y = start_index / width;
-                int[] cells = ctx.grid;
-                int value = cells[start_index];
-                if (waterValues.Contains(value)) {
-                    continue;
-                }
-                edgeOffset = GFGenAlgorithm.Pos_DetectAwayFrom(cells, width, height, start_x, start_y, waterValues, awayFromWater);
+
+                edgeOffset = GFGenAlgorithm.Pos_DetectAwayFrom(ctx.grid, width, height, start_x, start_y, waterValues, awayFromWater);
+
             } while (edgeOffset.Min() < option.awayFromWater);
 
             if (failedTimes <= 0) {
@@ -180,13 +169,23 @@ namespace GameFunctions {
                 return false;
             }
 
-            ctx.Lake_Add(start_index);
+            ctx.Lake_Add(start_index, option.lakeValue);
             --lakeCount;
 
+            Action<int> onHandle = (int index) => {
+                ctx.Lake_Add(index, option.lakeValue);
+            };
+
             // Flood: lake
-            return GFGenAlgorithm.Flood(ctx.grid, ctx.grid_lake_indices, ctx.grid_lake_set, random, width, height, lakeCount, lakeValue, (int index) => {
-                ctx.Lake_Add(index);
-            });
+            return GFGenAlgorithm.Alg_Flood(ctx.grid,
+                                        ctx.grid_lake_indices,
+                                        ctx.grid_lake_set,
+                                        random,
+                                        width,
+                                        height,
+                                        lakeCount,
+                                        lakeValue,
+                                        onHandle);
 
         }
 

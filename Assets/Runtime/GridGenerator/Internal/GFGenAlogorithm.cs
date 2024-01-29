@@ -21,7 +21,7 @@ namespace GameFunctions {
         // 0 0 0 0 0 0  ==> 0 0 0 0 0 0 ==> 0 0 0 1 0 0
         // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 0 0 0
         // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 0 0 0
-        public static bool Erode(int[] cells, int[] erode_value_indices, HashSet<int> erode_index_set, RD random, int width, int height, int erodeCount, int erodeRate, int erodeValue, int erodeFromDir, Action<int> onErode) {
+        public static bool Alg_Erode(int[] cells, int[] erode_value_indices, HashSet<int> erode_index_set, RD random, int width, int height, int erodeCount, int erodeRate, int erodeValue, int erodeFromDir, Action<int> onErode) {
 
             if (erodeRate <= 0) {
                 erodeRate = 9;
@@ -95,7 +95,7 @@ namespace GameFunctions {
         // 0 1 1 1 1 0   ==>    0 2 1 1 2 0
         // 0 1 1 1 1 0          0 2 2 2 2 0
         // 0 0 0 0 0 0          0 0 0 0 0 0
-        static bool Algorithm_Outline(int[] cells, RD random, int width, int height, int outlineCount, int outlineValue, int outlineFromDir, Action<int> onOutline) {
+        static bool Alg_Outline(int[] cells, RD random, int width, int height, int outlineCount, int outlineValue, int outlineFromDir, Action<int> onOutline) {
             throw new NotImplementedException();
         }
 
@@ -105,7 +105,7 @@ namespace GameFunctions {
         // 0 0 0 1 0 0  ==> 0 0 0 1 1 0 ==> 0 0 1 1 1 0
         // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 1 0 0
         // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 0 0 0
-        public static bool Flood(int[] cells, int[] cells_value_indices, HashSet<int> cells_index_set, RD random, int width, int height, int floodCount, int floodValue, Action<int> onFlood) {
+        public static bool Alg_Flood(int[] cells, int[] cells_value_indices, HashSet<int> cells_index_set, RD random, int width, int height, int floodCount, int floodValue, Action<int> onFlood) {
 
             int failedTimes = width * height * 100;
 
@@ -240,7 +240,7 @@ namespace GameFunctions {
             return edgeOffset;
         }
 
-        public static void Pos_GetOnEdge(RD random, int width, int height, int DIR, out int x, out int y) {
+        public static void Pos_GetRandomPointOnEdge(RD random, int width, int height, int DIR, out int x, out int y) {
             if (DIR == DIR_TOP) {
                 x = random.Next(width);
                 y = height - 1;
