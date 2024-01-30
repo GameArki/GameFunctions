@@ -307,11 +307,26 @@ MonoBehaviour:
       algorithmType: 2
       erodeRate: 0
       scatterMinMax: {x: 0, y: 0}
+    - cellType: 8
+      value: 5
+      count: 50
+      countMax: 0
+      startType: 2
+      baseOnCellType: 1
+      FROM_DIR: 0
+      closeToCellType: 0
+      closeToManhattanDis: 0
+      awayFromCellType: 6
+      awayFromManhattanDis: 10
+      algorithmType: 3
+      erodeRate: 0
+      scatterMinMax: {x: 20, y: 40}
   color_empty: {r: 0.92941177, g: 0.92941177, b: 0.92941177, a: 1}
   color_land_grass: {r: 0.07186719, g: 0.8018868, b: 0.24476661, a: 1}
   color_land_lake: {r: 0, g: 0.34628177, b: 0.5660378, a: 1}
   color_sea: {r: 0, g: 0.07989821, b: 0.16037738, a: 1}
   color_forest: {r: 0.08525717, g: 0.4056604, b: 0, a: 1}
+  color_flower: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

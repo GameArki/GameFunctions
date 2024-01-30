@@ -158,17 +158,18 @@ namespace GameFunctions.GridGeneratorInternal {
 
             int failedTimes = width * height * 100;
 
+            int lastCout = 0;
             while (scatterCount > 0) {
 
                 int sets_count = sets.Count;
-                for (int i = 0; i < sets_count; i += 1) {
+                for (int i = lastCout; i < sets_count; i += 1) {
                     int index = indices[i];
                     int x = index % width;
                     int y = index / width;
 
-                    int step = random.Next(scatterMinMax.x, scatterMinMax.y + 1);
 
                     // fill random direction
+                    int step = random.Next(scatterMinMax.x, scatterMinMax.y + 1);
                     int nextDir = random.Next(DIR_COUNT);
                     int nextDirIndex = Index_GetByPosStep(x, y, width, height, step, nextDir);
                     if (nextDirIndex != -1 && AllowGen(basedOnValues, awayFromValues, cells[nextDirIndex], scatterValue)) {
@@ -177,6 +178,7 @@ namespace GameFunctions.GridGeneratorInternal {
                         continue;
                     }
                 }
+                lastCout = sets.Count - 1;
 
                 --failedTimes;
                 if (failedTimes <= 0) {
