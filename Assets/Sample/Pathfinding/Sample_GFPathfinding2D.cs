@@ -7,7 +7,7 @@ namespace GameFunctions.Sample {
 
     public class Sample_GFPathfinding2D : MonoBehaviour {
 
-        HashSet<I32I32_U64> blockSet = new HashSet<I32I32_U64>();
+        HashSet<Vector2Int> blockSet = new HashSet<Vector2Int>();
         Vector2Int startPos;
         Vector2Int endPos;
         Vector2Int curPos;
@@ -25,18 +25,18 @@ namespace GameFunctions.Sample {
         void Update() {
             Vector2Int mouseGridPos = MouseGridPos();
             if (Input.GetMouseButton(0)) {
-                blockSet.Add(new I32I32_U64(mouseGridPos));
+                blockSet.Add(mouseGridPos);
             } else if (Input.GetMouseButtonUp(1)) {
                 startPos = mouseGridPos;
             } else if (Input.GetMouseButtonUp(2)) {
                 endPos = mouseGridPos;
                 visited = 0;
                 resultCount = GFPathfinding2D.AStar(startPos, endPos, 5000, (pos) => {
-                    return !blockSet.Contains(new I32I32_U64(pos));
+                    return !blockSet.Contains(pos);
                 }, result);
             } else if (Input.GetKeyDown(KeyCode.Space)) {
                 bool hasResult = GFPathfinding2D.ManualProcess(ref visited, ref resultCount, 5000, startPos, endPos, (pos) => {
-                    return !blockSet.Contains(new I32I32_U64(pos));
+                    return !blockSet.Contains(pos);
                 }, result, out curPos);
                 if (hasResult) {
                     Debug.Log("Res: " + resultCount);
@@ -55,8 +55,8 @@ namespace GameFunctions.Sample {
 
             // Draw Block
             Gizmos.color = Color.red;
-            foreach (I32I32_U64 pos in blockSet) {
-                Gizmos.DrawCube(new Vector3(pos.i32_0, pos.i32_1, 0), Vector3.one);
+            foreach (Vector2Int pos in blockSet) {
+                Gizmos.DrawCube(new Vector3(pos.x, pos.y, 0), Vector3.one);
             }
 
             // Draw CloseSet

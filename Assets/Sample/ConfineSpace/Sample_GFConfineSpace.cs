@@ -7,7 +7,7 @@ namespace GameFunctions {
 
     struct Room {
         public int id;
-        public Vector2Int[] spaces;
+        public HashSet<Vector2Int> spaces;
     }
 
     public class Sample_GFConfineSpace : MonoBehaviour {
@@ -38,6 +38,9 @@ namespace GameFunctions {
 
                 for (int i = 0; i < 4; i++) {
                     Vector2Int cur = brothers[i];
+                    if (ExistRoom(cur)) {
+                        continue;
+                    }
                     int spaceCount = GFConfineSpaceV2.Process(
                         cur,
                         LIMIT_COUNT,
@@ -49,14 +52,23 @@ namespace GameFunctions {
                     if (spaceCount > 0) {
                         Room room = new Room();
                         room.id = roomDict.Count;
-                        room.spaces = new Vector2Int[spaceCount];
+                        room.spaces = new HashSet<Vector2Int>(spaceCount);
                         for (int j = 0; j < spaceCount; j++) {
-                            room.spaces[j] = result[j];
+                            room.spaces.Add(result[j]);
                         }
                         roomDict.Add(room.id, room);
                     }
                 }
             }
+        }
+
+        bool ExistRoom(Vector2Int pos) {
+            foreach (Room room in roomDict.Values) {
+                if (room.spaces.Contains(pos)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         bool IsWalkable(Vector2Int pos) {
@@ -73,8 +85,10 @@ namespace GameFunctions {
 
             // Draw rooms
             if (roomDict != null) {
-                Gizmos.color = Color.green;
                 foreach (Room room in roomDict.Values) {
+                    Color roomColor = Color.green;
+                    roomColor.b += room.id * 0.01f;
+                    Gizmos.color = roomColor;
                     foreach (Vector2Int pos in room.spaces) {
                         Gizmos.DrawCube(new Vector3(pos.x, pos.y), Vector3.one);
                     }

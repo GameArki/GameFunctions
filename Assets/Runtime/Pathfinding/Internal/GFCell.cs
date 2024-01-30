@@ -8,7 +8,6 @@ namespace GameFunctions.PathfindingInternal {
     public class GFCell : IEquatable<GFCell>, IComparable<GFCell> {
 
         public Vector2Int pos;
-        public I32I32_U64 key;
         public float fCost;
         public float gCost;
         public float hCost;
@@ -18,7 +17,6 @@ namespace GameFunctions.PathfindingInternal {
 
         public void Init(Vector2Int pos, float fCost, float gCost, float hCost, GFCell parent) {
             this.pos = pos;
-            this.key = new I32I32_U64(pos);
             this.fCost = fCost;
             this.gCost = gCost;
             this.hCost = hCost;
@@ -26,21 +24,19 @@ namespace GameFunctions.PathfindingInternal {
         }
 
         bool IEquatable<GFCell>.Equals(GFCell other) {
-            return key == other.key;
+            return pos == other.pos;
         }
 
         public override bool Equals(object obj) {
             GFCell other = obj as GFCell;
-            Debug.Log("Equals: " + key + " " + other.key);
             if (other != null) {
-                return key == other.key;
+                return pos == other.pos;
             }
             return false;
         }
 
         public override int GetHashCode() {
-            Debug.Log(" GetHashCode: " + key.GetHashCode());
-            return key.GetHashCode();
+            return pos.GetHashCode();
         }
 
         int IComparable<GFCell>.CompareTo(GFCell other) {

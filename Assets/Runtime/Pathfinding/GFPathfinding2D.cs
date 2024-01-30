@@ -20,8 +20,8 @@ namespace GameFunctions {
         [ThreadStatic] internal static SortedSet<GFCell> closedSet = new SortedSet<GFCell>();
 #endif
 
-        [ThreadStatic] internal static Dictionary<I32I32_U64, GFCell> openSetKey = new Dictionary<I32I32_U64, GFCell>(10000);
-        [ThreadStatic] internal static HashSet<I32I32_U64> closedSetKey = new HashSet<I32I32_U64>(10000);
+        [ThreadStatic] internal static Dictionary<Vector2Int, GFCell> openSetKey = new Dictionary<Vector2Int, GFCell>(10000);
+        [ThreadStatic] internal static HashSet<Vector2Int> closedSetKey = new HashSet<Vector2Int>(10000);
         [ThreadStatic] static Stack<GFCell> pool = new Stack<GFCell>(10000);
 
         const float G_COST = 10;
@@ -54,7 +54,7 @@ namespace GameFunctions {
             startCell.Init(start, 0, 0, 0, null);
 
             openSet.Add(startCell);
-            openSetKey.Add(startCell.key, startCell);
+            openSetKey.Add(startCell.pos, startCell);
 
             int visited = 0;
             int resultCount = 0;
@@ -80,9 +80,9 @@ namespace GameFunctions {
             GFCell q = openSet.Min;
             cur = q.pos;
             openSet.Remove(q);
-            openSetKey.Remove(q.key);
+            openSetKey.Remove(q.pos);
             closedSet.Add(q);
-            closedSetKey.Add(q.key);
+            closedSetKey.Add(q.pos);
 
             visited += 1;
             if (visited >= limitedCount) {
@@ -93,8 +93,7 @@ namespace GameFunctions {
             for (int i = 0; i < 4; i++) {
 
                 Vector2Int neighborPos = q.pos + neighbors[i];
-                I32I32_U64 neighborKey = new I32I32_U64(neighborPos);
-                if (!isWalkable(neighborPos) || closedSetKey.Contains(neighborKey)) {
+                if (!isWalkable(neighborPos) || closedSetKey.Contains(neighborPos)) {
                     continue;
                 }
 
@@ -114,7 +113,7 @@ namespace GameFunctions {
                 float hCost = H_Manhattan(neighborPos, end);
                 float fCost = gCost + hCost;
                 GFCell neighborCell;
-                if (openSetKey.TryGetValue(neighborKey, out neighborCell)) {
+                if (openSetKey.TryGetValue(neighborPos, out neighborCell)) {
                     if (fCost < neighborCell.fCost) {
                         openSet.Remove(neighborCell);
                         neighborCell.Init(neighborPos, fCost, gCost, hCost, q);
@@ -124,7 +123,7 @@ namespace GameFunctions {
                     neighborCell = PoolGet();
                     neighborCell.Init(neighborPos, fCost, gCost, hCost, q);
                     openSet.Add(neighborCell);
-                    openSetKey.Add(neighborCell.key, neighborCell);
+                    openSetKey.Add(neighborCell.pos, neighborCell);
                 }
 
             }
