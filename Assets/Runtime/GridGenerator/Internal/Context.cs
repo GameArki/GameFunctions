@@ -118,10 +118,9 @@ namespace GameFunctions.GridGeneratorInternal {
             }
         }
 
-        public HashSet<int> GetAwayFromValues(CellType awayFromType) {
+        public HashSet<int> GetCellTypeValues(CellType awayFromType) {
             bool has = cellTypeValues.TryGetValue(awayFromType, out HashSet<int> values);
             if (!has) {
-                Debug.LogError("No values for cell type: " + awayFromType);
                 return null;
             }
             return values;

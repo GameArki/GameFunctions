@@ -145,6 +145,8 @@ namespace GameFunctions {
                                         option.erodeRate,
                                         option.value,
                                         option.FROM_DIR,
+                                        ctx.GetCellTypeValues(option.baseOnCellType),
+                                        ctx.GetCellTypeValues(option.awayFromCellType),
                                         onHandle);
 
         }
@@ -185,6 +187,8 @@ namespace GameFunctions {
                                         height,
                                         count,
                                         value,
+                                        ctx.GetCellTypeValues(option.baseOnCellType),
+                                        ctx.GetCellTypeValues(option.awayFromCellType),
                                         onHandle);
 
         }
@@ -225,13 +229,15 @@ namespace GameFunctions {
                                             count,
                                             option.value,
                                             option.scatterMinMax,
+                                            ctx.GetCellTypeValues(option.baseOnCellType),
+                                            ctx.GetCellTypeValues(option.awayFromCellType),
                                             onHandle);
 
         }
 
         static bool Pos_GetAwayFrom(CTX ctx, int width, int height, RD random, AreaEntity area, out int start_index) {
             var option = area.option;
-            HashSet<int> awayFromValues = ctx.GetAwayFromValues(option.awayFromCellType);
+            HashSet<int> awayFromValues = ctx.GetCellTypeValues(option.awayFromCellType);
             GFVector4Int edgeOffset = new GFVector4Int();
             int start_x = 0;
             int start_y = 0;

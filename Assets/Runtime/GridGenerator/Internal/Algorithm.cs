@@ -30,7 +30,7 @@ namespace GameFunctions.GridGeneratorInternal {
         // 0 0 0 0 0 0  ==> 0 0 0 0 0 0 ==> 0 0 0 1 0 0
         // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 0 0 0
         // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 0 0 0
-        public static bool Alg_Erode_Loop(int[] cells, int[] indices, HashSet<int> sets, RD random, int width, int height, int erodeCount, int erodeRate, int erodeValue, int fromDir, Action<int> onErode) {
+        public static bool Alg_Erode_Loop(int[] cells, int[] indices, HashSet<int> sets, RD random, int width, int height, int erodeCount, int erodeRate, int erodeValue, int fromDir, HashSet<int> basedOnValues, HashSet<int> awayFromValues, Action<int> onErode) {
 
             if (erodeCount >= cells.Length) {
                 return false;
@@ -87,7 +87,7 @@ namespace GameFunctions.GridGeneratorInternal {
                     // fill prefer direction
                     int nextDir = prefer[random.Next(preferCount)];
                     int nextDirIndex = Index_GetByPos(x, y, width, height, nextDir);
-                    if (nextDirIndex != -1 && cells[nextDirIndex] != erodeValue) {
+                    if (nextDirIndex != -1 && AllowGen(basedOnValues, awayFromValues, cells[nextDirIndex], erodeValue)) {
                         onErode.Invoke(nextDirIndex);
                         --erodeCount;
                         continue;
@@ -119,7 +119,7 @@ namespace GameFunctions.GridGeneratorInternal {
         // 0 0 0 1 0 0  ==> 0 0 0 1 1 0 ==> 0 0 1 1 1 0
         // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 1 0 0
         // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 0 0 0
-        public static bool Alg_Flood_Loop(int[] cells, int[] indices, HashSet<int> sets, RD random, int width, int height, int floodCount, int floodValue, Action<int> onFlood) {
+        public static bool Alg_Flood_Loop(int[] cells, int[] indices, HashSet<int> sets, RD random, int width, int height, int floodCount, int floodValue, HashSet<int> basedOnValues, HashSet<int> awayFromValues, Action<int> onFlood) {
 
             int failedTimes = width * height * 100;
 
@@ -138,7 +138,7 @@ namespace GameFunctions.GridGeneratorInternal {
                     // fill prefer direction
                     int nextDir = prefer[random.Next(DIR_COUNT)];
                     int nextDirIndex = Index_GetByPos(x, y, width, height, nextDir);
-                    if (nextDirIndex != -1 && cells[nextDirIndex] != floodValue) {
+                    if (nextDirIndex != -1 && AllowGen(basedOnValues, awayFromValues, cells[nextDirIndex], floodValue)) {
                         onFlood.Invoke(nextDirIndex);
                         --floodCount;
                         continue;
@@ -154,7 +154,7 @@ namespace GameFunctions.GridGeneratorInternal {
         }
 
         // 播种算法(Scatter):   0100    = 0101
-        public static bool Alg_Scatter_Loop(int[] cells, int[] indices, HashSet<int> sets, RD random, int width, int height, int scatterCount, int scatterValue, Vector2Int scatterMinMax, Action<int> onScatter) {
+        public static bool Alg_Scatter_Loop(int[] cells, int[] indices, HashSet<int> sets, RD random, int width, int height, int scatterCount, int scatterValue, Vector2Int scatterMinMax, HashSet<int> basedOnValues, HashSet<int> awayFromValues, Action<int> onScatter) {
 
             int failedTimes = width * height * 100;
 
@@ -171,7 +171,7 @@ namespace GameFunctions.GridGeneratorInternal {
                     // fill random direction
                     int nextDir = random.Next(DIR_COUNT);
                     int nextDirIndex = Index_GetByPosStep(x, y, width, height, step, nextDir);
-                    if (nextDirIndex != -1 && cells[nextDirIndex] != scatterValue) {
+                    if (nextDirIndex != -1 && AllowGen(basedOnValues, awayFromValues, cells[nextDirIndex], scatterValue)) {
                         onScatter.Invoke(nextDirIndex);
                         --scatterCount;
                         continue;
@@ -186,6 +186,19 @@ namespace GameFunctions.GridGeneratorInternal {
 
             }
 
+            return true;
+        }
+
+        static bool AllowGen(HashSet<int> basedOnValues, HashSet<int> awayFromValues, int value, int targetValue) {
+            if (basedOnValues != null && !basedOnValues.Contains(value)) {
+                return false;
+            }
+            if (awayFromValues != null && awayFromValues.Contains(value)) {
+                return false;
+            }
+            if (value == targetValue) {
+                return false;
+            }
             return true;
         }
 
