@@ -5,6 +5,7 @@ namespace GameFunctions.GridGeneratorInternal {
         GridEdge,
         AwayFromCell,
         CloseToCell,
+        Random,
     }
 
 }

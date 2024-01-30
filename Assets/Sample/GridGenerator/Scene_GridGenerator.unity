@@ -238,50 +238,70 @@ MonoBehaviour:
       height: 256
     areaOptions:
     - cellType: 1
-      baseOnCellType: 0
       value: 1
       count: 0
+      countMax: 0
+      startType: 4
+      baseOnCellType: 0
       FROM_DIR: 0
+      closeToCellType: 0
+      closeToManhattanDis: 0
       awayFromCellType: 0
       awayFromManhattanDis: 0
       algorithmType: 4
       erodeRate: 0
       scatterMinMax: {x: 0, y: 0}
     - cellType: 2
-      baseOnCellType: 1
       value: 2
       count: 10000
+      countMax: 0
+      startType: 1
+      baseOnCellType: 1
       FROM_DIR: 0
+      closeToCellType: 0
+      closeToManhattanDis: 0
       awayFromCellType: 0
       awayFromManhattanDis: 0
       algorithmType: 1
       erodeRate: 20
       scatterMinMax: {x: 0, y: 0}
     - cellType: 4
-      baseOnCellType: 1
       value: 3
       count: 200
+      countMax: 0
+      startType: 2
+      baseOnCellType: 1
       FROM_DIR: 0
+      closeToCellType: 0
+      closeToManhattanDis: 0
       awayFromCellType: 6
       awayFromManhattanDis: 0
       algorithmType: 2
       erodeRate: 0
       scatterMinMax: {x: 0, y: 0}
     - cellType: 8
-      baseOnCellType: 1
       value: 4
       count: 500
+      countMax: 0
+      startType: 2
+      baseOnCellType: 1
       FROM_DIR: 0
+      closeToCellType: 0
+      closeToManhattanDis: 0
       awayFromCellType: 6
       awayFromManhattanDis: 20
       algorithmType: 3
       erodeRate: 0
       scatterMinMax: {x: 2, y: 3}
     - cellType: 4
-      baseOnCellType: 1
       value: 3
       count: 1000
+      countMax: 0
+      startType: 2
+      baseOnCellType: 1
       FROM_DIR: 0
+      closeToCellType: 0
+      closeToManhattanDis: 0
       awayFromCellType: 6
       awayFromManhattanDis: 0
       algorithmType: 2

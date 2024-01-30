@@ -70,8 +70,8 @@ namespace GameFunctions.GridGeneratorInternal {
 
             // Erode: Loop
             while (erodeCount > 0) {
-                int count = sets.Count;
-                for (int i = 0; i < count; ++i) {
+                int sets_count = sets.Count;
+                for (int i = 0; i < sets_count; ++i) {
                     int seaIndex = indices[i];
                     int x = seaIndex % width;
                     int y = seaIndex / width;
@@ -129,8 +129,8 @@ namespace GameFunctions.GridGeneratorInternal {
             }
 
             while (floodCount > 0) {
-                int count = sets.Count;
-                for (int i = 0; i < count; i += 1) {
+                int sets_count = sets.Count;
+                for (int i = 0; i < sets_count; i += 1) {
                     int index = indices[i];
                     int x = index % width;
                     int y = index / width;
@@ -160,8 +160,8 @@ namespace GameFunctions.GridGeneratorInternal {
 
             while (scatterCount > 0) {
 
-                int count = sets.Count;
-                for (int i = 0; i < count; i += 1) {
+                int sets_count = sets.Count;
+                for (int i = 0; i < sets_count; i += 1) {
                     int index = indices[i];
                     int x = index % width;
                     int y = index / width;

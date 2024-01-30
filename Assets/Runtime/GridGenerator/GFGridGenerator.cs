@@ -86,22 +86,75 @@ namespace GameFunctions {
         public static bool Gen_Area(CTX ctx, AreaEntity area) {
             var option = area.option;
             option.FROM_DIR = Math.Abs(option.FROM_DIR) % Algorithm.DIR_COUNT;
-            AlgorithmType type = option.algorithmType;
-            if (type == AlgorithmType.FillAll) {
-                return Gen_Fill(ctx, area);
-            } else if (type == AlgorithmType.ErodeFromEdge) {
-                return Gen_Erode(ctx, area);
-            } else if (type == AlgorithmType.Flood) {
-                return Gen_Flood(ctx, area);
-            } else if (type == AlgorithmType.Scatter) {
-                return Gen_Scatter(ctx, area);
+
+            StartType startType = option.startType;
+            if (startType == StartType.GridEdge) {
+                Start_GridEdge(ctx, area);
+            } else if (startType == StartType.AwayFromCell) {
+                Start_AwayFromCell(ctx, area);
+            } else if (startType == StartType.Random) {
+                Start_Random(ctx, area);
             } else {
-                Debug.LogWarning("Unknown type: " + type.ToString());
+                Debug.LogError("Unknown StartType: " + startType.ToString());
+                return false;
+            }
+
+            AlgorithmType loopType = option.algorithmType;
+            if (loopType == AlgorithmType.FillAll) {
+                return Loop_Fill(ctx, area);
+            } else if (loopType == AlgorithmType.ErodeFromEdge) {
+                return Loop_Erode(ctx, area);
+            } else if (loopType == AlgorithmType.Flood) {
+                return Loop_Flood(ctx, area);
+            } else if (loopType == AlgorithmType.Scatter) {
+                return Loop_Scatter(ctx, area);
+            } else {
+                Debug.LogError("Unknown AlgorithmType: " + loopType.ToString());
                 return false;
             }
         }
 
-        static bool Gen_Fill(CTX ctx, AreaEntity area) {
+        static bool Start_GridEdge(CTX ctx, AreaEntity area) {
+            // Erode: start cell
+            ref var option = ref area.option;
+            Algorithm.Pos_GetRandomPointOnEdge(ctx.random, ctx.gridOption.width, ctx.gridOption.height, option.FROM_DIR, out int start_x, out int start_y);
+            int startIndex = Algorithm.Index_GetByPos(start_x, start_y, ctx.gridOption.width);
+            ctx.Grid_Set(startIndex, option.value);
+            area.Add(startIndex);
+            --area.option.count;
+            return true;
+        }
+
+        static bool Start_AwayFromCell(CTX ctx, AreaEntity area) {
+
+            // Flood: start cell
+            int start_index;
+            bool succ = Pos_GetAwayFrom(ctx, area, out start_index);
+            if (!succ) {
+                Debug.LogError("Gen Flood failed");
+                return false;
+            }
+
+            ref var option = ref area.option;
+
+            area.Add(start_index);
+            ctx.Grid_Set(start_index, option.value);
+            --option.count;
+            return true;
+            
+        }
+
+        static bool Start_Random(CTX ctx, AreaEntity area) {
+            // Scatter: start cell
+            ref var option = ref area.option;
+            ctx.GetRandomCell(ctx.random, option.baseOnCellType, out int start_index);
+            ctx.Grid_Set(start_index, option.value);
+            area.Add(start_index);
+            --option.count;
+            return true;
+        }
+
+        static bool Loop_Fill(CTX ctx, AreaEntity area) {
 
             var option = area.option;
             Action<int> onHandle = (int index) => {
@@ -116,18 +169,11 @@ namespace GameFunctions {
 
         }
 
-        static bool Gen_Erode(CTX ctx, AreaEntity area) {
+        static bool Loop_Erode(CTX ctx, AreaEntity area) {
 
             var option = area.option;
             int value = option.value;
             int count = option.count;
-
-            // Erode: start cell
-            Algorithm.Pos_GetRandomPointOnEdge(ctx.random, ctx.gridOption.width, ctx.gridOption.height, option.FROM_DIR, out int start_x, out int start_y);
-            int startIndex = Algorithm.Index_GetByPos(start_x, start_y, ctx.gridOption.width);
-            ctx.Grid_Set(startIndex, option.value);
-            area.Add(startIndex);
-            --count;
 
             Action<int> onHandle = (int index) => {
                 ctx.Grid_Set(index, option.value);
@@ -151,7 +197,7 @@ namespace GameFunctions {
 
         }
 
-        static bool Gen_Flood(CTX ctx, AreaEntity area) {
+        static bool Loop_Flood(CTX ctx, AreaEntity area) {
 
             int width = ctx.gridOption.width;
             int height = ctx.gridOption.height;
@@ -161,21 +207,9 @@ namespace GameFunctions {
             int count = option.count;
             int value = option.value;
 
-            // Flood: start cell
-            int start_index;
-            bool succ = Pos_GetAwayFrom(ctx, width, height, random, area, out start_index);
-            if (!succ) {
-                Debug.LogError("Gen Flood failed");
-                return false;
-            }
-
-            area.Add(start_index);
-            ctx.Grid_Set(start_index, value);
-            --count;
-
             Action<int> onHandle = (int index) => {
                 area.Add(index);
-                ctx.Grid_Set(index, value);
+                ctx.Grid_Set(index, option.value);
             };
 
             // Flood: loop
@@ -193,7 +227,7 @@ namespace GameFunctions {
 
         }
 
-        static bool Gen_Scatter(CTX ctx, AreaEntity area) {
+        static bool Loop_Scatter(CTX ctx, AreaEntity area) {
 
             var option = area.option;
             int count = option.count;
@@ -201,18 +235,6 @@ namespace GameFunctions {
             int width = ctx.gridOption.width;
             int height = ctx.gridOption.height;
             RD random = ctx.random;
-
-            // Scatter: start cell
-            int start_index;
-            bool succ = Pos_GetAwayFrom(ctx, width, height, random, area, out start_index);
-            if (!succ) {
-                Debug.LogError("Gen Scatter failed");
-                return false;
-            }
-
-            area.Add(start_index);
-            ctx.Grid_Set(start_index, value);
-            --count;
 
             Action<int> onHandle = (int index) => {
                 area.Add(index);
@@ -235,7 +257,13 @@ namespace GameFunctions {
 
         }
 
-        static bool Pos_GetAwayFrom(CTX ctx, int width, int height, RD random, AreaEntity area, out int start_index) {
+        static bool Pos_GetAwayFrom(CTX ctx, AreaEntity area, out int start_index) {
+
+            int width = ctx.gridOption.width;
+            int height = ctx.gridOption.height;
+
+            RD random = ctx.random;
+
             var option = area.option;
             HashSet<int> awayFromValues = ctx.GetCellTypeValues(option.awayFromCellType);
             GFVector4Int edgeOffset = new GFVector4Int();

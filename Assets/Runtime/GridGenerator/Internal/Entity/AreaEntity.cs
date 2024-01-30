@@ -16,6 +16,7 @@ namespace GameFunctions.GridGeneratorInternal {
             indices = new int[width * height];
             set = new HashSet<int>(indices.Length);
             this.option = option;
+            option.countMax = option.count;
         }
 
         public bool Add(int index) {
