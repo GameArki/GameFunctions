@@ -37,6 +37,10 @@ namespace GameFunctions {
         /// <summary> ↑ → ↓ ←, returns -1 if not found. </summary>
         public static int AStar(Vector2Int start, Vector2Int end, int limitedCount, Predicate<Vector2Int> isWalkable, Vector2Int[] result, bool isManuallyProcess = false) {
 
+            if (!isWalkable(start) || !isWalkable(end)) {
+                return -1;
+            }
+
             // ==== Begin ====
             // A* algorithm
             foreach (GFCell cell in openSet) {
