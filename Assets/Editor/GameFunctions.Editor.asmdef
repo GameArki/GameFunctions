@@ -2,13 +2,19 @@
     "name": "GameFunctions.Editor",
     "rootNamespace": "",
     "references": [
-        "GUID:8b845b123ab418448a8be2935fa804e0"
+        "GUID:6ab90af8c2ba87e4bba6df4a563258ff"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Humanizer.dll",
+        "Microsoft.CodeAnalysis.dll",
+        "Microsoft.CodeAnalysis.CSharp.dll",
+        "System.Runtime.CompilerServices.Unsafe.4.6.dll",
+        "System.Reflection.Metadata.dll"
+    ],
     "autoReferenced": true,
     "defineConstraints": [
         "UNITY_EDITOR"

@@ -1,0 +1,21 @@
+{
+    "name": "GameFunctions.Tests",
+    "rootNamespace": "",
+    "references": [
+        "GUID:6ab90af8c2ba87e4bba6df4a563258ff",
+        "GUID:8ec02171008f88849bb5a5c71e6db939"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
