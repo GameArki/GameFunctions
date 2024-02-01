@@ -23,6 +23,8 @@ namespace GameFunctions.Sample {
                 GUILayout.Label("CircleCycle Radius: " + circleCycle_radius);
             } else if (mode == 2) {
 
+            } else if (mode == 3) {
+                GUILayout.Label("CrossCycle Radius: " + crossCycle_radius);
             }
         }
 
@@ -33,6 +35,8 @@ namespace GameFunctions.Sample {
                 CircleCycle_Update();
             } else if (mode == 2) {
                 Slant_Update();
+            } else if (mode == 3) {
+                CrossCycle_Update();
             }
         }
 
@@ -43,6 +47,8 @@ namespace GameFunctions.Sample {
                 CircleCycle_Draw();
             } else if (mode == 2) {
                 Slant_Draw();
+            } else if (mode == 3) {
+                CrossCycle_Draw();
             }
         }
 
@@ -101,6 +107,28 @@ namespace GameFunctions.Sample {
             }
         }
 
+        // ==== CrossCycle ====
+        [SerializeField] int crossCycle_radius = 0;
+        int crossCycle_lastRadius = 0;
+        void CrossCycle_Update() {
+            if (Input.GetKeyUp(KeyCode.W)) {
+                crossCycle_radius++;
+            } else if (Input.GetKeyUp(KeyCode.S)) {
+                crossCycle_radius--;
+            }
+            if (crossCycle_lastRadius != crossCycle_radius) {
+                resultCount = GFGrid.CrossCycle_GetCells(new Vector2Int(0, 0), crossCycle_radius, results);
+                crossCycle_lastRadius = crossCycle_radius;
+            }
+        }
+
+        void CrossCycle_Draw() {
+            Gizmos.color = Color.red;
+            for (int i = 0; i < resultCount; i++) {
+                Vector2Int cell = results[i];
+                Gizmos.DrawWireCube(new Vector3(cell.x, cell.y), Vector3.one);
+            }
+        }
 
         // ==== Slant ====
         [SerializeField] GameObject slant_start;

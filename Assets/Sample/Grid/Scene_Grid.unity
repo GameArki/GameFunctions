@@ -229,7 +229,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 363632020a237e84aaf1079a7db7795f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mode: 1
+  mode: 3
+  circleCycle_radius: 0
+  crossCycle_radius: 0
   slant_start: {fileID: 579570181}
   slant_end: {fileID: 1940447621}
 --- !u!1 &432956284

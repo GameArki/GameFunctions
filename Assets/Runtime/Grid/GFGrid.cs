@@ -12,6 +12,7 @@ namespace GameFunctions {
            o + + + o 
            o o + o o 
         */
+        #region CircleCycle
         public static int CircleCycle_GetCells(Vector2Int center, float radius, Vector2Int[] cells) {
             if (radius <= 0) {
                 cells[0] = center;
@@ -31,6 +32,27 @@ namespace GameFunctions {
             }
             return count;
         }
+        #endregion CircleCycle
+
+        #region CrossCycle
+        public static int CrossCycle_GetCells(Vector2Int center, int radius, Vector2Int[] cells) {
+            if (radius <= 0) {
+                cells[0] = center;
+                return 1;
+            }
+            int count = 0;
+            for (int x = center.x - radius; x <= center.x + radius; x++) {
+                for (int y = center.y - radius; y <= center.y + radius; y++) {
+                    int dis = ManhattanDistance(center, new Vector2Int(x, y));
+                    if (dis <= radius) {
+                        cells[count] = new Vector2Int(x, y);
+                        count++;
+                    }
+                }
+            }
+            return count;
+        }
+        #endregion CrossCycle
 
         /*
            gridCount == 0
@@ -48,6 +70,7 @@ namespace GameFunctions {
            o o o o o 
            o o o o o 
         */
+        #region RectCycle
         public static int RectCycle_GetCellCount(int gridCount) {
             int v = 2 * gridCount + 1;
             return v * v;
@@ -145,8 +168,10 @@ namespace GameFunctions {
                 }
             }
         }
+        #endregion RectCycle
 
         // 斜线
+        #region Slant
         public static int Slant_GetCells(Vector2 start, Vector2 end, Vector2Int[] result) {
 
             Vector2 bottom = start.y < end.y ? start : end;
@@ -189,6 +214,11 @@ namespace GameFunctions {
             }
 
             return count;
+        }
+        #endregion Slant
+
+        static int ManhattanDistance(Vector2Int a, Vector2Int b) {
+            return Math.Abs(a.x - b.x) + Math.Abs(a.y - b.y);
         }
 
     }
