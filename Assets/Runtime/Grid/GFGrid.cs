@@ -5,6 +5,20 @@ namespace GameFunctions {
 
     public static class GFGrid {
 
+        public static int GetCells(GFGridSearchType searchType, int searchSize, Vector2Int center, Vector2Int[] cells) {
+            switch (searchType) {
+                case GFGridSearchType.RectCycle:
+                    return RectCycle_GetCellsBySpirals(center, searchSize, cells);
+                case GFGridSearchType.CircleCycle:
+                    return CircleCycle_GetCells(center, searchSize, cells);
+                case GFGridSearchType.CrossCycle:
+                    return CrossCycle_GetCells(center, searchSize, cells);
+                default:
+                    Debug.LogError("GFGrid.GetCells: searchType not found: " + searchType.ToString());
+                    return -1;
+            }
+        }
+
         /*
            o o + o o 
            o + + + o 
