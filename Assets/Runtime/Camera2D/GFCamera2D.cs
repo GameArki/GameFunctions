@@ -16,7 +16,6 @@ namespace GameFunctions {
             Vector2 confinerHalfSize = (confinerMax - confinerMin) / 2;
             Vector2 cameraHalfSize = new Vector2(cameraOrthoSize * resolutionRadio, cameraOrthoSize);
             if (confinerHalfSize.x < cameraHalfSize.x || confinerHalfSize.y < cameraHalfSize.y) {
-                Debug.LogError("Confiner area is smaller than camera area.");
                 return cameraPos;
             }
 
