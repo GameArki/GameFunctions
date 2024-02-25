@@ -44,6 +44,7 @@ namespace RVO {
         internal List<Agent> agents_;
         internal KdTree kdTree_;
         internal float timeStep_;
+        bool isDirty;
 
         float globalTime_;
 
@@ -54,12 +55,14 @@ namespace RVO {
             agents_ = new List<Agent>();
             kdTree_ = new KdTree();
             globalTime_ = 0.0f;
+            isDirty = false;
         }
 
         public void Clear() {
             agents_.Clear();
             kdTree_ = new KdTree();
             globalTime_ = 0.0f;
+            isDirty = false;
         }
 
         /**
@@ -113,6 +116,7 @@ namespace RVO {
             agent.velocity_ = velocity;
             agents_.Add(agent);
 
+            isDirty = true;
             return agent;
         }
 
@@ -120,6 +124,7 @@ namespace RVO {
             int index = agents_.FindIndex(agent => agent.id_ == id);
             if (index >= 0) {
                 agents_.RemoveAt(index);
+                isDirty = true;
             } else {
                 throw new Exception("Agent not found");
             }
@@ -133,7 +138,7 @@ namespace RVO {
          */
         public float doStep(float dt) {
 
-            kdTree_.buildAgentTree(agents_);
+            kdTree_.buildAgentTree(agents_, ref isDirty);
 
             foreach (Agent agent in agents_) {
                 agent.computeNeighbors(kdTree_);

@@ -25,6 +25,17 @@ namespace GameFunctions.Sample {
                     agent.SetPreferVelocity(agent.targetPos - agent.Pos);
                 }
                 simulator.doStep(Time.deltaTime);
+
+                if (Input.GetMouseButtonDown(1)) {
+                    Vector2 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                    foreach (Agent agent in agents.Values) {
+                        if ((agent.Pos - worldPos).magnitude < agent.Radius) {
+                            simulator.RemoveAgent(agent.ID);
+                            agents.Remove(agent.ID);
+                            break;
+                        }
+                    }
+                }
             } catch {
                 Debug.LogError("RVO2 Simulator is not initialized.");
             }
