@@ -22,7 +22,7 @@ namespace GameFunctions.Sample {
                     agents.Add(agent.ID, agent);
                 }
                 foreach (Agent agent in agents.Values) {
-                    simulator.setAgentPrefVelocity(agent.ID, agent.targetPos - agent.Pos);
+                    agent.SetPreferVelocity(agent.targetPos - agent.Pos);
                 }
                 simulator.doStep(Time.deltaTime);
             } catch {
@@ -33,7 +33,7 @@ namespace GameFunctions.Sample {
         Agent SpawnAgent(Vector2 screen) {
             Vector2 worldPos = Camera.main.ScreenToWorldPoint(screen);
             float moveSpeed = 5f;
-            var agent = simulator.AddAgent(worldPos, 15f, 10, 5, 5f, 2f, moveSpeed, Vector2.zero);
+            var agent = simulator.AddAgent(worldPos, 55f, 4, 5, 5f, 2f, moveSpeed, Vector2.zero);
             agent.targetPos = -worldPos;
             return agent;
         }
