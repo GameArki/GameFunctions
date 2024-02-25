@@ -66,6 +66,10 @@ namespace RVO {
             orcaLines_ = new List<Line>();
         }
 
+        public void SetPos(Vector2 pos) {
+            position_ = pos;
+        }
+
         public void SetPreferVelocity(Vector2 prefVelocity) {
             prefVelocity_ = prefVelocity;
         }
