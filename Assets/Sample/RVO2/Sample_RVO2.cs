@@ -11,7 +11,7 @@ namespace GameFunctions.Sample {
         Dictionary<int, Agent> agents;
 
         void Awake() {
-            simulator = new Simulator();
+            simulator = new Simulator(1000);
             agents = new Dictionary<int, Agent>();
         }
 

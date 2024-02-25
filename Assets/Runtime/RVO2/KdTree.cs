@@ -140,17 +140,15 @@ namespace RVO {
         Agent[] agents;
         int agentCount;
         AgentTreeNode[] tree;
-        int treeNodeCount;
 
-        public KdTree() {
-            agents = new Agent[1000];
+        public KdTree(int agentMaxCount) {
+            agents = new Agent[agentMaxCount];
             agentCount = 0;
 
-            tree = new AgentTreeNode[1000];
+            tree = new AgentTreeNode[agentMaxCount];
             for (int i = 0; i < tree.Length; ++i) {
                 tree[i] = new AgentTreeNode();
             }
-            treeNodeCount = 0;
         }
 
         /**

@@ -51,16 +51,15 @@ namespace RVO {
         /**
          * <summary>Clears the simulation.</summary>
          */
-        public Simulator() {
-            agents_ = new List<Agent>();
-            kdTree_ = new KdTree();
+        public Simulator(int agentMaxCount) {
+            agents_ = new List<Agent>(agentMaxCount);
+            kdTree_ = new KdTree(agentMaxCount);
             globalTime_ = 0.0f;
             isDirty = false;
         }
 
         public void Clear() {
             agents_.Clear();
-            kdTree_ = new KdTree();
             globalTime_ = 0.0f;
             isDirty = false;
         }
