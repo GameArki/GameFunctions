@@ -69,6 +69,9 @@ namespace GameFunctions {
                     bool hasLeader = leaderDict.TryGetValue(cur.groupID, out GFBoidsEntity2D leader);
                     if (hasLeader) {
                         cur.velocity += (leader.position - cur.position).normalized;
+                        cur.isFollowingLeader = true;
+                    } else {
+                        cur.isFollowingLeader = false;
                     }
                     cur.velocity = Vector2.ClampMagnitude(cur.velocity, cur.moveSpeed);
                 }

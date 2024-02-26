@@ -7,6 +7,7 @@ namespace GameFunctions {
         public int id;
         public int groupID;
         public bool isLeader;
+        public bool isFollowingLeader;
         public Vector2 position;
         public Vector2 velocity;
         public float radius;
