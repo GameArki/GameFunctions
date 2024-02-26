@@ -16,7 +16,7 @@ namespace GameFunctions {
                     continue;
                 }
                 float d = Vector2.Distance(cur.position, other.position);
-                if (d < separateRadius) {
+                if (d > 0 && d < separateRadius) {
                     Vector2 diff = cur.position - other.position;
                     diff.Normalize();
                     diff /= d;
@@ -46,7 +46,7 @@ namespace GameFunctions {
                     continue;
                 }
                 float d = Vector2.Distance(cur.position, other.position);
-                if (d < alignRadius) {
+                if (d > 0 && d < alignRadius) {
                     alignVelocity += other.velocity.normalized;
                     count++;
                 }
@@ -70,7 +70,7 @@ namespace GameFunctions {
                     continue;
                 }
                 float d = Vector2.Distance(cur.position, other.position);
-                if (d < cohesionRadius) {
+                if (d > 0 && d < cohesionRadius) {
                     cohesionVelocity += other.position;
                     count++;
                 }
