@@ -10,7 +10,15 @@ namespace GameFunctions.Sample {
 
         void Awake() {
             all = new Dictionary<int, GFBoidsEntity2D>();
-            manager = new GFBoidsManager(1000);
+            manager = new GFBoidsManager(new GFBoidsSettingModel() {
+                maxBoids = 100,
+                separateRadius = 5f,
+                separateFactor = 1f,
+                alignRadius = 5f,
+                alignFactor = 1f,
+                cohesionRadius = 5f,
+                cohesionFactor = 1f
+            });
         }
 
         void Update() {

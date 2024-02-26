@@ -5,14 +5,17 @@ namespace GameFunctions {
 
     public class GFBoidsManager {
 
+        GFBoidsSettingModel settingModel;
+
         int idRecord;
         GFBoidsEntity2D[] all;
         int count;
 
         Dictionary<int, GFBoidsEntity2D> leaderDict;
 
-        public GFBoidsManager(int maxBoids) {
-            all = new GFBoidsEntity2D[maxBoids];
+        public GFBoidsManager(GFBoidsSettingModel settingModel) {
+            this.settingModel = settingModel;
+            all = new GFBoidsEntity2D[settingModel.maxBoids];
             leaderDict = new Dictionary<int, GFBoidsEntity2D>(10);
             count = 0;
             idRecord = 0;
@@ -58,9 +61,9 @@ namespace GameFunctions {
             for (int i = 0; i < count; i++) {
                 GFBoidsEntity2D cur = all[i];
                 if (!cur.isLeader) {
-                    Vector2 separate = GFBoidsAlgorithm2D.Separation(cur, all, count, 2f, 6f);
-                    Vector2 align = GFBoidsAlgorithm2D.Alignment(cur, all, count, 5f, 0.1f);
-                    Vector2 cohesion = GFBoidsAlgorithm2D.Cohesion(cur, all, count, 10f, 0.1f);
+                    Vector2 separate = GFBoidsAlgorithm2D.Separation(cur, all, count, settingModel.separateRadius, settingModel.separateFactor);
+                    Vector2 align = GFBoidsAlgorithm2D.Alignment(cur, all, count, settingModel.alignRadius, settingModel.alignFactor);
+                    Vector2 cohesion = GFBoidsAlgorithm2D.Cohesion(cur, all, count, settingModel.cohesionRadius, settingModel.cohesionFactor);
                     cur.velocity = cur.velocity + separate;
                     cur.velocity += align + cohesion;
                     bool hasLeader = leaderDict.TryGetValue(cur.groupID, out GFBoidsEntity2D leader);
