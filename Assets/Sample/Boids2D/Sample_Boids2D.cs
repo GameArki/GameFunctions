@@ -12,12 +12,13 @@ namespace GameFunctions.Sample {
             all = new Dictionary<int, GFBoidsEntity2D>();
             manager = new GFBoidsManager(new GFBoidsSettingModel() {
                 maxBoids = 100,
-                separateRadius = 5f,
+                originVelocityWeight = 0.1f,
+                separateRadius = 3f,
                 separateFactor = 1f,
-                alignRadius = 5f,
-                alignFactor = 1f,
-                cohesionRadius = 5f,
-                cohesionFactor = 1f
+                alignRadius = 10f,
+                alignFactor = .5f,
+                cohesionRadius = 10f,
+                cohesionFactor = .5f
             });
         }
 
@@ -44,6 +45,9 @@ namespace GameFunctions.Sample {
                         boid.velocity = Random.insideUnitCircle * boid.moveSpeed;
                     }
                 }
+            }
+            foreach (GFBoidsEntity2D boid in all.Values) {
+                boid.velocity = Vector2.right * boid.moveSpeed;
             }
             manager.Simulate(Time.deltaTime);
         }
