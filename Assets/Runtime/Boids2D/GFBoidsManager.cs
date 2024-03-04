@@ -64,15 +64,15 @@ namespace GameFunctions {
                     Vector2 separate = GFBoidsAlgorithm2D.Separation(cur, all, count, settingModel.separateRadius, settingModel.separateFactor);
                     Vector2 align = GFBoidsAlgorithm2D.Alignment(cur, all, count, settingModel.alignRadius, settingModel.alignFactor);
                     Vector2 cohesion = GFBoidsAlgorithm2D.Cohesion(cur, all, count, settingModel.cohesionRadius, settingModel.cohesionFactor);
-                    cur.velocity = cur.velocity + (separate + align + cohesion) * (1 - settingModel.originVelocityWeight);
+                    Vector2 leaderVelocity = Vector2.zero;
                     bool hasLeader = leaderDict.TryGetValue(cur.groupID, out GFBoidsEntity2D leader);
                     if (hasLeader) {
-                        cur.velocity += (leader.position - cur.position).normalized;
+                        leaderVelocity = (leader.position - cur.position).normalized * settingModel.leaderFactor;
                         cur.isFollowingLeader = true;
                     } else {
                         cur.isFollowingLeader = false;
                     }
-                    cur.velocity = Vector2.ClampMagnitude(cur.velocity, cur.moveSpeed * 1.2f);
+                    cur.velocity = (cur.velocity.normalized * settingModel.originWeight * cur.moveSpeed) + ((separate + align + cohesion) + leaderVelocity) * (1 - settingModel.originWeight) * cur.moveSpeed;
                 }
                 cur.position += cur.velocity * dt;
             }

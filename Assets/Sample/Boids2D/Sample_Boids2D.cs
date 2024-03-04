@@ -12,13 +12,14 @@ namespace GameFunctions.Sample {
             all = new Dictionary<int, GFBoidsEntity2D>();
             manager = new GFBoidsManager(new GFBoidsSettingModel() {
                 maxBoids = 100,
-                originVelocityWeight = 0.1f,
+                originWeight = 0.9f,
                 separateRadius = 3f,
-                separateFactor = 1f,
+                separateFactor = .5f,
                 alignRadius = 10f,
                 alignFactor = .5f,
                 cohesionRadius = 10f,
-                cohesionFactor = .5f
+                cohesionFactor = .5f,
+                leaderFactor = .5f
             });
         }
 
