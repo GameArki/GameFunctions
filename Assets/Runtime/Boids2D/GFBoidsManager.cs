@@ -72,7 +72,7 @@ namespace GameFunctions {
                     } else {
                         cur.isFollowingLeader = false;
                     }
-                    // cur.velocity = Vector2.ClampMagnitude(cur.velocity, cur.moveSpeed);
+                    cur.velocity = Vector2.ClampMagnitude(cur.velocity, cur.moveSpeed * 1.2f);
                 }
                 cur.position += cur.velocity * dt;
             }
