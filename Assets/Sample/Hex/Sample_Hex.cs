@@ -25,9 +25,16 @@ namespace GameFunctions.Sample {
             Generate();
         }
 
+        void OnGUI() {
+            Vector2 mousePos = Input.mousePosition;
+            Vector2 worldPos = Camera.main.ScreenToWorldPoint(mousePos);
+            Vector2Int logicPos = GFHex.RenderPosToLogicPos(worldPos, 1f, 0);
+            GUILayout.Label($"Mouse Pos: {logicPos}");
+        }
+
         // Update is called once per frame
         void Update() {
-
+            
         }
 
         void OnDrawGizmos() {

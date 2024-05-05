@@ -18,6 +18,29 @@ namespace GameFunctions {
             return Mathf.Max(dx, dy, dz);
         }
 
+        public static Vector2Int RenderPosToLogicPos(Vector2 input, float outterRadius, float gap) {
+            float innerRadius = GetInnerRadius(outterRadius);
+            Vector2Int guessCenter = new Vector2Int(
+                                Mathf.RoundToInt(input.x / (innerRadius * 2f + gap)),
+                                Mathf.RoundToInt(input.y / (outterRadius * 1.5f + gap)));
+            Vector2Int min = new Vector2Int(guessCenter.x - 2, guessCenter.y - 2);
+            Vector2Int max = new Vector2Int(guessCenter.x + 2, guessCenter.y + 2);
+            float minDistanceSqr = float.MaxValue;
+            Vector2Int result = guessCenter;
+            for (int y = min.y; y <= max.y; y++) {
+                for (int x = min.x; x <= max.x; x++) {
+                    Vector2Int centerLogic = new Vector2Int(x, y);
+                    Vector2 center = Render_GetCenterPos(centerLogic, outterRadius, gap);
+                    float distanceSqr = Vector2.SqrMagnitude(input - center);
+                    if (distanceSqr < minDistanceSqr) {
+                        minDistanceSqr = distanceSqr;
+                        result = centerLogic;
+                    }
+                }
+            }
+            return result;
+        }
+
         public static float GetInnerRadius(float outterRadius) {
             return outterRadius * Mathf.Sqrt(3f) / 2f;
         }
@@ -57,7 +80,7 @@ namespace GameFunctions {
         #region Neighbor
         public const int Neighbor_Count = 6;
         /// <summary> 6 Neighbors, Clockwise from left-up </summary>
-        public static int Neighbors(Vector2Int input, Span<Vector2Int> output) {
+        public static int Neighbors_Logic(Vector2Int input, ref Span<Vector2Int> output) {
             output[0] = Neighbor_LeftUp(input);
             output[1] = Neighbor_RightUp(input);
             output[2] = Neighbor_Right(input);
