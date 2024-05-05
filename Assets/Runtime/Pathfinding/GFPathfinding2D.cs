@@ -9,29 +9,28 @@ namespace GameFunctions {
     public static class GFPathfinding2D {
 
 #if UNITY_EDITOR
-        [ThreadStatic] public static SortedSet<GFCell> openSet = new SortedSet<GFCell>();
+        [ThreadStatic] public static SortedSet<GFRectCell> openSet = new SortedSet<GFRectCell>();
 #else
         [ThreadStatic] internal static SortedSet<GFCell> openSet = new SortedSet<GFCell>();
 #endif
 
 #if UNITY_EDITOR
-        [ThreadStatic] public static SortedSet<GFCell> closedSet = new SortedSet<GFCell>();
+        [ThreadStatic] public static SortedSet<GFRectCell> closedSet = new SortedSet<GFRectCell>();
 #else
         [ThreadStatic] internal static SortedSet<GFCell> closedSet = new SortedSet<GFCell>();
 #endif
 
-        [ThreadStatic] internal static Dictionary<Vector2Int, GFCell> openSetKey = new Dictionary<Vector2Int, GFCell>(10000);
+        [ThreadStatic] internal static Dictionary<Vector2Int, GFRectCell> openSetKey = new Dictionary<Vector2Int, GFRectCell>(10000);
         [ThreadStatic] internal static HashSet<Vector2Int> closedSetKey = new HashSet<Vector2Int>(10000);
-        [ThreadStatic] static Stack<GFCell> pool = new Stack<GFCell>(10000);
+        [ThreadStatic] internal static Dictionary<Vector2Int, Vector2Int> childToParentDict = new Dictionary<Vector2Int, Vector2Int>(10000);
 
         const float G_COST = 10;
 
-        [ThreadStatic]
-        readonly static Dictionary<int, Vector2Int> neighbors = new Dictionary<int, Vector2Int> {
-            { 0, new Vector2Int(1, 0) }, // →
-            { 1, new Vector2Int(0, -1) }, // ↓
-            { 2, new Vector2Int(-1, 0) }, // ←
-            { 3, new Vector2Int(0, 1) }, // ↑
+        readonly static Vector2Int[] neighbors = new Vector2Int[4] {
+            new Vector2Int(1, 0) , // →
+            new Vector2Int(0, -1) , // ↓
+            new Vector2Int(-1, 0) , // ←
+            new Vector2Int(0, 1)  // ↑
         };
 
         /// <summary> ↑ → ↓ ←, returns -1 if not found. </summary>
@@ -43,19 +42,14 @@ namespace GameFunctions {
 
             // ==== Begin ====
             // A* algorithm
-            foreach (GFCell cell in openSet) {
-                PoolReturn(cell);
-            }
-            foreach (GFCell cell in closedSet) {
-                PoolReturn(cell);
-            }
             openSet.Clear();
             openSetKey.Clear();
             closedSet.Clear();
             closedSetKey.Clear();
+            childToParentDict.Clear();
 
-            GFCell startCell = PoolGet();
-            startCell.Init(start, 0, 0, 0, null);
+            GFRectCell startCell = new GFRectCell();
+            startCell.Init(start, 0, 0, 0);
 
             openSet.Add(startCell);
             openSetKey.Add(startCell.pos, startCell);
@@ -81,7 +75,7 @@ namespace GameFunctions {
 
         public static bool ManualProcess(ref int visited, ref int count, int limitedCount, Vector2Int start, Vector2Int end, Predicate<Vector2Int> isWalkable, Vector2Int[] result, out Vector2Int cur) {
 
-            GFCell q = openSet.Min;
+            GFRectCell q = openSet.Min;
             cur = q.pos;
             openSet.Remove(q);
             openSetKey.Remove(q.pos);
@@ -103,12 +97,13 @@ namespace GameFunctions {
 
                 // 找到了, 从end开始回溯
                 if (neighborPos == end) {
-                    GFCell point = q;
+                    Vector2Int p = q.pos;
                     count = 0;
                     result[count++] = end;
-                    while (point != null) {
-                        result[count++] = point.pos;
-                        point = point.parent;
+                    result[count++] = p;
+                    while (childToParentDict.TryGetValue(p, out var parent)) {
+                        result[count++] = parent;
+                        p = parent;
                     }
                     return true;
                 }
@@ -116,18 +111,23 @@ namespace GameFunctions {
                 float gCost = G_COST;
                 float hCost = H_Manhattan(neighborPos, end);
                 float fCost = gCost + hCost;
-                GFCell neighborCell;
+                GFRectCell neighborCell;
                 if (openSetKey.TryGetValue(neighborPos, out neighborCell)) {
                     if (fCost < neighborCell.fCost) {
                         openSet.Remove(neighborCell);
-                        neighborCell.Init(neighborPos, fCost, gCost, hCost, q);
+                        openSetKey.Remove(neighborPos);
+                        childToParentDict.Remove(neighborPos);
+                        neighborCell.Init(neighborPos, fCost, gCost, hCost);
                         openSet.Add(neighborCell);
+                        openSetKey.Add(neighborPos, neighborCell);
+                        childToParentDict.Add(neighborPos, q.pos);
                     }
                 } else {
-                    neighborCell = PoolGet();
-                    neighborCell.Init(neighborPos, fCost, gCost, hCost, q);
+                    neighborCell = new GFRectCell();
+                    neighborCell.Init(neighborPos, fCost, gCost, hCost);
                     openSet.Add(neighborCell);
-                    openSetKey.Add(neighborCell.pos, neighborCell);
+                    openSetKey.Add(neighborPos, neighborCell);
+                    childToParentDict.Add(neighborPos, q.pos);
                 }
 
             }
@@ -138,18 +138,6 @@ namespace GameFunctions {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static float H_Manhattan(Vector2Int cur, Vector2Int end) {
             return 10 * (Mathf.Abs(cur.x - end.x) + Mathf.Abs(cur.y - end.y));
-        }
-
-        static GFCell PoolGet() {
-            if (pool.Count > 0) {
-                return pool.Pop();
-            } else {
-                return new GFCell();
-            }
-        }
-
-        static void PoolReturn(GFCell cell) {
-            pool.Push(cell);
         }
 
     }

@@ -5,41 +5,29 @@ using UnityEngine;
 
 namespace GameFunctions.PathfindingInternal {
 
-    public class GFCell : IEquatable<GFCell>, IComparable<GFCell> {
+    public struct GFRectCell : IEquatable<GFRectCell>, IComparable<GFRectCell> {
 
         public Vector2Int pos;
         public float fCost;
         public float gCost;
         public float hCost;
-        public GFCell parent;
 
-        public GFCell() {}
-
-        public void Init(Vector2Int pos, float fCost, float gCost, float hCost, GFCell parent) {
+        public void Init(Vector2Int pos, float fCost, float gCost, float hCost) {
             this.pos = pos;
             this.fCost = fCost;
             this.gCost = gCost;
             this.hCost = hCost;
-            this.parent = parent;
         }
 
-        bool IEquatable<GFCell>.Equals(GFCell other) {
+        bool IEquatable<GFRectCell>.Equals(GFRectCell other) {
             return pos == other.pos;
-        }
-
-        public override bool Equals(object obj) {
-            GFCell other = obj as GFCell;
-            if (other != null) {
-                return pos == other.pos;
-            }
-            return false;
         }
 
         public override int GetHashCode() {
             return pos.GetHashCode();
         }
 
-        int IComparable<GFCell>.CompareTo(GFCell other) {
+        int IComparable<GFRectCell>.CompareTo(GFRectCell other) {
 
             Bit128 fKey = new Bit128();
             fKey.i32_0 = pos.y;
