@@ -21,9 +21,9 @@ namespace GameFunctions {
         public static Vector2Int RenderPosToLogicPos(Vector2 input, float outterRadius, float gap) {
             float innerRadius = GetInnerRadius(outterRadius);
             Vector2Int guessCenter = new Vector2Int(
-                                Mathf.RoundToInt(input.x / (innerRadius * 2f + gap)),
-                                Mathf.RoundToInt(input.y / (outterRadius * 1.5f + gap)));
-            Vector2Int min = new Vector2Int(guessCenter.x - 2, guessCenter.y - 2);
+                                Mathf.CeilToInt(input.x / (innerRadius * 2f + gap)),
+                                Mathf.CeilToInt(input.y / (outterRadius * 1.5f + gap)));
+            Vector2Int min = new Vector2Int(guessCenter.x - 1, guessCenter.y - 1);
             Vector2Int max = new Vector2Int(guessCenter.x + 2, guessCenter.y + 2);
             float minDistanceSqr = float.MaxValue;
             Vector2Int result = guessCenter;
@@ -54,7 +54,7 @@ namespace GameFunctions {
             }
         }
 
-        public static int Render_GetHexCorners(Vector2 input, float outterRadius, Span<Vector2> output) {
+        public static int Render_GetHexCorners(Vector2 input, float outterRadius, ref Span<Vector2> output) {
             float innerRadius = GetInnerRadius(outterRadius);
             output[0] = new Vector2(input.x, input.y + outterRadius); // up point
             output[1] = new Vector2(input.x + innerRadius, input.y + outterRadius * 0.5f); // right-up point
@@ -70,7 +70,7 @@ namespace GameFunctions {
             // six lines
             Vector2 center = Render_GetCenterPos(input, outterRadius, gap);
             Span<Vector2> corners = stackalloc Vector2[Neighbor_Count];
-            Render_GetHexCorners(center, outterRadius, corners);
+            Render_GetHexCorners(center, outterRadius, ref corners);
             for (int i = 0; i < Neighbor_Count; i++) {
                 Gizmos.DrawLine(corners[i], corners[(i + 1) % Neighbor_Count]);
             }
