@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace GameFunctions {
 
+    /// <summary> 尖顶六边形 / Hexagon with Pointy Top </summary>
     public static class GFHex {
 
         // x
@@ -16,6 +17,42 @@ namespace GameFunctions {
             int dz = Mathf.Abs(az - bz);
             return Mathf.Max(dx, dy, dz);
         }
+
+        public static float GetInnerRadius(float outterRadius) {
+            return outterRadius * Mathf.Sqrt(3f) / 2f;
+        }
+
+        public static Vector2 Render_GetCenterPos(Vector2Int input, float outterRadius, float gap) {
+            float innerRadius = GetInnerRadius(outterRadius);
+            if ((input.y & 1) == 1) {
+                return new Vector2(input.x * (innerRadius * 2f + gap), input.y * (outterRadius * 1.5f + gap));
+            } else {
+                return new Vector2(input.x * (innerRadius * 2f + gap) + innerRadius + gap, input.y * (outterRadius * 1.5f + gap));
+            }
+        }
+
+        public static int Render_GetHexCorners(Vector2 input, float outterRadius, Span<Vector2> output) {
+            float innerRadius = GetInnerRadius(outterRadius);
+            output[0] = new Vector2(input.x, input.y + outterRadius); // up point
+            output[1] = new Vector2(input.x + innerRadius, input.y + outterRadius * 0.5f); // right-up point
+            output[2] = new Vector2(input.x + innerRadius, input.y - outterRadius * 0.5f); // right-down point
+            output[3] = new Vector2(input.x, input.y - outterRadius); // down point
+            output[4] = new Vector2(input.x - innerRadius, input.y - outterRadius * 0.5f); // left-down point
+            output[5] = new Vector2(input.x - innerRadius, input.y + outterRadius * 0.5f); // left-up point
+            return Neighbor_Count;
+        }
+
+#if UNITY_EDITOR
+        public static void DrawGizmos(Vector2Int input, float outterRadius, float gap) {
+            // six lines
+            Vector2 center = Render_GetCenterPos(input, outterRadius, gap);
+            Span<Vector2> corners = stackalloc Vector2[Neighbor_Count];
+            Render_GetHexCorners(center, outterRadius, corners);
+            for (int i = 0; i < Neighbor_Count; i++) {
+                Gizmos.DrawLine(corners[i], corners[(i + 1) % Neighbor_Count]);
+            }
+        }
+#endif
 
         #region Neighbor
         public const int Neighbor_Count = 6;
