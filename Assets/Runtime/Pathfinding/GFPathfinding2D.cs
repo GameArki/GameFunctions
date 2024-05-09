@@ -11,13 +11,13 @@ namespace GameFunctions {
 #if UNITY_EDITOR
         [ThreadStatic] public static SortedSet<GFRectCell> openSet = new SortedSet<GFRectCell>();
 #else
-        [ThreadStatic] internal static SortedSet<GFCell> openSet = new SortedSet<GFCell>();
+        [ThreadStatic] internal static SortedSet<GFRectCell> openSet = new SortedSet<GFRectCell>();
 #endif
 
 #if UNITY_EDITOR
         [ThreadStatic] public static SortedSet<GFRectCell> closedSet = new SortedSet<GFRectCell>();
 #else
-        [ThreadStatic] internal static SortedSet<GFCell> closedSet = new SortedSet<GFCell>();
+        [ThreadStatic] internal static SortedSet<GFRectCell> closedSet = new SortedSet<GFRectCell>();
 #endif
 
         [ThreadStatic] internal static Dictionary<Vector2Int, GFRectCell> openSetKey = new Dictionary<Vector2Int, GFRectCell>(10000);
