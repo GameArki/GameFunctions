@@ -56,6 +56,42 @@ namespace GameFunctions {
         [FieldOffset(15)]
         public byte b15;
 
+        [FieldOffset(0)]
+        public int i0;
+
+        [FieldOffset(4)]
+        public int i1;
+
+        [FieldOffset(8)]
+        public int i2;
+
+        [FieldOffset(12)]
+        public int i3;
+
+        [FieldOffset(0)]
+        public long l0;
+
+        [FieldOffset(8)]
+        public long l1;
+
+        [FieldOffset(0)]
+        public float f0;
+
+        [FieldOffset(4)]
+        public float f1;
+
+        [FieldOffset(8)]
+        public float f2;
+
+        [FieldOffset(12)]
+        public float f3;
+
+        [FieldOffset(0)]
+        public double d0;
+
+        [FieldOffset(8)]
+        public double d1;
+
     }
 
 }
