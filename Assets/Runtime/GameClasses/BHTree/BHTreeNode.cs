@@ -19,6 +19,8 @@ namespace GameClasses.BehaviourTree {
         // Only for container
         public List<BHTreeNode> containerChildren;
 
+        // TODO: Owner, Self Data
+
         public BHTreeNode() {
             containerChildren = new List<BHTreeNode>();
         }

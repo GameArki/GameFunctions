@@ -2,7 +2,8 @@
     "name": "GameFunctions.Sample",
     "rootNamespace": "",
     "references": [
-        "GUID:6ab90af8c2ba87e4bba6df4a563258ff"
+        "GUID:6ab90af8c2ba87e4bba6df4a563258ff",
+        "GUID:4ddcf382592e01d41a1c3e7a743a5b54"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
