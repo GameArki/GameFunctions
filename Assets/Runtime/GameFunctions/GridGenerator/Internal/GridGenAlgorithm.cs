@@ -6,7 +6,7 @@ using RD = System.Random;
 
 namespace GameFunctions.GridGeneratorInternal {
 
-    public static class Algorithm {
+    internal static class GridGenAlgorithm {
 
         public const int DIR_TOP = 0;
         public const int DIR_RIGHT = 1;

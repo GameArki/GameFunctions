@@ -1,6 +1,6 @@
 namespace GameFunctions.GridGeneratorInternal {
 
-    public enum CellType {
+    public enum GridGenCellType {
         None,
         Land = 1 << 0,
         Sea = 1 << 1,
@@ -12,8 +12,8 @@ namespace GameFunctions.GridGeneratorInternal {
 
     public static class CellTypeExtension {
 
-        public static bool IsWater(this CellType type) {
-            return (type & CellType.Water) == type;
+        internal static bool IsWater(this GridGenCellType type) {
+            return (type & GridGenCellType.Water) == type;
         }
     }
 }

@@ -1,6 +1,6 @@
 namespace GameFunctions.GridGeneratorInternal {
 
-    public enum AlgorithmType {
+    public enum GridGenAlgorithmType {
         None,
         ErodeFromEdge,
         Flood,

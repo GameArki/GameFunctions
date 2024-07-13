@@ -3,15 +3,15 @@ using System.Collections.Generic;
 
 namespace GameFunctions.GridGeneratorInternal {
 
-    public class AreaEntity {
+    internal class GridGenAreaEntity {
 
         public int id;
         public int[] indices;
         public HashSet<int> set;
 
-        public AreaOption option;
+        public GridGenAreaOption option;
 
-        public AreaEntity(int id, int width, int height, AreaOption option) {
+        public GridGenAreaEntity(int id, int width, int height, GridGenAreaOption option) {
             this.id = id;
             indices = new int[width * height];
             set = new HashSet<int>(indices.Length);

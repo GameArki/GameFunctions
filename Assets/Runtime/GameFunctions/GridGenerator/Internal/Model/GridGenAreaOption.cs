@@ -4,25 +4,25 @@ using UnityEngine;
 namespace GameFunctions.GridGeneratorInternal {
 
     [Serializable]
-    public struct AreaOption {
+    public struct GridGenAreaOption {
 
-        public CellType cellType;
+        public GridGenCellType cellType;
 
         public int value;
         public int count;
         public int countMax;
 
-        public StartType startType;
-        public CellType baseOnCellType;
+        public GridGenStartType startType;
+        public GridGenCellType baseOnCellType;
         public int FROM_DIR;
 
-        public CellType closeToCellType;
+        public GridGenCellType closeToCellType;
         public int closeToManhattanDis;
-        public CellType awayFromCellType;
+        public GridGenCellType awayFromCellType;
         public int awayFromManhattanDis;
 
         // Loop
-        public AlgorithmType algorithmType;
+        public GridGenAlgorithmType algorithmType;
         public int erodeRate;
         public Vector2Int scatterMinMax;
 

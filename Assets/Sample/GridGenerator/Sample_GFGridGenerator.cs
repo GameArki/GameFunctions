@@ -8,8 +8,8 @@ namespace GameFunctions.Sample {
     internal class GeneratorSetting {
         public float cellSize;
         public float cellGap;
-        public GridOption gridOption;
-        public AreaOption[] areaOptions;
+        public GridGenGridOption gridOption;
+        public GridGenAreaOption[] areaOptions;
     }
 
     public class Sample_GFGridGenerator : MonoBehaviour {
@@ -38,8 +38,7 @@ namespace GameFunctions.Sample {
         }
 
         void Gen() {
-            var ctx = GFGridGenerator.GenAll(setting.gridOption, setting.areaOptions);
-            cells = ctx.grid;
+            cells = GFGridGenerator.GenAll(setting.gridOption, setting.areaOptions);
         }
 
         void OnDrawGizmos() {

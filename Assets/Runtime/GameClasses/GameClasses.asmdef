@@ -1,3 +1,16 @@
 {
-	"name": "GameClasses"
+    "name": "GameClasses",
+    "rootNamespace": "",
+    "references": [
+        "GUID:6ab90af8c2ba87e4bba6df4a563258ff"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

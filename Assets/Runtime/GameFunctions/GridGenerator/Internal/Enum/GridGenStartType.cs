@@ -1,6 +1,6 @@
 namespace GameFunctions.GridGeneratorInternal {
 
-    public enum StartType {
+    public enum GridGenStartType {
         None,
         GridEdge,
         AwayFromCell,

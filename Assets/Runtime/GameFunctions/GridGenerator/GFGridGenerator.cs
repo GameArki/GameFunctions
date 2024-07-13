@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 using GameFunctions.GridGeneratorInternal;
 using RD = System.Random;
-using CTX = GameFunctions.GridGeneratorInternal.Context;
+using CTX = GameFunctions.GridGeneratorInternal.GridGenContext;
 
 // Rewrite 算法:
 // 侵蚀算法(Erode):     01      = 11
@@ -20,7 +20,7 @@ namespace GameFunctions {
     public static class GFGridGenerator {
 
         // ==== Land Init ====
-        public static CTX GenAll(GridOption gridOption, params AreaOption[] options) {
+        public static int[] GenAll(GridGenGridOption gridOption, params GridGenAreaOption[] options) {
 
             CTX ctx = new CTX();
             ctx.Init(gridOption, options);
@@ -77,36 +77,36 @@ namespace GameFunctions {
                 }
             });
 
-            return ctx;
+            return ctx.grid;
 
         }
 
         // ==== Sea ====
         // cells[index] = seaValue
-        public static bool Gen_Area(CTX ctx, AreaEntity area) {
+        static bool Gen_Area(CTX ctx, GridGenAreaEntity area) {
             var option = area.option;
-            option.FROM_DIR = Math.Abs(option.FROM_DIR) % Algorithm.DIR_COUNT;
+            option.FROM_DIR = Math.Abs(option.FROM_DIR) % GridGenAlgorithm.DIR_COUNT;
 
-            StartType startType = option.startType;
-            if (startType == StartType.GridEdge) {
+            GridGenStartType startType = option.startType;
+            if (startType == GridGenStartType.GridEdge) {
                 Start_GridEdge(ctx, area);
-            } else if (startType == StartType.AwayFromCell) {
+            } else if (startType == GridGenStartType.AwayFromCell) {
                 Start_AwayFromCell(ctx, area);
-            } else if (startType == StartType.Random) {
+            } else if (startType == GridGenStartType.Random) {
                 Start_Random(ctx, area);
             } else {
                 Debug.LogError("Unknown StartType: " + startType.ToString());
                 return false;
             }
 
-            AlgorithmType loopType = option.algorithmType;
-            if (loopType == AlgorithmType.FillAll) {
+            GridGenAlgorithmType loopType = option.algorithmType;
+            if (loopType == GridGenAlgorithmType.FillAll) {
                 return Loop_Fill(ctx, area);
-            } else if (loopType == AlgorithmType.ErodeFromEdge) {
+            } else if (loopType == GridGenAlgorithmType.ErodeFromEdge) {
                 return Loop_Erode(ctx, area);
-            } else if (loopType == AlgorithmType.Flood) {
+            } else if (loopType == GridGenAlgorithmType.Flood) {
                 return Loop_Flood(ctx, area);
-            } else if (loopType == AlgorithmType.Scatter) {
+            } else if (loopType == GridGenAlgorithmType.Scatter) {
                 return Loop_Scatter(ctx, area);
             } else {
                 Debug.LogError("Unknown AlgorithmType: " + loopType.ToString());
@@ -114,18 +114,18 @@ namespace GameFunctions {
             }
         }
 
-        static bool Start_GridEdge(CTX ctx, AreaEntity area) {
+        static bool Start_GridEdge(CTX ctx, GridGenAreaEntity area) {
             // Erode: start cell
             ref var option = ref area.option;
-            Algorithm.Pos_GetRandomPointOnEdge(ctx.random, ctx.gridOption.width, ctx.gridOption.height, option.FROM_DIR, out int start_x, out int start_y);
-            int startIndex = Algorithm.Index_GetByPos(start_x, start_y, ctx.gridOption.width);
+            GridGenAlgorithm.Pos_GetRandomPointOnEdge(ctx.random, ctx.gridOption.width, ctx.gridOption.height, option.FROM_DIR, out int start_x, out int start_y);
+            int startIndex = GridGenAlgorithm.Index_GetByPos(start_x, start_y, ctx.gridOption.width);
             ctx.Grid_Set(startIndex, option.value);
             area.Add(startIndex);
             --area.option.count;
             return true;
         }
 
-        static bool Start_AwayFromCell(CTX ctx, AreaEntity area) {
+        static bool Start_AwayFromCell(CTX ctx, GridGenAreaEntity area) {
 
             // Flood: start cell
             int start_index;
@@ -144,7 +144,7 @@ namespace GameFunctions {
             
         }
 
-        static bool Start_Random(CTX ctx, AreaEntity area) {
+        static bool Start_Random(CTX ctx, GridGenAreaEntity area) {
             // Scatter: start cell
             ref var option = ref area.option;
             ctx.GetRandomCell(ctx.random, option.baseOnCellType, out int start_index);
@@ -154,7 +154,7 @@ namespace GameFunctions {
             return true;
         }
 
-        static bool Loop_Fill(CTX ctx, AreaEntity area) {
+        static bool Loop_Fill(CTX ctx, GridGenAreaEntity area) {
 
             var option = area.option;
             Action<int> onHandle = (int index) => {
@@ -163,13 +163,13 @@ namespace GameFunctions {
             };
 
             // Fill: Loop
-            return Algorithm.Alg_FillAll(ctx.grid,
+            return GridGenAlgorithm.Alg_FillAll(ctx.grid,
                                         option.value,
                                         onHandle);
 
         }
 
-        static bool Loop_Erode(CTX ctx, AreaEntity area) {
+        static bool Loop_Erode(CTX ctx, GridGenAreaEntity area) {
 
             var option = area.option;
             int value = option.value;
@@ -181,7 +181,7 @@ namespace GameFunctions {
             };
 
             // Erode: Loop
-            return Algorithm.Alg_Erode_Loop(ctx.grid,
+            return GridGenAlgorithm.Alg_Erode_Loop(ctx.grid,
                                         area.indices,
                                         area.set,
                                         ctx.random,
@@ -197,7 +197,7 @@ namespace GameFunctions {
 
         }
 
-        static bool Loop_Flood(CTX ctx, AreaEntity area) {
+        static bool Loop_Flood(CTX ctx, GridGenAreaEntity area) {
 
             int width = ctx.gridOption.width;
             int height = ctx.gridOption.height;
@@ -213,7 +213,7 @@ namespace GameFunctions {
             };
 
             // Flood: loop
-            return Algorithm.Alg_Flood_Loop(ctx.grid,
+            return GridGenAlgorithm.Alg_Flood_Loop(ctx.grid,
                                         area.indices,
                                         area.set,
                                         random,
@@ -227,7 +227,7 @@ namespace GameFunctions {
 
         }
 
-        static bool Loop_Scatter(CTX ctx, AreaEntity area) {
+        static bool Loop_Scatter(CTX ctx, GridGenAreaEntity area) {
 
             var option = area.option;
             int count = option.count;
@@ -242,7 +242,7 @@ namespace GameFunctions {
             };
 
             // Scatter: loop
-            return Algorithm.Alg_Scatter_Loop(ctx.grid,
+            return GridGenAlgorithm.Alg_Scatter_Loop(ctx.grid,
                                             area.indices,
                                             area.set,
                                             random,
@@ -257,7 +257,7 @@ namespace GameFunctions {
 
         }
 
-        static bool Pos_GetAwayFrom(CTX ctx, AreaEntity area, out int start_index) {
+        static bool Pos_GetAwayFrom(CTX ctx, GridGenAreaEntity area, out int start_index) {
 
             int width = ctx.gridOption.width;
             int height = ctx.gridOption.height;
@@ -298,7 +298,7 @@ namespace GameFunctions {
             return true;
         }
 
-        public static GFVector4Int Pos_DetectAwayFrom(int[] cells, int width, int height, int x, int y, HashSet<int> awayValues, int awayFromSize) {
+        static GFVector4Int Pos_DetectAwayFrom(int[] cells, int width, int height, int x, int y, HashSet<int> awayValues, int awayFromSize) {
             // up down left right, walk awayFromSize steps
             // if found awayValue, return awayFromSize
             bool findLeft, findRight, findTop, findBottom;
@@ -309,7 +309,7 @@ namespace GameFunctions {
             GFVector4Int edgeOffset = new GFVector4Int();
             for (int i = 0; i <= awayFromSize; i += 1) {
                 if (!findTop) {
-                    int upIndex = Algorithm.Index_GetByPos(x, y + i, width);
+                    int upIndex = GridGenAlgorithm.Index_GetByPos(x, y + i, width);
                     if (upIndex != -1 && awayValues.Contains(cells[upIndex])) {
                         edgeOffset.x = i;
                         findTop = true;
@@ -317,7 +317,7 @@ namespace GameFunctions {
                 }
 
                 if (!findRight) {
-                    int rightIndex = Algorithm.Index_GetByPos(x + i, y, width);
+                    int rightIndex = GridGenAlgorithm.Index_GetByPos(x + i, y, width);
                     if (rightIndex != -1 && awayValues.Contains(cells[rightIndex])) {
                         edgeOffset.y = i;
                         findRight = true;
@@ -325,7 +325,7 @@ namespace GameFunctions {
                 }
 
                 if (!findBottom) {
-                    int downIndex = Algorithm.Index_GetByPos(x, y - i, width);
+                    int downIndex = GridGenAlgorithm.Index_GetByPos(x, y - i, width);
                     if (downIndex != -1 && awayValues.Contains(cells[downIndex])) {
                         edgeOffset.w = i;
                         findBottom = true;
@@ -333,7 +333,7 @@ namespace GameFunctions {
                 }
 
                 if (!findLeft) {
-                    int leftIndex = Algorithm.Index_GetByPos(x - i, y, width);
+                    int leftIndex = GridGenAlgorithm.Index_GetByPos(x - i, y, width);
                     if (leftIndex != -1 && awayValues.Contains(cells[leftIndex])) {
                         edgeOffset.z = i;
                         findLeft = true;

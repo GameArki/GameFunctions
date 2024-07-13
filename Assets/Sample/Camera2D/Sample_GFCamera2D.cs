@@ -18,7 +18,7 @@ namespace GameFunctions.Sample {
             Vector2 input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
             Vector2 cameraPos = cam.transform.position;
             cameraPos += input * Time.deltaTime * moveSpeed;
-            cameraPos = GFCamera2D.CalcConfinePos(cameraPos, confinerMin, confinerMax, cam.orthographicSize, cam.aspect);
+            cameraPos = GFCamera2DHelper.CalcConfinePos(cameraPos, confinerMin, confinerMax, cam.orthographicSize, cam.aspect);
             cam.transform.position = new Vector3(cameraPos.x, cameraPos.y, cam.transform.position.z);
         }
 

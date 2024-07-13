@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace GameFunctions {
 
-    public static class GFCamera2D {
+    public static class GFCamera2DHelper {
 
         /// <summary>
         /// Confine the camera in a rectangle area.
