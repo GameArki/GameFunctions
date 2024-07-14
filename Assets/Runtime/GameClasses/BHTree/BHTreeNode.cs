@@ -8,16 +8,17 @@ namespace GameClasses.BehaviourTree {
         // Whether is a container or action
         public BHTreeContainerType containerType;
 
-        // PreEnterCondition for container and action
+        // for container and action
         public Func<bool> OnPreEnterConditionHandle;
+        internal BHTreeNodeExecuteType executeType;
 
         // Only for action
         public Action<float> OnActionEnterHandle;
-        public Func<float, BHTreeActionNodeExecuteType> OnActionUpdateHandle;
-        internal BHTreeActionNodeExecuteType actionNodeExecuteType;
+        public Func<float, BHTreeNodeExecuteType> OnActionUpdateHandle;
 
         // Only for container
         public List<BHTreeNode> containerChildren;
+        BHTreeNode activeChild;
 
         // TODO: Owner, Self Data
 
@@ -34,7 +35,7 @@ namespace GameClasses.BehaviourTree {
             return this;
         }
 
-        public BHTreeNode InitAsAction(Func<bool> OnPreEnterConditionHandle, Action<float> OnActionEnterHandle, Func<float, BHTreeActionNodeExecuteType> OnActionUpdateHandle) {
+        public BHTreeNode InitAsAction(Func<bool> OnPreEnterConditionHandle, Action<float> OnActionEnterHandle, Func<float, BHTreeNodeExecuteType> OnActionUpdateHandle) {
             this.containerType = BHTreeContainerType.None;
             this.OnPreEnterConditionHandle = OnPreEnterConditionHandle;
             this.OnActionEnterHandle = OnActionEnterHandle;
@@ -48,120 +49,196 @@ namespace GameClasses.BehaviourTree {
 
         // If root done, reset all nodes
         public void Reset() {
-            actionNodeExecuteType = BHTreeActionNodeExecuteType.NotEntered;
+            executeType = BHTreeNodeExecuteType.NotEntered;
             foreach (var child in containerChildren) {
                 child.Reset();
             }
         }
 
-        public BHTreeContainerNodeExecuteType Execute(float dt, Random rd = null) {
-            BHTreeContainerNodeExecuteType containerNodeExecuteType = BHTreeContainerNodeExecuteType.NotEntered;
+        public BHTreeNodeExecuteType Execute(float dt, Random rd = null) {
             if (containerType == BHTreeContainerType.None) {
-                // Action
-                var actionRes = ExecuteAction(dt);
-                if (actionRes == BHTreeActionNodeExecuteType.EnterFailed) {
-                    containerNodeExecuteType = BHTreeContainerNodeExecuteType.Done;
-                } else if (actionRes == BHTreeActionNodeExecuteType.Done) {
-                    containerNodeExecuteType = BHTreeContainerNodeExecuteType.Done;
-                } else {
-                    containerNodeExecuteType = BHTreeContainerNodeExecuteType.Running;
-                }
+                executeType = ExecuteAction(dt);
             } else if (containerType == BHTreeContainerType.Sequence) {
-                // Sequence
+                executeType = ExecuteSequence(dt);
+            } else if (containerType == BHTreeContainerType.SelectorSeq) {
+                executeType = ExecuteSelectorSeq(dt);
+            } else if (containerType == BHTreeContainerType.SelectorRandom) {
+                executeType = ExecuteSelectorRandom(dt, rd);
+            } else if (containerType == BHTreeContainerType.ParallelOr) {
+                executeType = ExecuteParallelOr(dt);
+            } else if (containerType == BHTreeContainerType.ParallelAnd) {
+                executeType = ExecuteParallelAnd(dt);
+            }
+            return executeType;
+        }
+
+        BHTreeNodeExecuteType ExecuteAction(float dt) {
+            if (executeType == BHTreeNodeExecuteType.NotEntered) {
+                if (OnPreEnterConditionHandle == null || OnPreEnterConditionHandle.Invoke()) {
+                    executeType = BHTreeNodeExecuteType.Running;
+                    OnActionEnterHandle.Invoke(dt);
+                } else {
+                    executeType = BHTreeNodeExecuteType.Done;
+                }
+            } else if (executeType == BHTreeNodeExecuteType.Running) {
+                executeType = OnActionUpdateHandle.Invoke(dt);
+                if (executeType == BHTreeNodeExecuteType.NotEntered) {
+                    throw new Exception("BHTreeNode ExecuteAction Error: actionNodeExecuteType can't be NotEntered or EnterFailed");
+                }
+            } else if (executeType == BHTreeNodeExecuteType.Done) {
+                // Do nothing
+            }
+            return executeType;
+        }
+
+        BHTreeNodeExecuteType ExecuteSequence(float dt) {
+            if (executeType == BHTreeNodeExecuteType.NotEntered) {
+                if (OnPreEnterConditionHandle == null || OnPreEnterConditionHandle.Invoke()) {
+                    executeType = BHTreeNodeExecuteType.Running;
+                } else {
+                    executeType = BHTreeNodeExecuteType.Done;
+                }
+            } else if (executeType == BHTreeNodeExecuteType.Running) {
                 int totalCount = containerChildren.Count;
                 int successCount = 0;
                 for (int i = 0; i < containerChildren.Count; i += 1) {
                     var child = containerChildren[i];
                     var childResult = child.Execute(dt);
-                    if (childResult == BHTreeContainerNodeExecuteType.Done) {
+                    if (childResult == BHTreeNodeExecuteType.Done) {
                         successCount += 1;
-                    } else if (childResult == BHTreeContainerNodeExecuteType.Running) {
+                    } else if (childResult == BHTreeNodeExecuteType.Running) {
                         break;
                     }
                 }
                 if (successCount == totalCount) {
-                    containerNodeExecuteType = BHTreeContainerNodeExecuteType.Done;
+                    executeType = BHTreeNodeExecuteType.Done;
                 } else {
-                    containerNodeExecuteType = BHTreeContainerNodeExecuteType.Running;
+                    executeType = BHTreeNodeExecuteType.Running;
                 }
-            } else if (containerType == BHTreeContainerType.SelectorSeq) {
-                // Selector Sequence Mode
-                for (int i = 0; i < containerChildren.Count; i += 1) {
-                    var child = containerChildren[i];
-                    var childResult = child.Execute(dt);
-                    if (childResult == BHTreeContainerNodeExecuteType.Done) {
-                        containerNodeExecuteType = BHTreeContainerNodeExecuteType.Done;
-                        break;
-                    } else if (childResult == BHTreeContainerNodeExecuteType.Running) {
-                        containerNodeExecuteType = BHTreeContainerNodeExecuteType.Running;
-                        break;
+            } else if (executeType == BHTreeNodeExecuteType.Done) {
+                // Do nothing
+            }
+            return executeType;
+        }
+
+        BHTreeNodeExecuteType ExecuteSelectorSeq(float dt) {
+            if (executeType == BHTreeNodeExecuteType.NotEntered) {
+                if (OnPreEnterConditionHandle == null || OnPreEnterConditionHandle.Invoke()) {
+                    executeType = BHTreeNodeExecuteType.Running;
+                } else {
+                    executeType = BHTreeNodeExecuteType.Done;
+                }
+            } else if (executeType == BHTreeNodeExecuteType.Running) {
+                if (activeChild != null) {
+                    executeType = activeChild.Execute(dt);
+                    if (executeType == BHTreeNodeExecuteType.Done) {
+                        activeChild = null;
+                    }
+                } else {
+                    for (int i = 0; i < containerChildren.Count; i += 1) {
+                        var child = containerChildren[i];
+                        executeType = child.Execute(dt);
+                        if (executeType == BHTreeNodeExecuteType.NotEntered) {
+                            continue;
+                        } else if (executeType == BHTreeNodeExecuteType.Done) {
+                            break;
+                        } else if (executeType == BHTreeNodeExecuteType.Running) {
+                            activeChild = child;
+                            break;
+                        }
                     }
                 }
-            } else if (containerType == BHTreeContainerType.SelectorRandom) {
-                // Selector Random Mode
-                if (rd == null) {
-                    throw new Exception("BHTreeNode Execute Error: SelectorRandom need Random instance");
+            } else if (executeType == BHTreeNodeExecuteType.Done) {
+                // Do nothing
+            }
+            return executeType;
+        }
+
+        static Random staticRD = new Random();
+        BHTreeNodeExecuteType ExecuteSelectorRandom(float dt, Random rd = null) {
+            if (executeType == BHTreeNodeExecuteType.NotEntered) {
+                if (OnPreEnterConditionHandle == null || OnPreEnterConditionHandle.Invoke()) {
+                    executeType = BHTreeNodeExecuteType.Running;
+                } else {
+                    executeType = BHTreeNodeExecuteType.Done;
                 }
-                var randomIndex = rd.Next(0, containerChildren.Count);
-                var child = containerChildren[randomIndex];
-                var childResult = child.Execute(dt);
-                if (childResult == BHTreeContainerNodeExecuteType.Done) {
-                    containerNodeExecuteType = BHTreeContainerNodeExecuteType.Done;
-                } else if (childResult == BHTreeContainerNodeExecuteType.Running) {
-                    containerNodeExecuteType = BHTreeContainerNodeExecuteType.Running;
+            } else if (executeType == BHTreeNodeExecuteType.Running) {
+                if (activeChild != null) {
+                    executeType = activeChild.Execute(dt);
+                    if (executeType == BHTreeNodeExecuteType.Done) {
+                        activeChild = null;
+                    }
+                } else {
+                    if (rd == null) {
+                        rd = staticRD;
+                    }
+                    var randomIndex = rd.Next(0, containerChildren.Count);
+                    var child = containerChildren[randomIndex];
+                    executeType = child.Execute(dt);
+                    if (executeType == BHTreeNodeExecuteType.Running) {
+                        activeChild = child;
+                    }
                 }
-            } else if (containerType == BHTreeContainerType.ParallelOr) {
+            } else if (executeType == BHTreeNodeExecuteType.Done) {
+                // Do nothing
+            }
+            return executeType;
+        }
+
+        BHTreeNodeExecuteType ExecuteParallelOr(float dt) {
+            if (executeType == BHTreeNodeExecuteType.NotEntered) {
+                if (OnPreEnterConditionHandle == null || OnPreEnterConditionHandle.Invoke()) {
+                    executeType = BHTreeNodeExecuteType.Running;
+                } else {
+                    executeType = BHTreeNodeExecuteType.Done;
+                }
+            } else if (executeType == BHTreeNodeExecuteType.Running) {
                 // Parallel Or Mode
                 int successCount = 0;
                 for (int i = 0; i < containerChildren.Count; i += 1) {
                     var child = containerChildren[i];
                     var childResult = child.Execute(dt);
-                    if (childResult == BHTreeContainerNodeExecuteType.Done) {
+                    if (childResult == BHTreeNodeExecuteType.Done) {
                         successCount += 1;
                     }
                 }
                 if (successCount > 0) {
-                    containerNodeExecuteType = BHTreeContainerNodeExecuteType.Done;
+                    executeType = BHTreeNodeExecuteType.Done;
                 } else {
-                    containerNodeExecuteType = BHTreeContainerNodeExecuteType.Running;
+                    executeType = BHTreeNodeExecuteType.Running;
                 }
-            } else if (containerType == BHTreeContainerType.ParallelAnd) {
+            } else if (executeType == BHTreeNodeExecuteType.Done) {
+                // Do nothing
+            }
+            return executeType;
+        }
+
+        BHTreeNodeExecuteType ExecuteParallelAnd(float dt) {
+            if (executeType == BHTreeNodeExecuteType.NotEntered) {
+                if (OnPreEnterConditionHandle == null || OnPreEnterConditionHandle.Invoke()) {
+                    executeType = BHTreeNodeExecuteType.Running;
+                } else {
+                    executeType = BHTreeNodeExecuteType.Done;
+                }
+            } else if (executeType == BHTreeNodeExecuteType.Running) {
                 // Parallel And Mode
                 int successCount = 0;
                 for (int i = 0; i < containerChildren.Count; i += 1) {
                     var child = containerChildren[i];
                     var childResult = child.Execute(dt);
-                    if (childResult == BHTreeContainerNodeExecuteType.Done) {
+                    if (childResult == BHTreeNodeExecuteType.Done) {
                         successCount += 1;
                     }
                 }
                 if (successCount == containerChildren.Count) {
-                    containerNodeExecuteType = BHTreeContainerNodeExecuteType.Done;
+                    executeType = BHTreeNodeExecuteType.Done;
                 } else {
-                    containerNodeExecuteType = BHTreeContainerNodeExecuteType.Running;
+                    executeType = BHTreeNodeExecuteType.Running;
                 }
-            }
-
-            return containerNodeExecuteType;
-        }
-
-        BHTreeActionNodeExecuteType ExecuteAction(float dt) {
-            if (actionNodeExecuteType == BHTreeActionNodeExecuteType.NotEntered) {
-                if (OnPreEnterConditionHandle == null || OnPreEnterConditionHandle.Invoke()) {
-                    actionNodeExecuteType = BHTreeActionNodeExecuteType.Running;
-                    OnActionEnterHandle.Invoke(dt);
-                } else {
-                    actionNodeExecuteType = BHTreeActionNodeExecuteType.EnterFailed;
-                }
-            } else if (actionNodeExecuteType == BHTreeActionNodeExecuteType.Running) {
-                actionNodeExecuteType = OnActionUpdateHandle.Invoke(dt);
-                if (actionNodeExecuteType == BHTreeActionNodeExecuteType.NotEntered || actionNodeExecuteType == BHTreeActionNodeExecuteType.EnterFailed) {
-                    throw new Exception("BHTreeNode ExecuteAction Error: actionNodeExecuteType can't be NotEntered or EnterFailed");
-                }
-            } else if (actionNodeExecuteType == BHTreeActionNodeExecuteType.Done) {
+            } else if (executeType == BHTreeNodeExecuteType.Done) {
                 // Do nothing
             }
-            return actionNodeExecuteType;
+            return executeType;
         }
 
     }

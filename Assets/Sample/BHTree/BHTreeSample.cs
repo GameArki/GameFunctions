@@ -32,7 +32,7 @@ namespace GameClasses.Sample {
                 }, (dt) => {
                     Debug.Log("StayAction Enter");
                 }, (dt) => {
-                    return BHTreeActionNodeExecuteType.Running;
+                    return BHTreeNodeExecuteType.Running;
                 });
 
                 BHTreeNode searchAction = new BHTreeNode();
@@ -46,9 +46,9 @@ namespace GameClasses.Sample {
                         searchTime = 0;
                         hasEnemy = true;
                         Debug.Log("SearchAction Done");
-                        return BHTreeActionNodeExecuteType.Done;
+                        return BHTreeNodeExecuteType.Done;
                     }
-                    return BHTreeActionNodeExecuteType.Running;
+                    return BHTreeNodeExecuteType.Running;
                 });
 
                 stayContainer.AddChild(stayAction);
@@ -70,7 +70,7 @@ namespace GameClasses.Sample {
                     Debug.Log("AttackAction Enter");
                 }, (dt) => {
                     Debug.Log("AttackAction Done");
-                    return BHTreeActionNodeExecuteType.Done;
+                    return BHTreeNodeExecuteType.Done;
                 });
 
                 BHTreeNode escapeAction = new BHTreeNode();
@@ -84,9 +84,9 @@ namespace GameClasses.Sample {
                         searchTime = 0;
                         hasEnemy = false;
                         Debug.Log("EscapeAction Done");
-                        return BHTreeActionNodeExecuteType.Done;
+                        return BHTreeNodeExecuteType.Done;
                     }
-                    return BHTreeActionNodeExecuteType.Running;
+                    return BHTreeNodeExecuteType.Running;
                 });
 
                 attackContainer.AddChild(attackAction);

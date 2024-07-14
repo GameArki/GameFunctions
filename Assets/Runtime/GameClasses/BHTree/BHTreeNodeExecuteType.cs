@@ -1,6 +1,6 @@
 namespace GameClasses.BehaviourTree {
 
-    public enum BHTreeContainerNodeExecuteType {
+    public enum BHTreeNodeExecuteType {
         NotEntered,
         Running,
         Done,

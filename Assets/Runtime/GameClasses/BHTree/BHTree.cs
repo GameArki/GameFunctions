@@ -32,7 +32,7 @@ namespace GameClasses.BehaviourTree {
                 return;
             }
             var res = root.Execute(dt);
-            if (res == BHTreeContainerNodeExecuteType.Done) {
+            if (res == BHTreeNodeExecuteType.Done) {
                 root.Reset();
             }
         }
