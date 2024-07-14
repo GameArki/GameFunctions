@@ -134,7 +134,7 @@ namespace GameFunctions {
             if (func != null) {
                 return func.Invoke(timePercent);
             } else {
-                throw new System.ArgumentException("Invalid EasingType" + type.ToString());
+                throw new System.ArgumentException("Invalid GFEasingEnum" + type.ToString());
             }
         }
 

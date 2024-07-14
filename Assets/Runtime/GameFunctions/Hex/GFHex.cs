@@ -41,7 +41,7 @@ namespace GameFunctions {
             return result;
         }
 
-        public static float GetInnerRadius(float outterRadius) {
+        static float GetInnerRadius(float outterRadius) {
             return outterRadius * Mathf.Sqrt(3f) / 2f;
         }
 
@@ -54,7 +54,7 @@ namespace GameFunctions {
             }
         }
 
-        public static int Render_GetHexCorners(Vector2 input, float outterRadius, ref Span<Vector2> output) {
+        static int Render_GetHexCorners(Vector2 input, float outterRadius, ref Span<Vector2> output) {
             float innerRadius = GetInnerRadius(outterRadius);
             output[0] = new Vector2(input.x, input.y + outterRadius); // up point
             output[1] = new Vector2(input.x + innerRadius, input.y + outterRadius * 0.5f); // right-up point
