@@ -10,6 +10,7 @@ namespace GameFunctions.BehaviourTreeTK {
         public RoleAINodeExecuteType executeType;
 
         public List<RoleAINodeModel> children;
+        public RoleAINodeModel activeChild;
 
         public RoleAINodeModel() {}
 

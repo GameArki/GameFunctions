@@ -72,89 +72,97 @@ namespace GameClasses.BehaviourTree {
             return executeType;
         }
 
+        // Action 节点, 即行为(非容器)
         BHTreeNodeExecuteType ExecuteAction(float dt) {
-            if (executeType == BHTreeNodeExecuteType.NotEntered) {
+            ref var exeType = ref executeType;
+            if (exeType == BHTreeNodeExecuteType.NotEntered) {
                 if (OnPreEnterConditionHandle == null || OnPreEnterConditionHandle.Invoke()) {
-                    executeType = BHTreeNodeExecuteType.Running;
+                    exeType = BHTreeNodeExecuteType.Running;
                     OnActionEnterHandle.Invoke(dt);
                 } else {
-                    executeType = BHTreeNodeExecuteType.Done;
+                    exeType = BHTreeNodeExecuteType.Done;
                 }
-            } else if (executeType == BHTreeNodeExecuteType.Running) {
-                executeType = OnActionUpdateHandle.Invoke(dt);
-                if (executeType == BHTreeNodeExecuteType.NotEntered) {
+            } else if (exeType == BHTreeNodeExecuteType.Running) {
+                exeType = OnActionUpdateHandle.Invoke(dt);
+                if (exeType == BHTreeNodeExecuteType.NotEntered) {
                     throw new Exception("BHTreeNode ExecuteAction Error: actionNodeExecuteType can't be NotEntered or EnterFailed");
                 }
-            } else if (executeType == BHTreeNodeExecuteType.Done) {
+            } else if (exeType == BHTreeNodeExecuteType.Done) {
                 // Do nothing
             }
-            return executeType;
+            return exeType;
         }
 
+        // 同时只执行一个子节点, 顺序执行非Done子节点, 所有子节点Done, 就算容器Done
         BHTreeNodeExecuteType ExecuteSequence(float dt) {
-            if (executeType == BHTreeNodeExecuteType.NotEntered) {
+            ref var exeType = ref executeType;
+            if (exeType == BHTreeNodeExecuteType.NotEntered) {
                 if (OnPreEnterConditionHandle == null || OnPreEnterConditionHandle.Invoke()) {
-                    executeType = BHTreeNodeExecuteType.Running;
+                    exeType = BHTreeNodeExecuteType.Running;
                 } else {
-                    executeType = BHTreeNodeExecuteType.Done;
+                    exeType = BHTreeNodeExecuteType.Done;
                 }
-            } else if (executeType == BHTreeNodeExecuteType.Running) {
+            } else if (exeType == BHTreeNodeExecuteType.Running) {
                 int totalCount = containerChildren.Count;
                 int successCount = 0;
                 for (int i = 0; i < containerChildren.Count; i += 1) {
                     var child = containerChildren[i];
-                    var childResult = child.Execute(dt);
-                    if (childResult == BHTreeNodeExecuteType.Done) {
+                    var childRes = child.Execute(dt);
+                    if (childRes == BHTreeNodeExecuteType.Done) {
                         successCount += 1;
-                    } else if (childResult == BHTreeNodeExecuteType.Running) {
+                    } else if (childRes == BHTreeNodeExecuteType.Running) {
                         break;
                     }
                 }
                 if (successCount == totalCount) {
-                    executeType = BHTreeNodeExecuteType.Done;
+                    exeType = BHTreeNodeExecuteType.Done;
                 } else {
-                    executeType = BHTreeNodeExecuteType.Running;
+                    exeType = BHTreeNodeExecuteType.Running;
                 }
-            } else if (executeType == BHTreeNodeExecuteType.Done) {
+            } else if (exeType == BHTreeNodeExecuteType.Done) {
                 // Do nothing
             }
-            return executeType;
+            return exeType;
         }
 
+        // 同时只执行一个子节点, 首次按顺序选中一个可进入的子节点, 只要该子节点Done, 就算容器Done
         BHTreeNodeExecuteType ExecuteSelectorSeq(float dt) {
-            if (executeType == BHTreeNodeExecuteType.NotEntered) {
+            ref var exeType = ref executeType;
+            if (exeType == BHTreeNodeExecuteType.NotEntered) {
                 if (OnPreEnterConditionHandle == null || OnPreEnterConditionHandle.Invoke()) {
-                    executeType = BHTreeNodeExecuteType.Running;
+                    exeType = BHTreeNodeExecuteType.Running;
                 } else {
-                    executeType = BHTreeNodeExecuteType.Done;
+                    exeType = BHTreeNodeExecuteType.Done;
                 }
-            } else if (executeType == BHTreeNodeExecuteType.Running) {
+            } else if (exeType == BHTreeNodeExecuteType.Running) {
                 if (activeChild != null) {
-                    executeType = activeChild.Execute(dt);
-                    if (executeType == BHTreeNodeExecuteType.Done) {
+                    exeType = activeChild.Execute(dt);
+                    if (exeType == BHTreeNodeExecuteType.Done) {
                         activeChild = null;
                     }
                 } else {
                     for (int i = 0; i < containerChildren.Count; i += 1) {
                         var child = containerChildren[i];
-                        executeType = child.Execute(dt);
-                        if (executeType == BHTreeNodeExecuteType.NotEntered) {
+                        var childRes = child.Execute(dt);
+                        if (childRes == BHTreeNodeExecuteType.NotEntered) {
                             continue;
-                        } else if (executeType == BHTreeNodeExecuteType.Done) {
+                        } else if (childRes == BHTreeNodeExecuteType.Done) {
+                            exeType = BHTreeNodeExecuteType.Done;
                             break;
-                        } else if (executeType == BHTreeNodeExecuteType.Running) {
+                        } else if (childRes == BHTreeNodeExecuteType.Running) {
                             activeChild = child;
                             break;
                         }
                     }
                 }
-            } else if (executeType == BHTreeNodeExecuteType.Done) {
+            } else if (exeType == BHTreeNodeExecuteType.Done) {
                 // Do nothing
             }
-            return executeType;
+            return exeType;
         }
 
         static Random staticRD = new Random();
+        // 同时只执行一个子节点, 首次随机选中一个可进入的子节点, 只要该子节点Done, 就算容器Done
         BHTreeNodeExecuteType ExecuteSelectorRandom(float dt, Random rd = null) {
             if (executeType == BHTreeNodeExecuteType.NotEntered) {
                 if (OnPreEnterConditionHandle == null || OnPreEnterConditionHandle.Invoke()) {
@@ -174,9 +182,11 @@ namespace GameClasses.BehaviourTree {
                     }
                     var randomIndex = rd.Next(0, containerChildren.Count);
                     var child = containerChildren[randomIndex];
-                    executeType = child.Execute(dt);
-                    if (executeType == BHTreeNodeExecuteType.Running) {
+                    var childRes = child.Execute(dt);
+                    if (childRes == BHTreeNodeExecuteType.Running) {
                         activeChild = child;
+                    } else if (childRes == BHTreeNodeExecuteType.Done) {
+                        executeType = BHTreeNodeExecuteType.Done;
                     }
                 }
             } else if (executeType == BHTreeNodeExecuteType.Done) {
@@ -185,6 +195,7 @@ namespace GameClasses.BehaviourTree {
             return executeType;
         }
 
+        // 同时执行所有子节点, 只要一个子节点Done, 就算容器Done
         BHTreeNodeExecuteType ExecuteParallelOr(float dt) {
             if (executeType == BHTreeNodeExecuteType.NotEntered) {
                 if (OnPreEnterConditionHandle == null || OnPreEnterConditionHandle.Invoke()) {
@@ -197,8 +208,8 @@ namespace GameClasses.BehaviourTree {
                 int successCount = 0;
                 for (int i = 0; i < containerChildren.Count; i += 1) {
                     var child = containerChildren[i];
-                    var childResult = child.Execute(dt);
-                    if (childResult == BHTreeNodeExecuteType.Done) {
+                    var childRes = child.Execute(dt);
+                    if (childRes == BHTreeNodeExecuteType.Done) {
                         successCount += 1;
                     }
                 }
@@ -213,6 +224,7 @@ namespace GameClasses.BehaviourTree {
             return executeType;
         }
 
+        // 同时执行所有子节点, 所有子节点Done, 就算容器Done
         BHTreeNodeExecuteType ExecuteParallelAnd(float dt) {
             if (executeType == BHTreeNodeExecuteType.NotEntered) {
                 if (OnPreEnterConditionHandle == null || OnPreEnterConditionHandle.Invoke()) {
@@ -225,8 +237,8 @@ namespace GameClasses.BehaviourTree {
                 int successCount = 0;
                 for (int i = 0; i < containerChildren.Count; i += 1) {
                     var child = containerChildren[i];
-                    var childResult = child.Execute(dt);
-                    if (childResult == BHTreeNodeExecuteType.Done) {
+                    var childRes = child.Execute(dt);
+                    if (childRes == BHTreeNodeExecuteType.Done) {
                         successCount += 1;
                     }
                 }

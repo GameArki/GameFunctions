@@ -37,6 +37,7 @@ namespace GameFunctions.BehaviourTreeTK.Domains {
             return node.executeType;
         }
 
+        // Action 节点, 即行为(非容器)
         static RoleAINodeExecuteType ExecuteAction(GameContext ctx, RoleEntity entity, RoleAINodeModel node, float fixdt) {
             if (node.executeType == RoleAINodeExecuteType.NotEntered) {
                 if (!CheckPrecondition(ctx, entity, node.preconditionModel, fixdt)) {
@@ -54,15 +55,17 @@ namespace GameFunctions.BehaviourTreeTK.Domains {
             return node.executeType;
         }
 
+        // 同时只执行一个子节点, 顺序执行非Done子节点, 所有子节点Done, 就算容器Done
         static RoleAINodeExecuteType ExecuteSequence(GameContext ctx, RoleEntity entity, RoleAINodeModel node, float fixdt) {
-            if (node.executeType == RoleAINodeExecuteType.NotEntered) {
+            ref var exeType = ref node.executeType;
+            if (exeType == RoleAINodeExecuteType.NotEntered) {
                 if (!CheckPrecondition(ctx, entity, node.preconditionModel, fixdt)) {
                     // Failed precondition means done
-                    node.executeType = RoleAINodeExecuteType.Done;
+                    exeType = RoleAINodeExecuteType.Done;
                 } else {
-                    node.executeType = RoleAINodeExecuteType.Running;
+                    exeType = RoleAINodeExecuteType.Running;
                 }
-            } else if (node.executeType == RoleAINodeExecuteType.Running) {
+            } else if (exeType == RoleAINodeExecuteType.Running) {
                 int totalCount = node.children.Count;
                 int doneCount = 0;
                 foreach (RoleAINodeModel child in node.children) {
@@ -74,47 +77,61 @@ namespace GameFunctions.BehaviourTreeTK.Domains {
                     }
                 }
                 if (doneCount == totalCount) {
-                    node.executeType = RoleAINodeExecuteType.Done;
+                    exeType = RoleAINodeExecuteType.Done;
                 }
             } else {
                 // Done, do nothing
             }
-            return node.executeType;
+            return exeType;
         }
 
+        // 同时只执行一个子节点, 首次按顺序选中一个可进入的子节点, 只要该子节点Done, 就算容器Done
         static RoleAINodeExecuteType ExecuteSelectorSeq(GameContext ctx, RoleEntity entity, RoleAINodeModel node, float fixdt) {
-            if (node.executeType == RoleAINodeExecuteType.NotEntered) {
+            ref var exeType = ref node.executeType;
+            if (exeType == RoleAINodeExecuteType.NotEntered) {
                 if (!CheckPrecondition(ctx, entity, node.preconditionModel, fixdt)) {
                     // Failed precondition means done
-                    node.executeType = RoleAINodeExecuteType.Done;
+                    exeType = RoleAINodeExecuteType.Done;
                 } else {
-                    node.executeType = RoleAINodeExecuteType.Running;
+                    exeType = RoleAINodeExecuteType.Running;
                 }
-            } else if (node.executeType == RoleAINodeExecuteType.Running) {
-                int doneCount = 0;
-                foreach (RoleAINodeModel child in node.children) {
-                    RoleAINodeExecuteType res = ExecuteNode(ctx, entity, child, fixdt);
-                    if (res == RoleAINodeExecuteType.Done) {
-                        doneCount++;
-                        break;
+            } else if (exeType == RoleAINodeExecuteType.Running) {
+                if (node.activeChild != null) {
+                    exeType = ExecuteNode(ctx, entity, node.activeChild, fixdt);
+                    if (exeType == RoleAINodeExecuteType.Done) {
+                        node.activeChild = null;
+                    }
+                } else {
+                    int doneCount = 0;
+                    foreach (RoleAINodeModel child in node.children) {
+                        RoleAINodeExecuteType res = ExecuteNode(ctx, entity, child, fixdt);
+                        if (res == RoleAINodeExecuteType.Done) {
+                            doneCount++;
+                            break;
+                        } else if (res == RoleAINodeExecuteType.Running) {
+                            node.activeChild = child;
+                            break;
+                        }
+                    }
+                    if (doneCount > 0) {
+                        exeType = RoleAINodeExecuteType.Done;
                     }
                 }
-                if (doneCount > 0) {
-                    node.executeType = RoleAINodeExecuteType.Done;
-                }
             } else {
                 // Done, do nothing
             }
-            return node.executeType;
+            return exeType;
         }
 
+        // 同时只执行一个子节点, 首次随机选中一个可进入的子节点, 只要该子节点Done, 就算容器Done
         static RoleAINodeExecuteType ExecuteSelectorRandom(GameContext ctx, RoleEntity entity, RoleAINodeModel node, float fixdt) {
-            if (node.executeType == RoleAINodeExecuteType.NotEntered) {
+            ref var exeType = ref node.executeType;
+            if (exeType == RoleAINodeExecuteType.NotEntered) {
                 if (!CheckPrecondition(ctx, entity, node.preconditionModel, fixdt)) {
                     // Failed precondition means done
-                    node.executeType = RoleAINodeExecuteType.Done;
+                    exeType = RoleAINodeExecuteType.Done;
                 } else {
-                    node.executeType = RoleAINodeExecuteType.Running;
+                    exeType = RoleAINodeExecuteType.Running;
                     var children = node.children;
                     // Shuffle
                     for (int i = 0; i < children.Count; i++) {
@@ -124,29 +141,46 @@ namespace GameFunctions.BehaviourTreeTK.Domains {
                         children[j] = tmp;
                     }
                 }
-            } else if (node.executeType == RoleAINodeExecuteType.Running) {
-                foreach (RoleAINodeModel child in node.children) {
-                    RoleAINodeExecuteType res = ExecuteNode(ctx, entity, child, fixdt);
-                    if (res == RoleAINodeExecuteType.Done) {
-                        node.executeType = RoleAINodeExecuteType.Done;
-                        break;
+            } else if (exeType == RoleAINodeExecuteType.Running) {
+                if (node.activeChild != null) {
+                    exeType = ExecuteNode(ctx, entity, node.activeChild, fixdt);
+                    if (exeType == RoleAINodeExecuteType.Done) {
+                        node.activeChild = null;
+                    }
+                } else {
+                    int doneCount = 0;
+                    foreach (RoleAINodeModel child in node.children) {
+                        RoleAINodeExecuteType res = ExecuteNode(ctx, entity, child, fixdt);
+                        if (res == RoleAINodeExecuteType.Done) {
+                            doneCount++;
+                            break;
+                        } else if (res == RoleAINodeExecuteType.Running) {
+                            node.activeChild = child;
+                            break;
+                        }
+                    }
+                    if (doneCount > 0) {
+                        exeType = RoleAINodeExecuteType.Done;
+                        node.activeChild = null;
                     }
                 }
             } else {
                 // Done, do nothing
             }
-            return node.executeType;
+            return exeType;
         }
 
+        // 同时执行所有子节点, 只要一个子节点Done, 就算容器Done
         static RoleAINodeExecuteType ExecuteParallelAnd(GameContext ctx, RoleEntity entity, RoleAINodeModel node, float fixdt) {
-            if (node.executeType == RoleAINodeExecuteType.NotEntered) {
+            ref var exeType = ref node.executeType;
+            if (exeType == RoleAINodeExecuteType.NotEntered) {
                 if (!CheckPrecondition(ctx, entity, node.preconditionModel, fixdt)) {
                     // Failed precondition means done
-                    node.executeType = RoleAINodeExecuteType.Done;
+                    exeType = RoleAINodeExecuteType.Done;
                 } else {
-                    node.executeType = RoleAINodeExecuteType.Running;
+                    exeType = RoleAINodeExecuteType.Running;
                 }
-            } else if (node.executeType == RoleAINodeExecuteType.Running) {
+            } else if (exeType == RoleAINodeExecuteType.Running) {
                 int totalCount = node.children.Count;
                 int doneCount = 0;
                 foreach (RoleAINodeModel child in node.children) {
@@ -156,23 +190,25 @@ namespace GameFunctions.BehaviourTreeTK.Domains {
                     }
                 }
                 if (doneCount == totalCount) {
-                    node.executeType = RoleAINodeExecuteType.Done;
+                    exeType = RoleAINodeExecuteType.Done;
                 }
             } else {
                 // Done, do nothing
             }
-            return node.executeType;
+            return exeType;
         }
 
+        // 同时执行所有子节点, 所有子节点Done, 就算容器Done
         static RoleAINodeExecuteType ExecuteParallelOr(GameContext ctx, RoleEntity entity, RoleAINodeModel node, float fixdt) {
-            if (node.executeType == RoleAINodeExecuteType.NotEntered) {
+            ref var exeType = ref node.executeType;
+            if (exeType == RoleAINodeExecuteType.NotEntered) {
                 if (!CheckPrecondition(ctx, entity, node.preconditionModel, fixdt)) {
                     // Failed precondition means done
-                    node.executeType = RoleAINodeExecuteType.Done;
+                    exeType = RoleAINodeExecuteType.Done;
                 } else {
-                    node.executeType = RoleAINodeExecuteType.Running;
+                    exeType = RoleAINodeExecuteType.Running;
                 }
-            } else if (node.executeType == RoleAINodeExecuteType.Running) {
+            } else if (exeType == RoleAINodeExecuteType.Running) {
                 int doneCount = 0;
                 foreach (RoleAINodeModel child in node.children) {
                     RoleAINodeExecuteType res = ExecuteNode(ctx, entity, child, fixdt);
@@ -182,12 +218,12 @@ namespace GameFunctions.BehaviourTreeTK.Domains {
                     }
                 }
                 if (doneCount > 0) {
-                    node.executeType = RoleAINodeExecuteType.Done;
+                    exeType = RoleAINodeExecuteType.Done;
                 }
             } else {
                 // Done, do nothing
             }
-            return node.executeType;
+            return exeType;
         }
         #endregion
 
