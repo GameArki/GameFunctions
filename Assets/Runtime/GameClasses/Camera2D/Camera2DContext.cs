@@ -9,7 +9,9 @@ namespace GameClasses.Camera2DLib.Internal {
 
         public int idRecord;
 
-        public Camera2DContext() { }
+        public Camera2DContext() {
+            virtualRepo = new Camera2DVirtualRepo();
+        }
 
         public Camera2DVirtualEntity GetActiveVirtualEntity() {
             return virtualRepo.Get(activeVirtualID);
