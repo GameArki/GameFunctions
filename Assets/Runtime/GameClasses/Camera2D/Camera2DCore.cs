@@ -31,6 +31,7 @@ namespace GameClasses.Camera2DLib {
         public Camera2DExecuteResultModel Tick(float dt) {
 
             var activeEntity = ctx.GetActiveVirtualEntity();
+            Camera2DApplyDomain.ApplyCamera2D(ctx, activeEntity);
 
             Camera2DExecuteResultModel result = new Camera2DExecuteResultModel();
             result.pos = activeEntity.pos;
