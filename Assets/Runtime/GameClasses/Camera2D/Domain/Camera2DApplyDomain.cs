@@ -13,7 +13,7 @@ namespace GameClasses.Camera2DLib.Internal {
             // Confine
             Vector2 min = new Vector2(entity.minMaxBounds.x, entity.minMaxBounds.y);
             Vector2 max = new Vector2(entity.minMaxBounds.z, entity.minMaxBounds.w);
-            GFCamera2DHelper.CalcConfinePos(pos, min, max, entity.orthographicSize, entity.aspect);
+            pos = GFCamera2DHelper.CalcConfinePos(pos, min, max, entity.orthographicSize, entity.aspect);
 
             // Apply
             entity.pos = pos;
