@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 namespace GameFunctions {
 
     [StructLayout(LayoutKind.Explicit)]
-    internal struct Bit128 {
+    public struct Bit128 {
 
         [FieldOffset(0)]
         public decimal decimalValue;

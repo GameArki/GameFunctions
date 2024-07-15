@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 namespace GameFunctions {
 
     [StructLayout(LayoutKind.Explicit)]
-    internal struct Bit16 {
+    public struct Bit16 {
 
         [FieldOffset(0)]
         public short shortValue;

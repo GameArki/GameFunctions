@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 namespace GameFunctions {
 
     [StructLayout(LayoutKind.Explicit)]
-    internal struct Bit64 {
+    public struct Bit64 {
 
         [FieldOffset(0)]
         public long longValue;
