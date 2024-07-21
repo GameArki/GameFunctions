@@ -31,11 +31,11 @@ namespace GameFunctions.Sample {
             } else if (Input.GetMouseButtonUp(2)) {
                 endPos = mouseGridPos;
                 visited = 0;
-                resultCount = GFPathfinding2D.AStar(startPos, endPos, 5000, (pos) => {
+                resultCount = GFPathfinding2D.AStar(true, startPos, endPos, 5000, (pos) => {
                     return !blockSet.Contains(pos);
                 }, result);
             } else if (Input.GetKeyDown(KeyCode.Space)) {
-                bool hasResult = GFPathfinding2D.ManualProcess(ref visited, ref resultCount, 5000, startPos, endPos, (pos) => {
+                bool hasResult = GFPathfinding2D.ManualProcess(true, ref visited, ref resultCount, 5000, startPos, endPos, (pos) => {
                     return !blockSet.Contains(pos);
                 }, result, out curPos);
                 if (hasResult) {

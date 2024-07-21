@@ -41,6 +41,10 @@ namespace GameFunctions.PathfindingInternal {
             otherFKey.f32_2 = other.hCost;
             otherFKey.f32_3 = other.fCost;
 
+            if (pos.x == other.pos.x && pos.y == other.pos.y) {
+                return 0;
+            }
+
             if (fKey < otherFKey) {
                 return -1;
             } else if (fKey > otherFKey) {
