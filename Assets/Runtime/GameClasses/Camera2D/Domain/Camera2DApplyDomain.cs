@@ -54,6 +54,14 @@ namespace GameClasses.Camera2DLib.Internal {
                 }
             }
 
+            if (Mathf.Approximately(x, et.pos.x)) {
+                et.followDampingX = 0;
+            }
+
+            if (Mathf.Approximately(y, et.pos.y)) {
+                et.followDampingY = 0;
+            }
+
             return new Vector2(x, y);
 
         }
