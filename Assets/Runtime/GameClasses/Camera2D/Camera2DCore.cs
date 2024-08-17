@@ -31,7 +31,7 @@ namespace GameClasses.Camera2DLib {
         public Camera2DExecuteResultModel Tick(float dt) {
 
             var activeEntity = ctx.GetActiveVirtualEntity();
-            Camera2DApplyDomain.ApplyCamera2D(ctx, activeEntity);
+            Camera2DApplyDomain.Process(ctx, activeEntity, dt);
 
             Camera2DExecuteResultModel result = new Camera2DExecuteResultModel();
             result.pos = activeEntity.pos;
@@ -42,35 +42,37 @@ namespace GameClasses.Camera2DLib {
 
         // Follow
         #region Follow
-        public void Follow_Set(int id, Vector2 targetPos, Vector2 offset) {
+        public void Follow_Enable(int id, bool isEnable) {
+            var entity = ctx.virtualRepo.Get(id);
+            entity.isFollow = isEnable;
+        }
+
+        public void Follow_Set(int id, Vector2 targetPos, Vector2 offset, float dampingX, float dampingY) {
             var entity = ctx.virtualRepo.Get(id);
             entity.followTargetPos = targetPos;
             entity.followOffset = offset;
-        }
-
-        public void Follow_Set(Vector2 targetPos, Vector2 offset) {
-            Follow_Set(ctx.activeVirtualID, targetPos, offset);
+            entity.followDampingX = 0;
+            entity.followDampingY = 0;
+            entity.followDampingXOrigin = dampingX;
+            entity.followDampingYOrigin = dampingY;
         }
 
         public void Follow_Update(int id, Vector2 targetPos) {
             var entity = ctx.virtualRepo.Get(id);
             entity.followTargetPos = targetPos;
         }
-
-        public void Follow_Update(Vector2 targetPos) {
-            Follow_Update(ctx.activeVirtualID, targetPos);
-        }
         #endregion
 
         // Confine
         #region Confine
+        public void Confine_Enable(int id, bool isEnable) {
+            var entity = ctx.virtualRepo.Get(id);
+            entity.isConfine = isEnable;
+        }
+
         public void Confine_Set(int id, Vector2 min, Vector2 max) {
             var entity = ctx.virtualRepo.Get(id);
             entity.minMaxBounds = new Vector4(min.x, min.y, max.x, max.y);
-        }
-
-        public void Confine_Set(Vector2 min, Vector2 max) {
-            Confine_Set(ctx.activeVirtualID, min, max);
         }
         #endregion
 

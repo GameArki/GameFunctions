@@ -12,10 +12,16 @@ namespace GameClasses.Camera2DLib.Internal {
         public float aspect; // width / height
 
         // Follow
+        public bool isFollow;
         public Vector2 followTargetPos;
         public Vector2 followOffset;
+        public float followDampingX;
+        public float followDampingXOrigin;
+        public float followDampingY;
+        public float followDampingYOrigin;
 
         // Confine
+        public bool isConfine;
         public Vector4 minMaxBounds;
 
         public Camera2DVirtualEntity() { }
