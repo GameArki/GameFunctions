@@ -11,11 +11,15 @@ namespace GameClasses.Camera2DLib {
             ctx = new Camera2DContext();
         }
 
-        public void Init(Vector2 pos, float orthographicSize, float aspect) {
+        /// <summary>
+        /// return Handle ID
+        /// </summary>
+        public int Init(Vector2 pos, float orthographicSize, float aspect) {
             int id = Spawn(pos, orthographicSize, aspect);
             if (ctx.activeVirtualID == 0) {
                 ctx.activeVirtualID = id;
             }
+            return id;
         }
 
         public int Spawn(Vector2 pos, float orthographicSize, float aspect) {
