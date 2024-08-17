@@ -28,7 +28,7 @@ namespace GameClasses.Camera2DLib.Internal {
         static Vector2 Follow_Process(Camera2DContext ctx, Camera2DVirtualEntity et, float dt) {
 
             Vector2 targetPos = et.followTargetPos + et.followOffset;
-            
+
             // Damping
             float x;
             if (et.followDampingXOrigin == 0) {
@@ -37,6 +37,9 @@ namespace GameClasses.Camera2DLib.Internal {
                 et.followDampingX += dt;
                 float percent = et.followDampingX / et.followDampingXOrigin;
                 x = Mathf.Lerp(et.pos.x, targetPos.x, percent);
+                if (percent >= 1) {
+                    et.followDampingX = 0;
+                }
             }
 
             float y;
@@ -46,13 +49,9 @@ namespace GameClasses.Camera2DLib.Internal {
                 et.followDampingY += dt;
                 float percent = et.followDampingY / et.followDampingYOrigin;
                 y = Mathf.Lerp(et.pos.y, targetPos.y, percent);
-            }
-
-            if (x == et.pos.x) {
-                et.followDampingX = 0;
-            }
-            if (y == et.pos.y) {
-                et.followDampingY = 0;
+                if (percent >= 1) {
+                    et.followDampingY = 0;
+                }
             }
 
             return new Vector2(x, y);
