@@ -14,7 +14,7 @@ namespace GameFunctions {
         public static float CalculateCameraOrthographicSize(float minWidth, float minHeight) {
             float curAspect = (float)Screen.width / Screen.height;
             float targetAspect = minWidth / minHeight;
-            float targetOrthographicSize = minHeight;
+            float targetOrthographicSize = minHeight * 0.5f;
             if (curAspect < targetAspect) {
                 // 竖屏
                 targetOrthographicSize = minWidth * 0.5f / curAspect;
