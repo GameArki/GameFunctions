@@ -74,8 +74,10 @@ namespace GameClasses.Camera2DLib {
             entity.isConfine = isEnable;
         }
 
-        public void Confine_Set(int id, Vector2 min, Vector2 max) {
+        public void Confine_Set(int id, float orthographicSize, float aspect, Vector2 min, Vector2 max) {
             var entity = ctx.virtualRepo.Get(id);
+            entity.orthographicSize = orthographicSize;
+            entity.aspect = aspect;
             entity.minMaxBounds = new Vector4(min.x, min.y, max.x, max.y);
         }
         #endregion
