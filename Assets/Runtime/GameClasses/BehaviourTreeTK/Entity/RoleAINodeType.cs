@@ -7,6 +7,7 @@ namespace GameFunctions.BehaviourTreeTK {
         SelectorRandom,
         ParallelAnd,
         ParallelOr,
+        ParallelAlways,
     }
 
 }

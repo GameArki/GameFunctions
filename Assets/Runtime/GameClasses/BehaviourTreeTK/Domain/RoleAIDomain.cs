@@ -33,6 +33,8 @@ namespace GameFunctions.BehaviourTreeTK.Domains {
                 node.executeType = ExecuteParallelAnd(ctx, entity, node, fixdt);
             } else if (nodeType == RoleAINodeType.ParallelOr) {
                 node.executeType = ExecuteParallelOr(ctx, entity, node, fixdt);
+            } else if (nodeType == RoleAINodeType.ParallelAlways) {
+                node.executeType = ExecuteParallelAlways(ctx, entity, node, fixdt);
             }
             return node.executeType;
         }
@@ -219,6 +221,28 @@ namespace GameFunctions.BehaviourTreeTK.Domains {
                 }
                 if (doneCount > 0) {
                     exeType = RoleAINodeExecuteType.Done;
+                }
+            } else {
+                // Done, do nothing
+            }
+            return exeType;
+        }
+
+        static RoleAINodeExecuteType ExecuteParallelAlways(GameContext ctx, RoleEntity entity, RoleAINodeModel node, float fixdt) {
+            ref var exeType = ref node.executeType;
+            if (exeType == RoleAINodeExecuteType.NotEntered) {
+                if (!CheckPrecondition(ctx, entity, node.preconditionModel, fixdt)) {
+                    // Failed precondition means done
+                    exeType = RoleAINodeExecuteType.Done;
+                } else {
+                    exeType = RoleAINodeExecuteType.Running;
+                }
+            } else if (exeType == RoleAINodeExecuteType.Running) {
+                foreach (RoleAINodeModel child in node.children) {
+                    RoleAINodeExecuteType res = ExecuteNode(ctx, entity, child, fixdt);
+                    if (res == RoleAINodeExecuteType.Done) {
+                        node.Reset();
+                    }
                 }
             } else {
                 // Done, do nothing
