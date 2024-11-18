@@ -29,7 +29,6 @@ Shader "NJM/Shader_PP_ScanLine" {
                 float4 _MainTex_ST;
             CBUFFER_END
 
-
             TEXTURE2D (_MainTex);
             SAMPLER(sampler_MainTex);
 
@@ -60,7 +59,7 @@ Shader "NJM/Shader_PP_ScanLine" {
                 // CRT Scanline
                 float2 uv = i.uv;
                 float t = _Time.y;
-                float scanline = sin(uv.y * 1000 + t * 4) * 0.1 + 0.9;
+                float scanline = sin(uv.y * 1080 + t * 3) * 0.1 + 0.9;
                 col.rgb *= scanline;
 
                 return col;
