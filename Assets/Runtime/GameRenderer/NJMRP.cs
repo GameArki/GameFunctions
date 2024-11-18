@@ -17,12 +17,16 @@ namespace GameRenderer {
         }
 
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData) {
-            renderer.EnqueuePass(scanLinePass);
+            if (scanLinePass != null) {
+                renderer.EnqueuePass(scanLinePass);
+            }
         }
 
         public override void SetupRenderPasses(ScriptableRenderer renderer, in RenderingData renderingData) {
             base.SetupRenderPasses(renderer, renderingData);
-            scanLinePass.Setup(renderer.cameraColorTargetHandle);
+            if (scanLinePass != null) {
+                scanLinePass.Setup(renderer.cameraColorTargetHandle);
+            }
         }
 
     }
