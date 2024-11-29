@@ -26,5 +26,11 @@ namespace GameFunctions {
         [FieldOffset(3)]
         public byte b3;
 
+        [FieldOffset(0)]
+        public short short1;
+
+        [FieldOffset(2)]
+        public short short2;
+
     }
 }
