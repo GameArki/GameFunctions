@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace GameClasses {
 
-    public class ReadOnlyList<T> {
+    public struct ReadOnlyList<T> {
 
         List<T> list;
 
