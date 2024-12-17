@@ -7,7 +7,8 @@ namespace GameClasses.Camera2DLib.Internal {
 
         // Base
         public int id;
-        public Vector2 pos;
+        public Vector2 truePos;
+        public Vector2 finalPos;
         public float orthographicSize;
         public float aspect; // width / height
 
@@ -23,6 +24,13 @@ namespace GameClasses.Camera2DLib.Internal {
         // Confine
         public bool isConfine;
         public Vector4 minMaxBounds;
+
+        // Shake
+        public bool isShake;
+        public float shakeDuration;
+        public float shakeFrequency;
+        public Vector2 shakeAmplitude;
+        public float shakeTimer;
 
         public Camera2DVirtualEntity() { }
 
