@@ -31,7 +31,7 @@ namespace GameFunctions.Sample {
             handleID = core.Init(Vector2.zero, orthographicSize, aspect);
 
             core.Confine_Enable(handleID, true);
-            core.Confine_Set(handleID, orthographicSize, aspect, confinerMin, confinerMax);
+            core.Confine_Set(handleID, confinerMin, confinerMax);
 
             core.Follow_Enable(handleID, true);
             core.Follow_Set(handleID, role.transform.position, Vector2.zero, 1.5f, 2.5f);

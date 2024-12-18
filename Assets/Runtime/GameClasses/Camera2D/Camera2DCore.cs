@@ -61,6 +61,7 @@ namespace GameClasses.Camera2DLib {
             entity.orthographicSize_final = orthographicSize;
             entity.aspect_true = aspect;
             entity.aspect_final = aspect;
+            Debug.Log($"CameraHandleID: {id} OrthographicSize: {orthographicSize} Aspect: {aspect}");
         }
         #endregion
 
@@ -108,14 +109,12 @@ namespace GameClasses.Camera2DLib {
             entity.isConfine = isEnable;
         }
 
-        public void Confine_Set(int id, float orthographicSize, float aspect, Vector2 min, Vector2 max) {
+        public void Confine_Set(int id, Vector2 min, Vector2 max) {
             var entity = ctx.virtualRepo.Get(id);
             if (entity == null) {
                 Debug.LogError($"CameraHandleID: {id} not found");
                 return;
             }
-            entity.orthographicSize_true = orthographicSize;
-            entity.aspect_true = aspect;
             entity.minMaxBounds = new Vector4(min.x, min.y, max.x, max.y);
         }
         #endregion
