@@ -7,7 +7,9 @@ Shader "NJM/Shader_PP_ScanLine" {
     SubShader
     {
         Tags { "RenderPipeline"="UniversalPipeline" }
-        Cull Off Zwrite Off ZTest Always
+        Cull Off
+        ZWrite Off
+        ZTest Always
         HLSLINCLUDE
 
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"

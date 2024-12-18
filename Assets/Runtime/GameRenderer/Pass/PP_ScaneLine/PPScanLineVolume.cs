@@ -5,7 +5,7 @@ using UnityEngine.Rendering.Universal;
 
 namespace GameRenderer {
 
-    public class PPScanLineVomume : VolumeComponent {
+    public class PPScanLineVolume : VolumeComponent {
 
         public BoolParameter isEnable = new BoolParameter(false);
 

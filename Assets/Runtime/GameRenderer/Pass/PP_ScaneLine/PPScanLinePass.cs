@@ -46,7 +46,7 @@ namespace GameRenderer {
             }
 
             var stack = VolumeManager.instance.stack;
-            var volume = stack.GetComponent<PPScanLineVomume>();
+            var volume = stack.GetComponent<PPScanLineVolume>();
             if (!volume.isEnable.value) {
                 return;
             }
