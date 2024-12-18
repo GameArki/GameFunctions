@@ -12,26 +12,26 @@ namespace GameClasses.Camera2DLib.Internal {
             Vector2 pos = Follow_Process(ctx, entity, dt);
 
             // Zoom
-            float orthographicSize = entity.orthographicSize;
+            float orthographicSize_true = entity.orthographicSize;
+
+            // Effect: ZoomIn
+            float orthographicSize_final = Effect_ZoomIn_Process(ctx, entity, orthographicSize_true, dt);
 
             // Confine
-            pos = Confine_Calculate(ctx, entity, pos);
+            pos = Confine_Calculate(ctx, entity, orthographicSize_final, pos);
 
             // True: Pos, OrthographicSize
             entity.pos = pos;
-            entity.orthographicSize = orthographicSize;
+            entity.orthographicSize = orthographicSize_true;
 
             // ==== Effect ====
             // Effect: Shake
             pos = Effect_Shake_Process(ctx, entity, pos, dt);
 
-            // Effect: ZoomIn
-            orthographicSize = Effect_ZoomIn_Process(ctx, entity, orthographicSize, dt);
-
             // ==== Final ====
             Camera2DExecuteResultModel res;
             res.pos = pos;
-            res.orthographicSize = orthographicSize;
+            res.orthographicSize = orthographicSize_final;
             res.aspect = entity.aspect;
             return res;
 
@@ -84,14 +84,14 @@ namespace GameClasses.Camera2DLib.Internal {
         #endregion
 
         #region Confine
-        static Vector2 Confine_Calculate(Camera2DContext ctx, Camera2DVirtualEntity entity, Vector2 pos) {
+        static Vector2 Confine_Calculate(Camera2DContext ctx, Camera2DVirtualEntity entity, float orthographicSize, Vector2 pos) {
             Camera2DConfineModel confineModel = entity.confineModel;
             if (!confineModel.isEnable) {
                 return pos;
             }
             Vector2 min = new Vector2(confineModel.minMaxBounds.x, confineModel.minMaxBounds.y);
             Vector2 max = new Vector2(confineModel.minMaxBounds.z, confineModel.minMaxBounds.w);
-            pos = GFCamera2DHelper.CalcConfinePos(pos, min, max, entity.orthographicSize, entity.aspect);
+            pos = GFCamera2DHelper.CalcConfinePos(pos, min, max, orthographicSize, entity.aspect);
             return pos;
         }
         #endregion
