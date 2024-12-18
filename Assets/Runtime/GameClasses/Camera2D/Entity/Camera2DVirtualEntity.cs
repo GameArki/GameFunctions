@@ -11,7 +11,8 @@ namespace GameClasses.Camera2DLib.Internal {
         public Vector2 pos_final;
         public float orthographicSize_true;
         public float orthographicSize_final;
-        public float aspect; // width / height
+        public float aspect_true; // width / height
+        public float aspect_final; // width / height
 
         // Follow
         public bool isFollow;

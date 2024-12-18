@@ -27,7 +27,8 @@ namespace GameClasses.Camera2DLib {
             entity.pos_final = pos;
             entity.orthographicSize_true = orthographicSize;
             entity.orthographicSize_final = orthographicSize;
-            entity.aspect = aspect;
+            entity.aspect_true = aspect;
+            entity.aspect_final = aspect;
             ctx.virtualRepo.Add(entity);
             return entity.id;
         }
@@ -44,12 +45,13 @@ namespace GameClasses.Camera2DLib {
             Camera2DExecuteResultModel result;
             result.pos = activeEntity.pos_final;
             result.orthographicSize = activeEntity.orthographicSize_final;
+            result.aspect = activeEntity.aspect_final;
 
             return result;
         }
 
         #region Base
-        public void OrthographicSize_Set(int id, float orthographicSize) {
+        public void OrthographicSize_Set(int id, float orthographicSize, float aspect) {
             var entity = ctx.virtualRepo.Get(id);
             if (entity == null) {
                 Debug.LogError($"CameraHandleID: {id} not found");
@@ -57,6 +59,8 @@ namespace GameClasses.Camera2DLib {
             }
             entity.orthographicSize_true = orthographicSize;
             entity.orthographicSize_final = orthographicSize;
+            entity.aspect_true = aspect;
+            entity.aspect_final = aspect;
         }
         #endregion
 
@@ -111,7 +115,7 @@ namespace GameClasses.Camera2DLib {
                 return;
             }
             entity.orthographicSize_true = orthographicSize;
-            entity.aspect = aspect;
+            entity.aspect_true = aspect;
             entity.minMaxBounds = new Vector4(min.x, min.y, max.x, max.y);
         }
         #endregion

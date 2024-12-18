@@ -6,6 +6,7 @@ namespace GameClasses.Camera2DLib {
 
         public Vector2 pos;
         public float orthographicSize;
+        public float aspect;
 
     }
 
