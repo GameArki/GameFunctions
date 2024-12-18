@@ -157,6 +157,7 @@ namespace GameClasses.Camera2DLib {
             zoomInModel.timer = duration;
             zoomInModel.isAutoRestore = true;
             zoomInModel.restoreDelaySec = restoreDelaySec;
+            zoomInModel.restoreDelayTimer = restoreDelaySec;
             zoomInModel.restoreDuration = restoreDuration;
             zoomInModel.restoreEasingType = restoreEasingType;
         }
