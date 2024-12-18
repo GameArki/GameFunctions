@@ -67,10 +67,10 @@ Shader "NJM/Shader_PP_ShakeScreen" {
             {
 
                 float percent = (_Duration - _Timer) / _Duration;
-                _AmplitudeX = percent * _AmplitudeX;
-                _AmplitudeY = percent * _AmplitudeY;
+                _AmplitudeX *= _Timer / _Duration;
+                _AmplitudeY *= _Timer / _Duration;
 
-                i.uv += float2(sin(_Time.y * _Frequency) * _AmplitudeX, sin(_Time.y * _Frequency) * _AmplitudeY);
+                i.uv += float2(sin(_Timer * _Frequency) * _AmplitudeX, sin(_Timer * _Frequency) * _AmplitudeY);
 
                 half4 col = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
 

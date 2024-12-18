@@ -49,13 +49,13 @@ MonoBehaviour:
     m_Value: 0
   amplitude:
     m_OverrideState: 1
-    m_Value: {x: 0.01, y: 0.01}
+    m_Value: {x: 0.05, y: 0.05}
   frequency:
     m_OverrideState: 1
     m_Value: 50
   duration:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 100
   timer:
     m_OverrideState: 1
-    m_Value: 0.1
+    m_Value: 100

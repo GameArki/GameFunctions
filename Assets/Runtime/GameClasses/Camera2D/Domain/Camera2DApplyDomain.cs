@@ -113,8 +113,9 @@ namespace GameClasses.Camera2DLib.Internal {
                 return pos;
             }
             float percent = (duration - timer) / duration;
-            float x = Mathf.Sin(percent * frequency) * amplitude.x;
-            float y = Mathf.Sin(percent * frequency) * amplitude.y;
+            amplitude *= timer / duration;
+            float x = Mathf.Sin(timer * frequency) * amplitude.x;
+            float y = Mathf.Sin(timer * frequency) * amplitude.y;
             return pos + new Vector2(x, y);
         }
         #endregion
