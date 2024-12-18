@@ -30,3 +30,32 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   components:
   - {fileID: -8988978049573653588}
+  - {fileID: 6073128275002831412}
+--- !u!114 &6073128275002831412
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3bb930673ba85c49a0781ea194e278d, type: 3}
+  m_Name: PPShakeScreenVolume
+  m_EditorClassIdentifier: 
+  active: 1
+  isEnable:
+    m_OverrideState: 1
+    m_Value: 0
+  amplitude:
+    m_OverrideState: 1
+    m_Value: {x: 0.01, y: 0.01}
+  frequency:
+    m_OverrideState: 1
+    m_Value: 50
+  duration:
+    m_OverrideState: 1
+    m_Value: 1
+  timer:
+    m_OverrideState: 1
+    m_Value: 0.1

@@ -75,5 +75,7 @@ MonoBehaviour:
   m_Name: NJMRP
   m_EditorClassIdentifier: 
   m_Active: 1
+  pp_shakeScreen:
+    shader: {fileID: 4800000, guid: c599ec7d7fa9a264697119a7b7cdf221, type: 3}
   pp_scanLine:
     shader: {fileID: 4800000, guid: df67ac559c9f6a14c8feb0ebe0a5321e, type: 3}

@@ -6,7 +6,7 @@ using UnityEngine.Rendering.Universal;
 namespace GameRenderer {
 
     [Serializable]
-    public class PPScanLinePass : ScriptableRenderPass {
+    public class PPShakeScreenPass : ScriptableRenderPass {
 
         [SerializeField] Shader shader;
         Material material;
@@ -19,12 +19,12 @@ namespace GameRenderer {
         public void Setup(RenderTargetIdentifier rt) {
 #if UNITY_EDITOR
             if (shader == null) {
-                shader = Shader.Find("NJM/Shader_PP_ScanLine");
+                shader = Shader.Find("NJM/Shader_PP_ShakeScreen");
             }
 #endif
             renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
             material = CoreUtils.CreateEngineMaterial(shader);
-            renderTag = "PP_ScanLine";
+            renderTag = "PP_ShakeScreen";
             mainTexID = Shader.PropertyToID("_MainTex");
             tempTexID = Shader.PropertyToID("_TempText");
             currentTarget = rt;
@@ -46,7 +46,7 @@ namespace GameRenderer {
             }
 
             var stack = VolumeManager.instance.stack;
-            var volume = stack.GetComponent<PPScanLineVolume>();
+            var volume = stack.GetComponent<PPShakeScreenVolume>();
             if (volume == null || !volume.isEnable.value) {
                 return;
             }
@@ -56,6 +56,12 @@ namespace GameRenderer {
             var cmd = CommandBufferPool.Get(renderTag);
             var src = currentTarget;
             var dst = tempTexID;
+
+            material.SetFloat("_AmplitudeX", volume.amplitude.value.x);
+            material.SetFloat("_AmplitudeY", volume.amplitude.value.y);
+            material.SetFloat("_Frequency", volume.frequency.value);
+            material.SetFloat("_Duration", volume.duration.value);
+            material.SetFloat("_Timer", volume.timer.value);
 
             cmd.SetGlobalTexture(mainTexID, src);
             cmd.GetTemporaryRT(dst, cameraTextureDescriptor);
@@ -67,4 +73,5 @@ namespace GameRenderer {
         }
 
     }
+
 }
