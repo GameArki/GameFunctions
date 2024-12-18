@@ -136,6 +136,7 @@ namespace GameClasses.Camera2DLib {
                 return;
             }
             Camera2DEffectZoomInModel zoomInModel = entity.zoomInModel;
+            zoomInModel.zoomStage = 0;
             zoomInModel.isEnable = true;
             zoomInModel.easingType = easingType;
             zoomInModel.targetMultiply = zoomInMultiply;
@@ -150,6 +151,7 @@ namespace GameClasses.Camera2DLib {
                 return;
             }
             Camera2DEffectZoomInModel zoomInModel = entity.zoomInModel;
+            zoomInModel.zoomStage = 0;
             zoomInModel.isEnable = true;
             zoomInModel.easingType = easingType;
             zoomInModel.targetMultiply = zoomInMultiply;
@@ -170,6 +172,7 @@ namespace GameClasses.Camera2DLib {
                 return;
             }
             Camera2DEffectZoomInModel zoomInModel = entity.zoomInModel;
+            zoomInModel.zoomStage = 1;
             zoomInModel.isEnable = true;
             zoomInModel.easingType = easingType;
             zoomInModel.targetMultiply = 1;
