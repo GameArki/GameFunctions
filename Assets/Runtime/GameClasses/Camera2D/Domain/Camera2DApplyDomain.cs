@@ -5,68 +5,71 @@ namespace GameClasses.Camera2DLib.Internal {
 
     public static class Camera2DApplyDomain {
 
-        public static void Process(Camera2DContext ctx, Camera2DVirtualEntity entity, float dt) {
+        public static Camera2DExecuteResultModel Process(Camera2DContext ctx, Camera2DVirtualEntity entity, float dt) {
 
+            // ==== Normal ====
             // Follow
-            Vector2 pos;
-            if (entity.isFollow) {
-                pos = Follow_Process(ctx, entity, dt);
-            } else {
-                pos = entity.pos_true;
-            }
+            Vector2 pos = Follow_Process(ctx, entity, dt);
 
             // Zoom
-            float orthographicSize;
-            orthographicSize = Zoom_Calculate(ctx, entity, entity.orthographicSize_true);
+            float orthographicSize = entity.orthographicSize;
 
             // Confine
-            if (entity.isConfine) {
-                pos = Confine_Calculate(ctx, entity, pos);
-            }
+            pos = Confine_Calculate(ctx, entity, pos);
 
-            // True Pos
-            entity.pos_true = pos;
+            // True: Pos, OrthographicSize
+            entity.pos = pos;
+            entity.orthographicSize = orthographicSize;
 
-            // Shake
-            if (entity.isShake) {
-                pos = Shake_Calculate(ctx, entity, pos, dt);
-            }
+            // ==== Effect ====
+            // Effect: Shake
+            pos = Effect_Shake_Process(ctx, entity, pos, dt);
 
-            // Final Pos
-            entity.pos_final = pos;
-            entity.orthographicSize_final = orthographicSize;
-            entity.aspect_final = entity.aspect_true;
+            // Effect: ZoomIn
+            orthographicSize = Effect_ZoomIn_Process(ctx, entity, orthographicSize, dt);
+
+            // ==== Final ====
+            Camera2DExecuteResultModel res;
+            res.pos = pos;
+            res.orthographicSize = orthographicSize;
+            res.aspect = entity.aspect;
+            return res;
 
         }
 
         #region Follow
         static Vector2 Follow_Process(Camera2DContext ctx, Camera2DVirtualEntity et, float dt) {
 
-            Vector2 targetPos = et.followTargetPos + et.followOffset;
-            Vector2 camTruePos = et.pos_true;
+            Camera2DFollowModel followModel = et.followModel;
+            Vector2 truePos = et.pos;
+            if (!followModel.isEnable) {
+                return truePos;
+            }
+
+            Vector2 targetPos = followModel.followTargetPos + followModel.followOffset;
 
             // Damping
             float x;
-            if (et.followDampingXOrigin == 0) {
+            if (followModel.followDampingXOrigin == 0) {
                 x = targetPos.x;
             } else {
-                et.followDampingX += dt;
-                float percent = et.followDampingX / et.followDampingXOrigin;
-                x = Mathf.Lerp(camTruePos.x, targetPos.x, percent);
+                followModel.followDampingX += dt;
+                float percent = followModel.followDampingX / followModel.followDampingXOrigin;
+                x = Mathf.Lerp(truePos.x, targetPos.x, percent);
             }
 
             float y;
-            if (et.followDampingYOrigin == 0) {
+            if (followModel.followDampingYOrigin == 0) {
                 y = targetPos.y;
             } else {
-                et.followDampingY += dt;
-                float percent = et.followDampingY / et.followDampingYOrigin;
-                y = Mathf.Lerp(camTruePos.y, targetPos.y, percent);
+                followModel.followDampingY += dt;
+                float percent = followModel.followDampingY / followModel.followDampingYOrigin;
+                y = Mathf.Lerp(truePos.y, targetPos.y, percent);
             }
 
-            if (Mathf.Approximately(x, camTruePos.x) && Mathf.Approximately(y, camTruePos.y)) {
-                et.followDampingX = 0;
-                et.followDampingY = 0;
+            if (Mathf.Approximately(x, truePos.x) && Mathf.Approximately(y, truePos.y)) {
+                followModel.followDampingX = 0;
+                followModel.followDampingY = 0;
             }
 
             return new Vector2(x, y);
@@ -82,22 +85,30 @@ namespace GameClasses.Camera2DLib.Internal {
 
         #region Confine
         static Vector2 Confine_Calculate(Camera2DContext ctx, Camera2DVirtualEntity entity, Vector2 pos) {
-            Vector2 min = new Vector2(entity.minMaxBounds.x, entity.minMaxBounds.y);
-            Vector2 max = new Vector2(entity.minMaxBounds.z, entity.minMaxBounds.w);
-            pos = GFCamera2DHelper.CalcConfinePos(pos, min, max, entity.orthographicSize_final, entity.aspect_final);
+            Camera2DConfineModel confineModel = entity.confineModel;
+            if (!confineModel.isEnable) {
+                return pos;
+            }
+            Vector2 min = new Vector2(confineModel.minMaxBounds.x, confineModel.minMaxBounds.y);
+            Vector2 max = new Vector2(confineModel.minMaxBounds.z, confineModel.minMaxBounds.w);
+            pos = GFCamera2DHelper.CalcConfinePos(pos, min, max, entity.orthographicSize, entity.aspect);
             return pos;
         }
         #endregion
 
-        #region Shake
-        static Vector2 Shake_Calculate(Camera2DContext ctx, Camera2DVirtualEntity entity, Vector2 pos, float dt) {
-            ref float timer = ref entity.shakeTimer;
-            float duration = entity.shakeDuration;
-            float frequency = entity.shakeFrequency;
-            Vector2 amplitude = entity.shakeAmplitude;
+        #region Effect: Shake
+        static Vector2 Effect_Shake_Process(Camera2DContext ctx, Camera2DVirtualEntity entity, Vector2 pos, float dt) {
+            Camera2DEffectShakeModel shakeModel = entity.shakeModel;
+            if (!shakeModel.isEnable) {
+                return pos;
+            }
+            ref float timer = ref shakeModel.timer;
+            float duration = shakeModel.duration;
+            float frequency = shakeModel.frequency;
+            Vector2 amplitude = shakeModel.amplitude;
             timer -= dt;
             if (timer <= 0) {
-                entity.isShake = false;
+                shakeModel.isEnable = false;
                 timer = 0;
                 return pos;
             }
@@ -105,6 +116,30 @@ namespace GameClasses.Camera2DLib.Internal {
             float x = Mathf.Sin(percent * frequency) * amplitude.x;
             float y = Mathf.Sin(percent * frequency) * amplitude.y;
             return pos + new Vector2(x, y);
+        }
+        #endregion
+
+        #region Effect: ZoomIn
+        static float Effect_ZoomIn_Process(Camera2DContext ctx, Camera2DVirtualEntity entity, float orthographicSize, float dt) {
+            Camera2DEffectZoomInModel zoomInModel = entity.zoomInModel;
+            float res = orthographicSize;
+            if (!zoomInModel.isEnable) {
+                return res;
+            }
+            ref float timer = ref zoomInModel.timer;
+            float duration = zoomInModel.duration;
+            GFEasingEnum easingType = zoomInModel.easingType;
+            float zoomInMultiply = zoomInModel.targetMultiply;
+            if (timer <= 0) {
+                timer = 0;
+            } else {
+                timer -= dt;
+            }
+
+            // ZoomIn 2x Means: 0.5 * orthographicSize, then show less scene
+            float rate = 1 / zoomInMultiply;
+            res = GFEasing.Ease1D(easingType, (duration - timer), duration, orthographicSize, orthographicSize * rate);
+            return res;
         }
         #endregion
 

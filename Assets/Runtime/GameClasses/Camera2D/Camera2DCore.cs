@@ -1,4 +1,5 @@
 using UnityEngine;
+using GameFunctions;
 using GameClasses.Camera2DLib.Internal;
 
 namespace GameClasses.Camera2DLib {
@@ -23,12 +24,9 @@ namespace GameClasses.Camera2DLib {
         public int Spawn(Vector2 pos, float orthographicSize, float aspect) {
             Camera2DVirtualEntity entity = new Camera2DVirtualEntity();
             entity.id = ++ctx.idRecord;
-            entity.pos_true = pos;
-            entity.pos_final = pos;
-            entity.orthographicSize_true = orthographicSize;
-            entity.orthographicSize_final = orthographicSize;
-            entity.aspect_true = aspect;
-            entity.aspect_final = aspect;
+            entity.pos = pos;
+            entity.orthographicSize = orthographicSize;
+            entity.aspect = aspect;
             ctx.virtualRepo.Add(entity);
             return entity.id;
         }
@@ -38,15 +36,8 @@ namespace GameClasses.Camera2DLib {
         }
 
         public Camera2DExecuteResultModel Tick(float dt) {
-
             var activeEntity = ctx.GetActiveVirtualEntity();
-            Camera2DApplyDomain.Process(ctx, activeEntity, dt);
-
-            Camera2DExecuteResultModel result;
-            result.pos = activeEntity.pos_final;
-            result.orthographicSize = activeEntity.orthographicSize_final;
-            result.aspect = activeEntity.aspect_final;
-
+            Camera2DExecuteResultModel result = Camera2DApplyDomain.Process(ctx, activeEntity, dt);
             return result;
         }
 
@@ -57,11 +48,8 @@ namespace GameClasses.Camera2DLib {
                 Debug.LogError($"CameraHandleID: {id} not found");
                 return;
             }
-            entity.orthographicSize_true = orthographicSize;
-            entity.orthographicSize_final = orthographicSize;
-            entity.aspect_true = aspect;
-            entity.aspect_final = aspect;
-            Debug.Log($"CameraHandleID: {id} OrthographicSize: {orthographicSize} Aspect: {aspect}");
+            entity.orthographicSize = orthographicSize;
+            entity.aspect = aspect;
         }
         #endregion
 
@@ -72,7 +60,8 @@ namespace GameClasses.Camera2DLib {
                 Debug.LogError($"CameraHandleID: {id} not found");
                 return;
             }
-            entity.isFollow = isEnable;
+            Camera2DFollowModel followModel = entity.followModel;
+            followModel.isEnable = isEnable;
         }
 
         public void Follow_Set(int id, Vector2 targetPos, Vector2 offset, float dampingX, float dampingY) {
@@ -81,12 +70,13 @@ namespace GameClasses.Camera2DLib {
                 Debug.LogError($"CameraHandleID: {id} not found");
                 return;
             }
-            entity.followTargetPos = targetPos;
-            entity.followOffset = offset;
-            entity.followDampingX = 0;
-            entity.followDampingY = 0;
-            entity.followDampingXOrigin = dampingX;
-            entity.followDampingYOrigin = dampingY;
+            Camera2DFollowModel followModel = entity.followModel;
+            followModel.followTargetPos = targetPos;
+            followModel.followOffset = offset;
+            followModel.followDampingX = 0;
+            followModel.followDampingY = 0;
+            followModel.followDampingXOrigin = dampingX;
+            followModel.followDampingYOrigin = dampingY;
         }
 
         public void Follow_Update(int id, Vector2 targetPos) {
@@ -95,7 +85,8 @@ namespace GameClasses.Camera2DLib {
                 Debug.LogError($"CameraHandleID: {id} not found");
                 return;
             }
-            entity.followTargetPos = targetPos;
+            Camera2DFollowModel followModel = entity.followModel;
+            followModel.followTargetPos = targetPos;
         }
         #endregion
 
@@ -106,7 +97,8 @@ namespace GameClasses.Camera2DLib {
                 Debug.LogError($"CameraHandleID: {id} not found");
                 return;
             }
-            entity.isConfine = isEnable;
+            Camera2DConfineModel confineModel = entity.confineModel;
+            confineModel.isEnable = isEnable;
         }
 
         public void Confine_Set(int id, Vector2 min, Vector2 max) {
@@ -115,22 +107,54 @@ namespace GameClasses.Camera2DLib {
                 Debug.LogError($"CameraHandleID: {id} not found");
                 return;
             }
-            entity.minMaxBounds = new Vector4(min.x, min.y, max.x, max.y);
+            Camera2DConfineModel confineModel = entity.confineModel;
+            confineModel.minMaxBounds = new Vector4(min.x, min.y, max.x, max.y);
         }
         #endregion
 
-        #region Shake
+        #region Effect: Shake
         public void Effect_Shake_Begin(int id, Vector2 amplitude, float frequency, float duration) {
             var entity = ctx.virtualRepo.Get(id);
             if (entity == null) {
                 Debug.LogError($"CameraHandleID: {id} not found");
                 return;
             }
-            entity.isShake = true;
-            entity.shakeAmplitude = amplitude;
-            entity.shakeFrequency = frequency;
-            entity.shakeDuration = duration;
-            entity.shakeTimer = duration;
+            Camera2DEffectShakeModel shakeModel = entity.shakeModel;
+            shakeModel.isEnable = true;
+            shakeModel.amplitude = amplitude;
+            shakeModel.frequency = frequency;
+            shakeModel.duration = duration;
+            shakeModel.timer = duration;
+        }
+        #endregion
+
+        #region Effect: ZoomIn
+        public void Effect_ZoomIn_Begin(int id, GFEasingEnum easingType, float zoomInMultiply, float duration) {
+            var entity = ctx.virtualRepo.Get(id);
+            if (entity == null) {
+                Debug.LogError($"CameraHandleID: {id} not found");
+                return;
+            }
+            Camera2DEffectZoomInModel zoomInModel = entity.zoomInModel;
+            zoomInModel.isEnable = true;
+            zoomInModel.easingType = easingType;
+            zoomInModel.targetMultiply = zoomInMultiply;
+            zoomInModel.duration = duration;
+            zoomInModel.timer = duration;
+        }
+
+        public void Effect_ZoomIn_RestoreBegin(int id, GFEasingEnum easingType, float duration) {
+            var entity = ctx.virtualRepo.Get(id);
+            if (entity == null) {
+                Debug.LogError($"CameraHandleID: {id} not found");
+                return;
+            }
+            Camera2DEffectZoomInModel zoomInModel = entity.zoomInModel;
+            zoomInModel.isEnable = true;
+            zoomInModel.easingType = easingType;
+            zoomInModel.targetMultiply = 1;
+            zoomInModel.duration = duration;
+            zoomInModel.timer = duration;
         }
         #endregion
     }

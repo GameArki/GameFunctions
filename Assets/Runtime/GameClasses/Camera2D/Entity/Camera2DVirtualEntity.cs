@@ -7,34 +7,29 @@ namespace GameClasses.Camera2DLib.Internal {
 
         // Base
         public int id;
-        public Vector2 pos_true;
-        public Vector2 pos_final;
-        public float orthographicSize_true;
-        public float orthographicSize_final;
-        public float aspect_true; // width / height
-        public float aspect_final; // width / height
+
+        public Vector2 pos;
+        public float orthographicSize;
+        public float aspect; // width ÷ height
 
         // Follow
-        public bool isFollow;
-        public Vector2 followTargetPos;
-        public Vector2 followOffset;
-        public float followDampingX;
-        public float followDampingXOrigin;
-        public float followDampingY;
-        public float followDampingYOrigin;
+        public Camera2DFollowModel followModel;
 
         // Confine
-        public bool isConfine;
-        public Vector4 minMaxBounds;
+        public Camera2DConfineModel confineModel;
 
-        // Shake
-        public bool isShake;
-        public float shakeDuration;
-        public float shakeFrequency;
-        public Vector2 shakeAmplitude;
-        public float shakeTimer;
+        // Effect: Shake
+        public Camera2DEffectShakeModel shakeModel;
 
-        public Camera2DVirtualEntity() { }
+        // Effect: ZoomIn
+        public Camera2DEffectZoomInModel zoomInModel;
+
+        public Camera2DVirtualEntity() {
+            followModel = new Camera2DFollowModel();
+            confineModel = new Camera2DConfineModel();
+            shakeModel = new Camera2DEffectShakeModel();
+            zoomInModel = new Camera2DEffectZoomInModel();
+        }
 
     }
 
