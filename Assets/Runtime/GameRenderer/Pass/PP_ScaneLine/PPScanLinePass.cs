@@ -6,7 +6,7 @@ using UnityEngine.Rendering.Universal;
 namespace GameRenderer {
 
     [Serializable]
-    public class NJMScanLinePass : ScriptableRenderPass {
+    public class PPScanLinePass : ScriptableRenderPass {
 
         [SerializeField] Shader shader;
         Material material;
@@ -17,6 +17,11 @@ namespace GameRenderer {
         RenderTextureDescriptor cameraTextureDescriptor;
 
         public void Setup(RenderTargetIdentifier rt) {
+#if UNITY_EDITOR
+            if (shader == null) {
+                shader = Shader.Find("NJM/Shader_PP_ScanLine");
+            }
+#endif
             renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
             material = CoreUtils.CreateEngineMaterial(shader);
             renderTag = "NJM ScanLine";
@@ -41,7 +46,7 @@ namespace GameRenderer {
             }
 
             var stack = VolumeManager.instance.stack;
-            var volume = stack.GetComponent<NJMScanLineVomume>();
+            var volume = stack.GetComponent<PPScanLineVomume>();
             if (!volume.isEnable.value) {
                 return;
             }

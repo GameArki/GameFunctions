@@ -8,24 +8,24 @@ namespace GameRenderer {
 
     public class NJMRP : ScriptableRendererFeature {
 
-        public NJMScanLinePass scanLinePass;
+        public PPScanLinePass pp_scanLine;
 
         public override void Create() {
-            if (scanLinePass == null) {
-                scanLinePass = new NJMScanLinePass();
+            if (pp_scanLine == null) {
+                pp_scanLine = new PPScanLinePass();
             }
         }
 
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData) {
-            if (scanLinePass != null) {
-                renderer.EnqueuePass(scanLinePass);
+            if (pp_scanLine != null) {
+                renderer.EnqueuePass(pp_scanLine);
             }
         }
 
         public override void SetupRenderPasses(ScriptableRenderer renderer, in RenderingData renderingData) {
             base.SetupRenderPasses(renderer, renderingData);
-            if (scanLinePass != null) {
-                scanLinePass.Setup(renderer.cameraColorTargetHandle);
+            if (pp_scanLine != null) {
+                pp_scanLine.Setup(renderer.cameraColorTargetHandle);
             }
         }
 
