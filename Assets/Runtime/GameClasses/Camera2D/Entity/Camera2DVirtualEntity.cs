@@ -7,9 +7,10 @@ namespace GameClasses.Camera2DLib.Internal {
 
         // Base
         public int id;
-        public Vector2 truePos;
-        public Vector2 finalPos;
-        public float orthographicSize;
+        public Vector2 pos_true;
+        public Vector2 pos_final;
+        public float orthographicSize_true;
+        public float orthographicSize_final;
         public float aspect; // width / height
 
         // Follow

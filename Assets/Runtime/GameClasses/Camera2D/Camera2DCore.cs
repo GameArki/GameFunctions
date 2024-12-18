@@ -23,8 +23,10 @@ namespace GameClasses.Camera2DLib {
         public int Spawn(Vector2 pos, float orthographicSize, float aspect) {
             Camera2DVirtualEntity entity = new Camera2DVirtualEntity();
             entity.id = ++ctx.idRecord;
-            entity.truePos = pos;
-            entity.orthographicSize = orthographicSize;
+            entity.pos_true = pos;
+            entity.pos_final = pos;
+            entity.orthographicSize_true = orthographicSize;
+            entity.orthographicSize_final = orthographicSize;
             entity.aspect = aspect;
             ctx.virtualRepo.Add(entity);
             return entity.id;
@@ -39,12 +41,24 @@ namespace GameClasses.Camera2DLib {
             var activeEntity = ctx.GetActiveVirtualEntity();
             Camera2DApplyDomain.Process(ctx, activeEntity, dt);
 
-            Camera2DExecuteResultModel result = new Camera2DExecuteResultModel();
-            result.pos = activeEntity.finalPos;
+            Camera2DExecuteResultModel result;
+            result.pos = activeEntity.pos_final;
+            result.orthographicSize = activeEntity.orthographicSize_final;
 
             return result;
-
         }
+
+        #region Base
+        public void OrthographicSize_Set(int id, float orthographicSize) {
+            var entity = ctx.virtualRepo.Get(id);
+            if (entity == null) {
+                Debug.LogError($"CameraHandleID: {id} not found");
+                return;
+            }
+            entity.orthographicSize_true = orthographicSize;
+            entity.orthographicSize_final = orthographicSize;
+        }
+        #endregion
 
         #region Follow
         public void Follow_Enable(int id, bool isEnable) {
@@ -96,7 +110,7 @@ namespace GameClasses.Camera2DLib {
                 Debug.LogError($"CameraHandleID: {id} not found");
                 return;
             }
-            entity.orthographicSize = orthographicSize;
+            entity.orthographicSize_true = orthographicSize;
             entity.aspect = aspect;
             entity.minMaxBounds = new Vector4(min.x, min.y, max.x, max.y);
         }
