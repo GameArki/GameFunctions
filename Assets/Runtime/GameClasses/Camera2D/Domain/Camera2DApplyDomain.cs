@@ -15,7 +15,7 @@ namespace GameClasses.Camera2DLib.Internal {
             float orthographicSize_true = entity.orthographicSize;
 
             // Effect: ZoomIn
-            float orthographicSize_final = Effect_ZoomIn_Process(ctx, entity, orthographicSize_true, dt);
+            float orthographicSize_final = Effect_ZoomIn_Process(ctx, entity, dt);
 
             // Confine
             pos = Confine_Calculate(ctx, entity, orthographicSize_final, pos);
@@ -120,12 +120,25 @@ namespace GameClasses.Camera2DLib.Internal {
         #endregion
 
         #region Effect: ZoomIn
-        static float Effect_ZoomIn_Process(Camera2DContext ctx, Camera2DVirtualEntity entity, float orthographicSize, float dt) {
+        static float Effect_ZoomIn_Process(Camera2DContext ctx, Camera2DVirtualEntity entity, float dt) {
             Camera2DEffectZoomInModel zoomInModel = entity.zoomInModel;
-            float res = orthographicSize;
+            float res = entity.orthographicSize;
             if (!zoomInModel.isEnable) {
                 return res;
             }
+            if (zoomInModel.zoomStage == 0) {
+                res = Effect_ZoomIn_Normal_Process(ctx, entity, dt);
+            } else if (zoomInModel.zoomStage == 1) {
+                res = Effect_ZoomIn_Restore_Process(ctx, entity, dt);
+            }
+            return res;
+        }
+
+        static float Effect_ZoomIn_Normal_Process(Camera2DContext ctx, Camera2DVirtualEntity entity, float dt) {
+            float res = entity.orthographicSize;
+
+            Camera2DEffectZoomInModel zoomInModel = entity.zoomInModel;
+            float orthographicSize_true = entity.orthographicSize;
             ref float timer = ref zoomInModel.timer;
             float duration = zoomInModel.duration;
             GFEasingEnum easingType = zoomInModel.easingType;
@@ -147,13 +160,40 @@ namespace GameClasses.Camera2DLib.Internal {
                         zoomInModel.easingType = zoomInModel.restoreEasingType;
                         zoomInModel.duration = zoomInModel.restoreDuration;
                         zoomInModel.timer = zoomInModel.duration;
+                        zoomInModel.zoomStage = 1;
                     }
                 }
             }
 
             // ZoomIn 2x Means: 0.5 * orthographicSize, then show less scene
             float rate = 1 / zoomInMultiply;
-            res = GFEasing.Ease1D(easingType, passTime, duration, orthographicSize, orthographicSize * rate);
+            float start = orthographicSize_true;
+            float end = orthographicSize_true * rate;
+            res = GFEasing.Ease1D(easingType, passTime, duration, start, end);
+
+            zoomInModel.lastFinalOrthographicSize = res;
+            return res;
+        }
+        static float Effect_ZoomIn_Restore_Process(Camera2DContext ctx, Camera2DVirtualEntity entity, float dt) {
+
+            Camera2DEffectZoomInModel zoomInModel = entity.zoomInModel;
+            float orthographicSize_true = entity.orthographicSize;
+            ref float timer = ref zoomInModel.timer;
+            float duration = zoomInModel.duration;
+            GFEasingEnum easingType = zoomInModel.easingType;
+            float start = zoomInModel.lastFinalOrthographicSize;
+            float end = orthographicSize_true;
+
+            float passTime = duration - timer;
+            if (timer > 0) {
+                timer -= dt;
+            } else {
+                timer = 0;
+                zoomInModel.isEnable = false;
+                zoomInModel.zoomStage = 0;
+            }
+
+            float res = GFEasing.Ease1D(easingType, passTime, duration, start, end);
             return res;
         }
         #endregion

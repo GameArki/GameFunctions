@@ -8,11 +8,14 @@ namespace GameClasses.Camera2DLib.Internal {
 
         public bool isEnable;
 
+        public sbyte zoomStage; // 0: ZoomIn, 1: Restore
+
         public GFEasingEnum easingType;
         public float duration;
         public float timer;
 
         public float targetMultiply;
+        public float lastFinalOrthographicSize;
 
         public bool isAutoRestore;
         public float restoreDelaySec;

@@ -16,9 +16,18 @@ namespace GameFunctions.Sample {
         [SerializeField] Vector2 confinerMax;
         [SerializeField] float moveSpeed;
 
+        [Header("Effect: Shake")]
         [SerializeField] Vector2 shakeAmplitude = new Vector2(0.1f, 0.1f);
         [SerializeField] float shakeDuration = 0.1f;
         [SerializeField] float shakeFrequency = 20f;
+
+        [Header("Effect: ZoomIn")]
+        [SerializeField] float zoomInDuration = 1f;
+        [SerializeField] float zoomInMultiply = 2f;
+        [SerializeField] GFEasingEnum zoomInEasingType = GFEasingEnum.Linear;
+        [SerializeField] GFEasingEnum zoomInRestoreEasingType = GFEasingEnum.Linear;
+        [SerializeField] float zoomInRestoreDelaySec = 1f;
+        [SerializeField] float zoomInRestoreDuration = 1f;
 
         void Awake() {
 
@@ -49,8 +58,12 @@ namespace GameFunctions.Sample {
 
             if (Input.GetKeyDown(KeyCode.Space)) {
                 core.Effect_Shake_Begin(handleID, shakeAmplitude, shakeFrequency, shakeDuration);
+            } else if (Input.GetKeyDown(KeyCode.Z)) {
+                // core.Effect_ZoomIn_Begin(handleID, zoomInEasingType, zoomInMultiply, zoomInDuration);
+                core.Effect_ZoomIn_BeginAndAutoRestore(handleID, zoomInEasingType, zoomInMultiply, zoomInDuration, zoomInRestoreEasingType, zoomInRestoreDuration, zoomInRestoreDelaySec);
             }
             var res = core.Tick(dt);
+            cam.orthographicSize = res.orthographicSize;
             cam.transform.position = new Vector3(res.pos.x, res.pos.y, cam.transform.position.z);
         }
 
