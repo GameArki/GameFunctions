@@ -14,6 +14,12 @@ namespace GameClasses.Camera2DLib.Internal {
 
         public float targetMultiply;
 
+        public bool isAutoRestore;
+        public float restoreDelaySec;
+        public float restoreDelayTimer;
+        public float restoreDuration;
+        public GFEasingEnum restoreEasingType;
+
     }
 
 }

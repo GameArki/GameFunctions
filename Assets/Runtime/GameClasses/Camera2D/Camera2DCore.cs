@@ -143,6 +143,24 @@ namespace GameClasses.Camera2DLib {
             zoomInModel.timer = duration;
         }
 
+        public void Effect_ZoomIn_BeginAndAutoRestore(int id, GFEasingEnum easingType, float zoomInMultiply, float duration, GFEasingEnum restoreEasingType, float restoreDuration, float restoreDelaySec) {
+            var entity = ctx.virtualRepo.Get(id);
+            if (entity == null) {
+                Debug.LogError($"CameraHandleID: {id} not found");
+                return;
+            }
+            Camera2DEffectZoomInModel zoomInModel = entity.zoomInModel;
+            zoomInModel.isEnable = true;
+            zoomInModel.easingType = easingType;
+            zoomInModel.targetMultiply = zoomInMultiply;
+            zoomInModel.duration = duration;
+            zoomInModel.timer = duration;
+            zoomInModel.isAutoRestore = true;
+            zoomInModel.restoreDelaySec = restoreDelaySec;
+            zoomInModel.restoreDuration = restoreDuration;
+            zoomInModel.restoreEasingType = restoreEasingType;
+        }
+
         public void Effect_ZoomIn_RestoreBegin(int id, GFEasingEnum easingType, float duration) {
             var entity = ctx.virtualRepo.Get(id);
             if (entity == null) {

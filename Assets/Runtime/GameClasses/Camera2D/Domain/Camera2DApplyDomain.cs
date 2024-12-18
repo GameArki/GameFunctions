@@ -130,15 +130,30 @@ namespace GameClasses.Camera2DLib.Internal {
             float duration = zoomInModel.duration;
             GFEasingEnum easingType = zoomInModel.easingType;
             float zoomInMultiply = zoomInModel.targetMultiply;
-            if (timer <= 0) {
-                timer = 0;
-            } else {
+
+            float passTime = duration - timer;
+            if (timer > 0) {
                 timer -= dt;
+            } else {
+                timer = 0;
+                // - Auto Restore
+                if (zoomInModel.isAutoRestore) {
+                    if (zoomInModel.restoreDelayTimer > 0) {
+                        zoomInModel.restoreDelayTimer -= dt;
+                    } else {
+                        zoomInModel.restoreDelayTimer = 0;
+                        zoomInModel.isAutoRestore = false;
+                        zoomInModel.targetMultiply = 1;
+                        zoomInModel.easingType = zoomInModel.restoreEasingType;
+                        zoomInModel.duration = zoomInModel.restoreDuration;
+                        zoomInModel.timer = zoomInModel.duration;
+                    }
+                }
             }
 
             // ZoomIn 2x Means: 0.5 * orthographicSize, then show less scene
             float rate = 1 / zoomInMultiply;
-            res = GFEasing.Ease1D(easingType, (duration - timer), duration, orthographicSize, orthographicSize * rate);
+            res = GFEasing.Ease1D(easingType, passTime, duration, orthographicSize, orthographicSize * rate);
             return res;
         }
         #endregion
