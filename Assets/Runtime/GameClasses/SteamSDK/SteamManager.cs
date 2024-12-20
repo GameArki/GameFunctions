@@ -5,15 +5,30 @@
 //
 // Version: 1.0.13
 
-#if !(UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX || UNITY_STANDALONE_OSX || STEAMWORKS_WIN || STEAMWORKS_LIN_OSX)
+#if !(UNITY_STANDALONE_WIN || UNITY_SWITCH || UNITY_STANDALONE_LINUX || UNITY_STANDALONE_OSX || STEAMWORKS_WIN || STEAMWORKS_LIN_OSX)
 #define DISABLESTEAMWORKS
 #endif
 
 using UnityEngine;
+
 #if !DISABLESTEAMWORKS
 using Steamworks;
 #endif
 
+#region Generic
+namespace GameClasses {
+    public interface ISteamManager {
+        void Init(uint appID, bool isFailedToQuit);
+        void Tick();
+        void TearDown();
+        void Ach_Unlock(string achievementId);
+        void Ach_CleanAll();
+    }
+}
+#endregion
+
+#region Steam
+#if !DISABLESTEAMWORKS
 namespace GameClasses {
 
     //
@@ -21,7 +36,7 @@ namespace GameClasses {
     // It handles the basics of starting up and shutting down the SteamAPI for use.
     //
     [DisallowMultipleComponent]
-    public class SteamManager {
+    public class SteamManager : ISteamManager {
 
         SteamAPIWarningMessageHook_t m_SteamAPIWarningMessageHook;
         bool isInit;
@@ -128,5 +143,34 @@ namespace GameClasses {
         }
 
     }
-
 }
+#endif
+#endregion
+
+#region Disable Steam
+#if DISABLESTEAMWORKS
+namespace GameClasses {
+    public class SteamManager : ISteamManager {
+
+        public SteamManager() {
+        }
+
+        public void Init(uint appID, bool isFailedToQuit) {
+        }
+
+        public void Tick() {
+        }
+
+        public void TearDown() {
+        }
+
+        public void Ach_Unlock(string achievementId) {
+        }
+
+        public void Ach_CleanAll() {
+        }
+
+    }
+}
+#endif
+#endregion
