@@ -60,6 +60,10 @@ namespace GameFunctions {
             easingFuncs.Add(GFEasingEnum.InOutBounce, (float timePercent) => EasingFunctionHelper.EaseInOutBounce(timePercent));
         }
 
+        public static void SetupBackValue(float backValue) {
+            EasingFunctionHelper.SetupBackValue(backValue);
+        }
+
         public static float Ease1D(GFEasingEnum type, float passTime, float duration, float startValue, float endValue) {
             float timePercent = passTime / duration;
             if (timePercent > 1) {

@@ -6,6 +6,11 @@ namespace GameFunctions {
     // Output: Value Percent
     internal static class EasingFunctionHelper {
 
+        public static float back_value = 1.70158f;
+        public static void SetupBackValue(float value) {
+            back_value = value;
+        }
+
         public static float EaseImmediate(float timePercent) {
             return 1;
         }
@@ -246,7 +251,7 @@ namespace GameFunctions {
 
         // - Elastic
         public static float EaseInElastic(float t) {
-            float s = 1.70158f;
+            float s = back_value;
             float p = 0;
             float a = 1;
             if (t == 0) {
@@ -269,7 +274,7 @@ namespace GameFunctions {
         }
 
         public static float EaseOutElastic(float t) {
-            float s = 1.70158f;
+            float s = back_value;
             float p = 0;
             float a = 1;
             if (t == 0) {
@@ -291,7 +296,7 @@ namespace GameFunctions {
         }
 
         public static float EaseInOutElastic(float t) {
-            float s = 1.70158f;
+            float s = back_value;
             float p = 0;
             float a = 1;
             if (t == 0) {
@@ -320,18 +325,18 @@ namespace GameFunctions {
 
         // - Back
         public static float EaseInBack(float t) {
-            float s = 1.70158f;
+            float s = back_value;
             return t * t * ((s + 1) * t - s);
         }
 
         public static float EaseOutBack(float t) {
-            float s = 1.70158f;
+            float s = back_value;
             t -= 1;
             return (t * t * ((s + 1) * t + s) + 1);
         }
 
         public static float EaseInOutBack(float t) {
-            float s = 1.70158f;
+            float s = back_value;
             t *= 2;
             if (t < 1) {
                 s *= 1.525f;
