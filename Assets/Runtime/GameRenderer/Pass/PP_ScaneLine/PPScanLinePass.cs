@@ -23,10 +23,12 @@ namespace GameRenderer {
             }
 #endif
             renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
-            material = CoreUtils.CreateEngineMaterial(shader);
-            renderTag = "PP_ScanLine";
-            mainTexID = Shader.PropertyToID("_MainTex");
-            tempTexID = Shader.PropertyToID("_TempText");
+            if (material == null) {
+                material = CoreUtils.CreateEngineMaterial(shader);
+                renderTag = "PP_ScanLine";
+                mainTexID = Shader.PropertyToID("_MainTex");
+                tempTexID = Shader.PropertyToID("_TempText");
+            }
             currentTarget = rt;
         }
 
