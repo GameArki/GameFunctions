@@ -5,7 +5,7 @@ namespace GameFunctions {
 
     public static class IntHelper {
 
-        static Dictionary<int, string> numberToStringNoGC = new Dictionary<int, string>();
+        [ThreadStatic] static Dictionary<int, string> numberToStringNoGC = new Dictionary<int, string>(10000);
 
         public static string ToStringNoGC(int number) {
             if (numberToStringNoGC.TryGetValue(number, out string result)) {
