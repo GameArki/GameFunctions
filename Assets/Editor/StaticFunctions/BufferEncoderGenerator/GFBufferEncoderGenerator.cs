@@ -6,7 +6,7 @@ using GameFunctions.CSharpGenerator;
 
 namespace GameFunctions.Editors {
 
-    public class GFEBufferEncoderGenerator {
+    public class GFBufferEncoderGenerator {
 
         const string n_WriteTo = "WriteTo";
         const string n_FromBytes = "FromBytes";
@@ -305,6 +305,8 @@ namespace GameFunctions.Editors {
                 var field = fieldList[i];
                 string type = field.GetFieldType();
                 string name = field.GetFieldName();
+                string checkLine = $"if ({n_src}.Length <= {n_offset}) return;";
+                methodEditor.AppendLine(checkLine);
                 string line = WriteLine(type, name);
                 methodEditor.AppendLine(line);
             }

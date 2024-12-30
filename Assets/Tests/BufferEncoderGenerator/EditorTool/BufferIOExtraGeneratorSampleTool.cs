@@ -8,8 +8,8 @@ namespace GameFunctions.Editors {
 #endif
         public static void GenBufferIO() {
 
-            GFEBufferEncoderGenerator.GenModel(Application.dataPath + "/com.GameFunctions/Tests/TestModel");
-            GFEBufferEncoderGenerator.GenModel(Application.dataPath + "/Tests/BufferEncoderGenerator/TestModel");
+            GFBufferEncoderGenerator.GenModel(Application.dataPath + "/com.GameFunctions/Tests/TestModel");
+            GFBufferEncoderGenerator.GenModel(Application.dataPath + "/Tests/BufferEncoderGenerator/TestModel");
 
         }
 
