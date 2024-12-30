@@ -305,7 +305,7 @@ namespace GameFunctions.Editors {
                 var field = fieldList[i];
                 string type = field.GetFieldType();
                 string name = field.GetFieldName();
-                string checkLine = $"if ({n_src}.Length <= {n_offset}) return;";
+                string checkLine = $"if ({n_src}.Length <= {n_offset}) {{ return; }}\r\n";
                 methodEditor.AppendLine(checkLine);
                 string line = WriteLine(type, name);
                 methodEditor.AppendLine(line);
