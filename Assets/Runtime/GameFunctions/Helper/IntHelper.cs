@@ -16,5 +16,7 @@ namespace GameFunctions {
                 return str;
             }
         }
+
     }
+
 }

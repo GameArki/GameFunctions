@@ -31,6 +31,26 @@ MonoBehaviour:
   components:
   - {fileID: -8988978049573653588}
   - {fileID: 6073128275002831412}
+  - {fileID: 2409720712729501105}
+--- !u!114 &2409720712729501105
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa6b550524ecf93489695d202fa6ff83, type: 3}
+  m_Name: PPFilmBorderVolume
+  m_EditorClassIdentifier: 
+  active: 1
+  isEnable:
+    m_OverrideState: 1
+    m_Value: 1
+  borderOffset:
+    m_OverrideState: 1
+    m_Value: {x: 0, y: 0.99999994}
 --- !u!114 &6073128275002831412
 MonoBehaviour:
   m_ObjectHideFlags: 3
