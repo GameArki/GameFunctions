@@ -161,7 +161,7 @@ namespace GameFunctions {
         }
 
         #region OverlapAABB
-        public int OverlapAABB(Vector2Int center, int radius, T[] results) {
+        public int OverlapAABB(Vector2Int center, int radius, GFGridHashmapResult<T>[] results) {
             Vector2Int min = center - new Vector2Int(radius, radius);
             Vector2Int max = center + new Vector2Int(radius, radius);
             int evaluateCount = (radius * 2 + 1) * (radius * 2 + 1);
@@ -171,13 +171,13 @@ namespace GameFunctions {
             return OverlapAABB_Evaluated(min, max, results);
         }
 
-        public int OverlapAABB(Vector2Int center, Vector2Int size, T[] results) {
+        public int OverlapAABB(Vector2Int center, Vector2Int size, GFGridHashmapResult<T>[] results) {
             Vector2Int min = center - size / 2;
             Vector2Int max = center + size / 2;
             return OverlapAABB_Evaluated(min, max, results);
         }
 
-        int OverlapAABB_Evaluated(Vector2Int min, Vector2Int max, T[] results) {
+        int OverlapAABB_Evaluated(Vector2Int min, Vector2Int max, GFGridHashmapResult<T>[] results) {
             int evaluateCount = (max.x - min.x + 1) * (max.y - min.y + 1);
             if (evaluateCount > 6 * 6) {
                 return OverlapAABB_FromBig(min, max, results);
@@ -186,7 +186,7 @@ namespace GameFunctions {
             }
         }
 
-        int OverlapAABB_FromBig(Vector2Int min, Vector2Int max, T[] results) {
+        int OverlapAABB_FromBig(Vector2Int min, Vector2Int max, GFGridHashmapResult<T>[] results) {
             int count = 0;
             Vector2Int minBig = GetBigKey(min);
             Vector2Int maxBig = GetBigKey(max);
@@ -203,7 +203,10 @@ namespace GameFunctions {
                             continue;
                         }
                         foreach (T value in smallSet) {
-                            results[count++] = value;
+                            results[count++] = new GFGridHashmapResult<T> {
+                                posKey = pos,
+                                value = value
+                            };
                         }
                     }
                 }
@@ -212,7 +215,7 @@ namespace GameFunctions {
             return count;
         }
 
-        int OverlapAABB_FromSmall(Vector2Int min, Vector2Int max, T[] results) {
+        int OverlapAABB_FromSmall(Vector2Int min, Vector2Int max, GFGridHashmapResult<T>[] results) {
             int count = 0;
             for (int x = min.x; x <= max.x; x++) {
                 for (int y = min.y; y <= max.y; y++) {
@@ -222,7 +225,10 @@ namespace GameFunctions {
                         continue;
                     }
                     foreach (T value in smallSet) {
-                        results[count++] = value;
+                        results[count++] = new GFGridHashmapResult<T> {
+                            posKey = pos,
+                            value = value
+                        };
                     }
                 }
             }
