@@ -15,21 +15,23 @@ namespace GameFunctions {
         Vector2Int bigMapSize;
         public Vector2Int BigMapSize => bigMapSize;
 
-        Dictionary<Vector2Int, List<T>> smallMap;
-        public IEnumerable<Vector2Int> SmallMapKeys => smallMap.Keys;
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        Dictionary<Vector2Int, HashSet<T>> smallMap;
+
         public int SmallCount() => smallMap.Count;
 
         bool isStackable;
         int stackLimit;
 
+        Pool<HashSet<T>> pool;
+
         public GFGridHashmap(Vector2Int bigMapSize, int bigMapCapacity, bool isStackable, int stackLimit) {
             this.bigMap = new Dictionary<Vector2Int, HashSet<Vector2Int>>(bigMapCapacity);
             this.bigMapSize = bigMapSize;
-            this.smallMap = new Dictionary<Vector2Int, List<T>>(bigMapCapacity * bigMapSize.x * bigMapSize.y);
+            this.smallMap = new Dictionary<Vector2Int, HashSet<T>>(bigMapCapacity * bigMapSize.x * bigMapSize.y);
             this.isStackable = isStackable;
             this.stackLimit = stackLimit;
+
+            pool = new Pool<HashSet<T>>(1000, () => new HashSet<T>());
         }
 
         public bool Add(Vector2Int posAsKey, T value) {
@@ -45,9 +47,9 @@ namespace GameFunctions {
             bigSet.Add(posAsKey);
 
             // SmallMap
-            has = smallMap.TryGetValue(posAsKey, out List<T> smallSet);
+            has = smallMap.TryGetValue(posAsKey, out HashSet<T> smallSet);
             if (!has) {
-                smallSet = new List<T>();
+                smallSet = pool.Get();
                 smallMap.Add(posAsKey, smallSet);
             }
 
@@ -78,13 +80,17 @@ namespace GameFunctions {
             }
 
             // SmallMap
-            has = smallMap.TryGetValue(posAsKey, out List<T> smallSet);
+            has = smallMap.TryGetValue(posAsKey, out HashSet<T> smallSet);
             if (!has || smallSet.Count == 0) {
                 return false;
             }
 
             if (smallSet.Contains(value)) {
                 smallSet.Remove(value);
+                if (smallSet.Count == 0) {
+                    pool.Return(smallSet);
+                    smallMap.Remove(posAsKey);
+                }
                 bigSet.Remove(posAsKey);
                 return true;
             }
@@ -104,7 +110,7 @@ namespace GameFunctions {
         }
 
         public bool TryGetOneSmallValue(Vector2Int posAsKey, out T value) {
-            bool has = smallMap.TryGetValue(posAsKey, out List<T> smallSet);
+            bool has = smallMap.TryGetValue(posAsKey, out HashSet<T> smallSet);
             if (has && smallSet.Count > 0) {
                 value = smallSet.First();
                 return true;
@@ -113,7 +119,7 @@ namespace GameFunctions {
             return false;
         }
 
-        public bool TryGetSmallValues(Vector2Int posAsKey, out List<T> values) {
+        public bool TryGetSmallValues(Vector2Int posAsKey, out HashSet<T> values) {
             bool has = smallMap.TryGetValue(posAsKey, out values);
             if (has && values.Count > 0) {
                 return true;
@@ -144,7 +150,7 @@ namespace GameFunctions {
             bool has = bigMap.TryGetValue(bigMapKey, out HashSet<Vector2Int> values);
             if (has) {
                 foreach (Vector2Int pos in values) {
-                    bool hasSmall = smallMap.TryGetValue(pos, out List<T> smallSet);
+                    bool hasSmall = smallMap.TryGetValue(pos, out HashSet<T> smallSet);
                     if (hasSmall) {
                         foreach (T value in smallSet) {
                             action(value);
