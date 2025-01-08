@@ -160,6 +160,76 @@ namespace GameFunctions {
             }
         }
 
+        #region OverlapAABB
+        public int OverlapAABB(Vector2Int center, int radius, T[] results) {
+            Vector2Int min = center - new Vector2Int(radius, radius);
+            Vector2Int max = center + new Vector2Int(radius, radius);
+            int evaluateCount = (radius * 2 + 1) * (radius * 2 + 1);
+            if (evaluateCount > results.Length) {
+                throw new Exception("results.Length is not enough");
+            }
+            return OverlapAABB_Evaluated(min, max, results);
+        }
+
+        public int OverlapAABB(Vector2Int center, Vector2Int size, T[] results) {
+            Vector2Int min = center - size / 2;
+            Vector2Int max = center + size / 2;
+            return OverlapAABB_Evaluated(min, max, results);
+        }
+
+        int OverlapAABB_Evaluated(Vector2Int min, Vector2Int max, T[] results) {
+            int evaluateCount = (max.x - min.x + 1) * (max.y - min.y + 1);
+            if (evaluateCount > 6 * 6) {
+                return OverlapAABB_FromBig(min, max, results);
+            } else {
+                return OverlapAABB_FromSmall(min, max, results);
+            }
+        }
+
+        int OverlapAABB_FromBig(Vector2Int min, Vector2Int max, T[] results) {
+            int count = 0;
+            Vector2Int minBig = GetBigKey(min);
+            Vector2Int maxBig = GetBigKey(max);
+            for (int x = minBig.x; x <= maxBig.x; x += bigMapSize.x) {
+                for (int y = minBig.y; y <= maxBig.y; y += bigMapSize.y) {
+                    Vector2Int bigKey = new Vector2Int(x, y);
+                    bool has = bigMap.TryGetValue(bigKey, out HashSet<Vector2Int> smallKeys);
+                    if (!has) {
+                        continue;
+                    }
+                    foreach (Vector2Int pos in smallKeys) {
+                        has = smallMap.TryGetValue(pos, out HashSet<T> smallSet);
+                        if (!has) {
+                            continue;
+                        }
+                        foreach (T value in smallSet) {
+                            results[count++] = value;
+                        }
+                    }
+                }
+            }
+
+            return count;
+        }
+
+        int OverlapAABB_FromSmall(Vector2Int min, Vector2Int max, T[] results) {
+            int count = 0;
+            for (int x = min.x; x <= max.x; x++) {
+                for (int y = min.y; y <= max.y; y++) {
+                    Vector2Int pos = new Vector2Int(x, y);
+                    bool has = smallMap.TryGetValue(pos, out HashSet<T> smallSet);
+                    if (!has) {
+                        continue;
+                    }
+                    foreach (T value in smallSet) {
+                        results[count++] = value;
+                    }
+                }
+            }
+            return count;
+        }
+        #endregion
+
     }
 
 }
