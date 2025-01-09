@@ -179,7 +179,7 @@ namespace GameFunctions {
 
         int OverlapAABB_Evaluated(Vector2Int min, Vector2Int max, GFGridHashmapResult<T>[] results) {
             int evaluateCount = (max.x - min.x + 1) * (max.y - min.y + 1);
-            if (evaluateCount > 6 * 6) {
+            if (evaluateCount >= smallMap.Count || evaluateCount > 6 * 6) {
                 return OverlapAABB_FromBig(min, max, results);
             } else {
                 return OverlapAABB_FromSmall(min, max, results);
