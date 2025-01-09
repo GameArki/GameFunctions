@@ -16,6 +16,7 @@ namespace GameFunctions {
         public Vector2Int BigMapSize => bigMapSize;
 
         Dictionary<Vector2Int, HashSet<T>> smallMap;
+        public IEnumerable<Vector2Int> SmallMapKeys => smallMap.Keys;
 
         public int SmallCount() => smallMap.Count;
 
@@ -162,13 +163,13 @@ namespace GameFunctions {
 
         #region OverlapAABB
         public int OverlapAABB(Vector2Int center, int radius, GFGridHashmapResult<T>[] results) {
-            Vector2Int min = center - new Vector2Int(radius, radius);
-            Vector2Int max = center + new Vector2Int(radius, radius);
+            Vector2Int min_small = center - new Vector2Int(radius, radius);
+            Vector2Int max_small = center + new Vector2Int(radius, radius);
             int evaluateCount = (radius * 2 + 1) * (radius * 2 + 1);
             if (evaluateCount > results.Length) {
                 throw new Exception("results.Length is not enough");
             }
-            return OverlapAABB_Evaluated(min, max, results);
+            return OverlapAABB_Evaluated(min_small, max_small, results);
         }
 
         public int OverlapAABB(Vector2Int center, Vector2Int size, GFGridHashmapResult<T>[] results) {
@@ -177,56 +178,55 @@ namespace GameFunctions {
             return OverlapAABB_Evaluated(min, max, results);
         }
 
-        int OverlapAABB_Evaluated(Vector2Int min, Vector2Int max, GFGridHashmapResult<T>[] results) {
-            int evaluateCount = (max.x - min.x + 1) * (max.y - min.y + 1);
+        int OverlapAABB_Evaluated(Vector2Int min_small, Vector2Int max_small, GFGridHashmapResult<T>[] results) {
+            int evaluateCount = (max_small.x - min_small.x + 1) * (max_small.y - min_small.y + 1);
             if (evaluateCount >= smallMap.Count || evaluateCount > 6 * 6) {
-                return OverlapAABB_FromBig(min, max, results);
+                return OverlapAABB_FromBig(min_small, max_small, results);
             } else {
-                return OverlapAABB_FromSmall(min, max, results);
+                return OverlapAABB_FromSmall(min_small, max_small, results);
             }
         }
 
-        int OverlapAABB_FromBig(Vector2Int min, Vector2Int max, GFGridHashmapResult<T>[] results) {
+        int OverlapAABB_FromBig(Vector2Int min_small, Vector2Int max_small, GFGridHashmapResult<T>[] results) {
             int count = 0;
-            Vector2Int minBig = GetBigKey(min);
-            Vector2Int maxBig = GetBigKey(max);
-            for (int x = minBig.x; x <= maxBig.x; x += bigMapSize.x) {
-                for (int y = minBig.y; y <= maxBig.y; y += bigMapSize.y) {
-                    Vector2Int bigKey = new Vector2Int(x, y);
-                    bool has = bigMap.TryGetValue(bigKey, out HashSet<Vector2Int> smallKeys);
+            Vector2Int min_big = GetBigKey(min_small);
+            Vector2Int max_big = GetBigKey(max_small);
+            for (int x = min_big.x; x <= max_big.x; x += 1) {
+                for (int y = min_big.y; y <= max_big.y; y += 1) {
+                    Vector2Int bigPosKey = new Vector2Int(x, y);
+                    bool has = bigMap.TryGetValue(bigPosKey, out HashSet<Vector2Int> smallKeys);
                     if (!has) {
                         continue;
                     }
-                    foreach (Vector2Int pos in smallKeys) {
-                        has = smallMap.TryGetValue(pos, out HashSet<T> smallSet);
+                    foreach (Vector2Int smallPosKey in smallKeys) {
+                        has = smallMap.TryGetValue(smallPosKey, out HashSet<T> smallSet);
                         if (!has) {
                             continue;
                         }
                         foreach (T value in smallSet) {
                             results[count++] = new GFGridHashmapResult<T> {
-                                posKey = pos,
+                                posKey = smallPosKey,
                                 value = value
                             };
                         }
                     }
                 }
             }
-
             return count;
         }
 
-        int OverlapAABB_FromSmall(Vector2Int min, Vector2Int max, GFGridHashmapResult<T>[] results) {
+        int OverlapAABB_FromSmall(Vector2Int min_small, Vector2Int max_small, GFGridHashmapResult<T>[] results) {
             int count = 0;
-            for (int x = min.x; x <= max.x; x++) {
-                for (int y = min.y; y <= max.y; y++) {
-                    Vector2Int pos = new Vector2Int(x, y);
-                    bool has = smallMap.TryGetValue(pos, out HashSet<T> smallSet);
+            for (int x = min_small.x; x <= max_small.x; x++) {
+                for (int y = min_small.y; y <= max_small.y; y++) {
+                    Vector2Int smallPosKey = new Vector2Int(x, y);
+                    bool has = smallMap.TryGetValue(smallPosKey, out HashSet<T> smallSet);
                     if (!has) {
                         continue;
                     }
                     foreach (T value in smallSet) {
                         results[count++] = new GFGridHashmapResult<T> {
-                            posKey = pos,
+                            posKey = smallPosKey,
                             value = value
                         };
                     }

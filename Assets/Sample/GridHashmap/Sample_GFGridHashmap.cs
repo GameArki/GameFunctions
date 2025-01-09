@@ -7,15 +7,13 @@ namespace GameFunctions.Sample {
     public class Sample_GFGridHashmap : MonoBehaviour {
 
         GFGridHashmap<int> gridHashmap;
-        Vector2Int[] tempCells;
+        int searchRadius;
 
-        int mode;
-        GFGridSearchType searchType;
-        int searchSize;
+        GFGridHashmapResult<int>[] tmpResults = new GFGridHashmapResult<int>[10000];
 
         void Start() {
             gridHashmap = new GFGridHashmap<int>(new Vector2Int(24, 16), 100, true, 10);
-            tempCells = new Vector2Int[gridHashmap.BigMapSize.x * gridHashmap.BigMapSize.y * 100];
+            searchRadius = 1;
         }
 
         void OnGUI() {
@@ -36,23 +34,15 @@ namespace GameFunctions.Sample {
                 gridHashmap.Add(CursorPos(), 1);
             }
             if (Input.GetMouseButtonDown(1)) {
-                mode = 1;
-            }
-            if (Input.GetMouseButtonDown(2)) {
-                mode = 2;
+                gridHashmap.Remove(CursorPos(), 1);
             }
 
             if (Input.mouseScrollDelta.y > 0) {
-                searchSize++;
+                searchRadius++;
             } else if (Input.mouseScrollDelta.y < 0) {
-                searchSize--;
+                searchRadius--;
             }
 
-            if (Input.GetKeyDown(KeyCode.W)) {
-                searchType = (GFGridSearchType)(((int)searchType + 1) % 4);
-            } else if (Input.GetKeyDown(KeyCode.S)) {
-                searchType = (GFGridSearchType)(((int)searchType + 3) % 4);
-            }
         }
 
         Vector2Int CursorPos() {
@@ -62,74 +52,42 @@ namespace GameFunctions.Sample {
 
         void OnDrawGizmos() {
 
-            Vector2Int cursorPos = CursorPos();
-
             if (gridHashmap == null) {
-                // Draw Cursor
-                Gizmos.color = Color.red;
-                DrawCube(new Vector3(cursorPos.x, cursorPos.y, 0), Vector3.one);
                 return;
             }
 
+            Vector2Int cursorPos = CursorPos();
             Vector2Int bigSize = gridHashmap.BigMapSize;
             Vector3 halfSize = new Vector2(bigSize.x * 0.5f, bigSize.y * 0.5f);
 
-            // Draw Grid
+            // Draw Cursor
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireCube(new Vector3(cursorPos.x, cursorPos.y, 0), Vector3.one * searchRadius);
+
+            // Draw Big Grid
             Gizmos.color = Color.white;
             foreach (var key in gridHashmap.BigMapKeys) {
                 Gizmos.DrawWireCube(new Vector3(key.x * bigSize.x, key.y * bigSize.y, 0) + halfSize, new Vector3(bigSize.x, bigSize.y, 0));
             }
 
-            // Draw SmallValues
-            gridHashmap.ForeachAllSmallValues((pos, value) => {
+            // Draw Small Grid
+            foreach (var key in gridHashmap.SmallMapKeys) {
                 Gizmos.color = Color.white;
-                DrawCube(new Vector3(pos.x, pos.y, 0), Vector3.one);
-            });
-
-            // Draw Search Big
-            int searchLen = GFGrid.GetCells(searchType, searchSize, cursorPos, tempCells);
-            for (int i = 0; i < searchLen; i++) {
-                Vector2Int cell = tempCells[i];
-                Vector2Int bigKey = gridHashmap.GetBigKey(cell);
-                Gizmos.color = Color.blue;
-                Gizmos.DrawWireCube(new Vector3(bigKey.x * bigSize.x, bigKey.y * bigSize.y, 0) + halfSize, new Vector3(bigSize.x, bigSize.y, 0));
+                Gizmos.DrawWireCube(new Vector3(key.x, key.y, 0), Vector3.one);
             }
 
-            // Draw Saerch Cursor
-            for (int i = 0; i < searchLen; i++) {
-                Vector2Int cell = tempCells[i];
-                Gizmos.color = Color.red;
-                DrawCube(new Vector3(cell.x, cell.y, 0), Vector3.one);
-            }
+            // Draw Overlap
+            int resultLen = gridHashmap.OverlapAABB(cursorPos, searchRadius, tmpResults);
+            for (int i = 0; i < resultLen; i++) {
+                GFGridHashmapResult<int> result = tmpResults[i];
+                Vector2Int smallPos = result.posKey;
+                Vector2Int bigPos = gridHashmap.GetBigKey(smallPos);
 
-            Gizmos.color = Color.green;
-            if (mode == 1) {
-                for (int i = 0; i < searchLen; i++) {
-                    Vector2Int cell = tempCells[i];
-                    // Draw SmallValuesInBig
-                    gridHashmap.TryGetSmallKeysInBig(cell, out var set);
-                    if (set != null) {
-                        foreach (var key in set) {
-                            DrawCube(new Vector3(key.x, key.y, 0), Vector3.one);
-                        }
-                    }
-                }
-            } else if (mode == 2) {
-                for (int i = 0; i < searchLen; i++) {
-                    Vector2Int cell = tempCells[i];
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawWireCube(new Vector3(bigPos.x * bigSize.x, bigPos.y * bigSize.y, 0) + halfSize, new Vector3(bigSize.x, bigSize.y, 0));
 
-                    // Draw SmallValues
-                    gridHashmap.TryGetSmallValues(cell, out var set);
-                    if (set != null) {
-                        float mult = 0;
-                        foreach (var value in set) {
-                            Vector3 size = Vector3.one + new Vector3(mult, mult) * mult;
-                            Vector3 pos = new Vector3(cell.x, cell.y, 0) - new Vector3(mult, mult) * 0.5f;
-                            DrawCube(pos, size);
-                            mult += 0.1f;
-                        }
-                    }
-                }
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawWireCube(new Vector3(smallPos.x, smallPos.y, 0), Vector3.one);
             }
 
         }
