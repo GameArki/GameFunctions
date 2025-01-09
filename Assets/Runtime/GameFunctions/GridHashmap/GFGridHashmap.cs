@@ -57,17 +57,18 @@ namespace GameFunctions {
             if (isStackable) {
                 if (smallSet.Count < stackLimit) {
                     smallSet.Add(value);
+                    return true;
                 } else {
                     return false;
                 }
             } else {
                 if (smallSet.Count > 0) {
                     return false;
+                } else {
+                    smallSet.Add(value);
+                    return true;
                 }
-                smallSet.Add(value);
             }
-
-            return true;
 
         }
 
@@ -79,6 +80,7 @@ namespace GameFunctions {
             if (!has || bigSet.Count == 0) {
                 return false;
             }
+            bigSet.Remove(posAsKey);
 
             // SmallMap
             has = smallMap.TryGetValue(posAsKey, out HashSet<T> smallSet);
@@ -92,7 +94,6 @@ namespace GameFunctions {
                     pool.Return(smallSet);
                     smallMap.Remove(posAsKey);
                 }
-                bigSet.Remove(posAsKey);
                 return true;
             }
 
