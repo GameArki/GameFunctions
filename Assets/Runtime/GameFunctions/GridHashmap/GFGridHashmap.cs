@@ -80,7 +80,6 @@ namespace GameFunctions {
             if (!has || bigSet.Count == 0) {
                 return false;
             }
-            bigSet.Remove(posAsKey);
 
             // SmallMap
             has = smallMap.TryGetValue(posAsKey, out HashSet<T> smallSet);
@@ -93,6 +92,7 @@ namespace GameFunctions {
                 if (smallSet.Count == 0) {
                     pool.Return(smallSet);
                     smallMap.Remove(posAsKey);
+                    bigSet.Remove(posAsKey);
                 }
                 return true;
             }
