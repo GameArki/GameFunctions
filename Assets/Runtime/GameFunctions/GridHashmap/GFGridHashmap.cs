@@ -166,10 +166,6 @@ namespace GameFunctions {
         public int OverlapAABB(Vector2Int center, int radius, GFGridHashmapResult<T>[] results) {
             Vector2Int min_small = center - new Vector2Int(radius, radius);
             Vector2Int max_small = center + new Vector2Int(radius, radius);
-            int evaluateCount = (radius * 2 + 1) * (radius * 2 + 1);
-            if (evaluateCount > results.Length) {
-                throw new Exception("results.Length is not enough");
-            }
             return OverlapAABB_Evaluated(min_small, max_small, results);
         }
 
