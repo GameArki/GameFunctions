@@ -35,14 +35,17 @@ namespace GameClasses.RuleTileDrawer {
         // - 存储时
         [SerializeField] List<RuleTilePair> ruleList;
 
-        HashSet<Vector3Int> existTiles = new HashSet<Vector3Int>(1024);
+        HashSet<Vector2Int> existTiles = new HashSet<Vector2Int>(1024);
 
         #region Runtime
+        public void Init() {
+            existTiles.Clear();
+        }
+
         Vector2Int[] tempCells = new Vector2Int[49];
         public void FillOneCell(Tilemap tilemap, Vector2Int pos, bool isRefresh) {
             RuleTileRelationDescription posRelation = new RuleTileRelationDescription();
             // 根据 pos 位置填充 Tile
-            Vector3Int fillPos = new Vector3Int(pos.x, pos.y, 0);
             int len = GFGrid.RectCycle_GetCellsBySpirals(pos, 3, tempCells);
             for (int i = 0; i < len; i++) {
                 var cell = tempCells[i];
@@ -57,14 +60,15 @@ namespace GameClasses.RuleTileDrawer {
                 }
             }
 
-            foreach (var kv in ruleList) {
+            Vector3Int fillPos = new Vector3Int(pos.x, pos.y, 0);
+            for (int i = ruleList.Count - 1; i >= 0; i--) {
+                var kv = ruleList[i];
                 var condition = kv.relation;
                 if (condition.IsFit(posRelation)) {
                     tilemap.SetTile(fillPos, kv.tileSO.Next());
-                    Debug.Log($"SetTile: {kv.tileSO.Next().name}");
-                    existTiles.Add(fillPos);
+                    existTiles.Add(pos);
                     if (isRefresh) {
-                        RefreshExists(tilemap);
+                        RefreshExists(tilemap, pos);
                     }
                     return;
                 }
@@ -72,15 +76,20 @@ namespace GameClasses.RuleTileDrawer {
 
             // fallback
             tilemap.SetTile(fillPos, tile_default);
-            existTiles.Add(fillPos);
+            existTiles.Add(pos);
             if (isRefresh) {
-                RefreshExists(tilemap);
+                RefreshExists(tilemap, pos);
             }
         }
 
-        void RefreshExists(Tilemap tilemap) {
-            foreach (var pos in existTiles) {
-                FillOneCell(tilemap, new Vector2Int(pos.x, pos.y), false);
+        Vector2Int[] tempCellsForRefresh = new Vector2Int[49];
+        void RefreshExists(Tilemap tilemap, Vector2Int pos) {
+            int len = GFGrid.RectCycle_GetCellsBySpirals(pos, 3, tempCellsForRefresh);
+            for (int i = 0; i < len; i++) {
+                var cell = tempCellsForRefresh[i];
+                if (existTiles.Contains(cell)) {
+                    FillOneCell(tilemap, cell, false);
+                }
             }
         }
         #endregion
@@ -368,13 +377,13 @@ namespace GameClasses.RuleTileDrawer {
             posRelation.CalculateHashCode(must, mustNot);
 
             var spr = Sprite.Create(tex_origin, new Rect(xGrid * perTileSize, yGrid * perTileSize, perTileSize, perTileSize), new Vector2(0.5f, 0.5f), perTileSize);
-            string sprFilePath = Path.Combine(gen_dir, $"Spr_{prefix}_{typeID}.asset");
+            string sprFilePath = Path.Combine(gen_dir, $"Spr_{prefix}_{xGrid}_{yGrid}.asset");
             UnityEditor.AssetDatabase.CreateAsset(spr, sprFilePath);
             spr = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(sprFilePath);
 
             var tile = ScriptableObject.CreateInstance<RuleTileSO>();
             tile.typeID = typeID;
-            var fileFilePath = Path.Combine(gen_dir, $"Tile_{prefix}_{typeID}.asset");
+            var fileFilePath = Path.Combine(gen_dir, $"Tile_{prefix}_{xGrid}_{yGrid}.asset");
             UnityEditor.AssetDatabase.CreateAsset(tile, fileFilePath);
 
             UnityEditor.AssetDatabase.SaveAssets();

@@ -11,6 +11,10 @@ namespace GameFunctions.Sample {
         [SerializeField] RuleTileBakerSO bakerSO;
         [SerializeField] Tilemap tilemap;
 
+        void Start() {
+            bakerSO.Init();
+        }
+
         void Update() {
             Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Vector3Int cellPos = tilemap.WorldToCell(mousePos);
