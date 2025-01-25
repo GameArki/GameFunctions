@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5aa4129a3e83cd04482054f5ea87820b, type: 3}
+  m_Name: So_GFRuleTileBaked_
+  m_EditorClassIdentifier: 
+  tex_origin: {fileID: 2800000, guid: c2f42b124743dab47ab0131c51069ffd, type: 3}
+  perTileSize: 8
+  gen_dir: Assets/Sample/RuleTileDrawer/Tiles/
+  ruleList:
+  - tileSO: {fileID: 11400000, guid: 0c7c31a01f78b344a953e3d1ca9266cc, type: 2}
+  - tileSO: {fileID: 11400000, guid: 6f2c1c79dfc02dd46a4574a44eefa7ca, type: 2}
+  - tileSO: {fileID: 11400000, guid: 4db0816df79925e42989679903cc8dd6, type: 2}
+  - tileSO: {fileID: 11400000, guid: 15e92ed0c9d74b74285c02461a108e69, type: 2}
+  - tileSO: {fileID: 11400000, guid: 3df158cb5f74d1446b9da54bb1a2b9d1, type: 2}
+  - tileSO: {fileID: 11400000, guid: c9dfcbe9eeacec9408c1e4804d554635, type: 2}
+  - tileSO: {fileID: 11400000, guid: cf4b9ede18986504b855e50aebe93803, type: 2}
+  - tileSO: {fileID: 11400000, guid: 4839ed00196c0f04a9eb6f15befcc5da, type: 2}
+  - tileSO: {fileID: 11400000, guid: 53860837c43ca63498455c7ee862dff8, type: 2}
+  - tileSO: {fileID: 11400000, guid: b41984b9cbe5b3746a5909666039f533, type: 2}
+  - tileSO: {fileID: 11400000, guid: 818b602c6f5424e4da812db443926b1d, type: 2}
+  - tileSO: {fileID: 11400000, guid: c8c43803854455c4188c37e376dfa303, type: 2}

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
@@ -14,11 +15,28 @@ namespace GameClasses.RuleTileDrawer {
     public class GFRuleTileBakedSO : ScriptableObject {
 
         // - 输入: 原图
-        public Texture2D tex_original;
+        // 1. OutCornerLv1: UpLeft, UpRight, DownLeft, DownRight
+        // 2. EdgeLv1: UpEdge * n, DownEdge * n, LeftEdge * n, RightEdge * n
+        // 3. InCornerLv1: UpLeft, UpRight, DownLeft, DownRight
+
+        // 4. OutCornerLv2 * 4
+        // 5. EdgeLv2: UpEdge * n, DownEdge * n, LeftEdge * n, RightEdge * n
+        // 6. InCornerLv2 * 4
+
+        // 7. OutCornerLv3 * 4
+        // 8. EdgeLv3: UpEdge * n, DownEdge * n, LeftEdge * n, RightEdge * n
+        // 9. InCornerLv3 * 4
+
+        // 10. Center
+
+        [SerializeField] Texture2D tex_origin;
+        [SerializeField] int perTileSize = 16;
+
+        [SerializeField] string gen_dir = "Assets/Res_Runtime/RuleTileDrawer/";
 
         // ==== 输出: Rule 关系 ====
         // - 存储时
-        public List<GFRuleTilePair> ruleList;
+        [SerializeField] List<GFRuleTilePair> ruleList;
 
         // - 运行时
         Dictionary<GFRuleTilePosRelation, GFRuleTileSO> ruleDict;
@@ -32,9 +50,111 @@ namespace GameClasses.RuleTileDrawer {
             }
         }
 
-        public void Generate(int tileSize) {
-            // 在该SO目录下生成 Tile
+#if UNITY_EDITOR
+        [ContextMenu("Generate")]
+        public void Generate() {
+
+            ruleList.Clear();
+            UnityEditor.EditorUtility.SetDirty(this);
+
+            if (!Directory.Exists(gen_dir)) {
+                Directory.CreateDirectory(gen_dir);
+            }
+
+            Texture2D tex = tex_origin;
+            int perTileSize = this.perTileSize;
+
+            int maxXCount = tex.width / perTileSize;
+            int maxYCount = tex.height / perTileSize;
+
+            // LeftBottom -> RightBottom
+            ScanOutterCorner(new Vector2Int(0, 0), new Vector2Int(maxXCount - 1, 0), new Vector2Int(1, 0), new Vector2Int(1, 1));
+
+            // RightBottom -> LeftBottom
+            ScanOutterCorner(new Vector2Int(maxXCount - 1, 0), new Vector2Int(0, 0), new Vector2Int(-1, 0), new Vector2Int(-1, 1));
+
+            // LeftTop -> RightTop
+            ScanOutterCorner(new Vector2Int(0, maxYCount - 1), new Vector2Int(maxXCount - 1, maxYCount - 1), new Vector2Int(1, 0), new Vector2Int(1, -1));
+
+            // RightTop -> LeftTop
+            ScanOutterCorner(new Vector2Int(maxXCount - 1, maxYCount - 1), new Vector2Int(0, maxYCount - 1), new Vector2Int(-1, 0), new Vector2Int(-1, -1));
+
+            UnityEditor.EditorUtility.SetDirty(this);
         }
+
+        static List<GFVector2HalfSByte> tmp_mustList = new List<GFVector2HalfSByte>();
+        static List<GFVector2HalfSByte> tmp_mustNotList = new List<GFVector2HalfSByte>();
+        void ScanOutterCorner(Vector2Int start, Vector2Int end, Vector2Int scanDir, Vector2Int deepDir) {
+            Vector2Int meetPos = Vector2Int.zero;
+            for (int x = start.x; x != end.x; x += scanDir.x) {
+                Color cur = tex_origin.GetPixel(x * perTileSize + perTileSize / 2, start.y * perTileSize + perTileSize / 2);
+                if (cur.a != 0) {
+                    meetPos = new Vector2Int(x, start.y);
+                    break;
+                }
+            }
+
+            int maxDeep = 3;
+            for (int i = 0; i < maxDeep; i += 1) {
+                int x = meetPos.x + deepDir.x * i;
+                int y = meetPos.y + deepDir.y * i;
+                Color cur = tex_origin.GetPixel(x * perTileSize + perTileSize / 2, y * perTileSize + perTileSize / 2);
+                if (cur.a == 0) {
+                    Debug.LogError($"Failed OutterCorner: {x}, {y}");
+                    break;
+                }
+
+                tmp_mustList.Clear();
+                tmp_mustNotList.Clear();
+
+                tmp_mustList.Add(new GFVector2HalfSByte(0, 0));
+                tmp_mustList.Add(new GFVector2HalfSByte((sbyte)(deepDir.x), 0));
+                tmp_mustList.Add(new GFVector2HalfSByte(0, (sbyte)(deepDir.y)));
+
+                tmp_mustNotList.Add(new GFVector2HalfSByte((sbyte)(-deepDir.x * (i + 1)), 0));
+                tmp_mustNotList.Add(new GFVector2HalfSByte(0, (sbyte)(-deepDir.y * (i + 1))));
+
+                for (int j = 0; j < i; j += 1) {
+                    tmp_mustList.Add(new GFVector2HalfSByte((sbyte)(-deepDir.x * (j + 1)), 0));
+                    tmp_mustList.Add(new GFVector2HalfSByte(0, (sbyte)(-deepDir.y * (j + 1))));
+                }
+
+                GenerateOneTile(tmp_mustList, tmp_mustNotList, x, y);
+
+            }
+        }
+
+        void GenerateOneTile(List<GFVector2HalfSByte> must, List<GFVector2HalfSByte> mustNot, int xGrid, int yGrid) {
+            short typeID = (short)xGrid;
+            typeID |= (short)(yGrid << 8);
+
+            GFRuleTilePosRelation posRelation = new GFRuleTilePosRelation();
+            posRelation.CalculateHashCode(must, mustNot);
+
+            var spr = Sprite.Create(tex_origin, new Rect(xGrid * perTileSize, yGrid * perTileSize, perTileSize, perTileSize), new Vector2(0.5f, 0.5f), perTileSize);
+            string sprFilePath = Path.Combine(gen_dir, $"Spr_{typeID}.asset");
+            UnityEditor.AssetDatabase.CreateAsset(spr, sprFilePath);
+            spr = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(sprFilePath);
+            UnityEditor.AssetDatabase.SaveAssets();
+
+            var tile = ScriptableObject.CreateInstance<GFRuleTileSO>();
+            tile.typeID = typeID;
+            tile.spr_default = spr;
+            var fileFilePath = Path.Combine(gen_dir, $"Tile_{typeID}.asset");
+            UnityEditor.AssetDatabase.CreateAsset(tile, fileFilePath);
+            UnityEditor.AssetDatabase.SaveAssets();
+
+            tile = UnityEditor.AssetDatabase.LoadAssetAtPath<GFRuleTileSO>(fileFilePath);
+
+            ruleList.Add(new GFRuleTilePair {
+                pos = posRelation,
+                tileSO = tile,
+            });
+
+            Debug.Log($"GenerateOneTile: {typeID}");
+
+        }
+#endif
 
         Vector2Int[] tempCells = new Vector2Int[49];
         public void FillOneCell(Tilemap tilemap, Vector2Int pos) {
@@ -99,6 +219,12 @@ namespace GameClasses.RuleTileDrawer {
             set {
                 val |= (byte)(value << 4);
             }
+        }
+
+        public GFVector2HalfSByte(sbyte x, sbyte y) {
+            val = 0;
+            this.x = x;
+            this.y = y;
         }
 
         public int ToPos() {
@@ -194,10 +320,10 @@ namespace GameClasses.RuleTileDrawer {
         [FieldOffset(8)]
         ulong highHashcode;
 
-        public void CalculateHashCode(ReadOnlySpan<GFVector2HalfSByte> must, ReadOnlySpan<GFVector2HalfSByte> mustNot) {
+        public void CalculateHashCode(List<GFVector2HalfSByte> must, List<GFVector2HalfSByte> mustNot) {
             hashcode = 0;
 
-            for (int i = 0; i < must.Length; i++) {
+            for (int i = 0; i < must.Count; i++) {
                 int pos = must[i].ToPos();
                 if (pos < 64) {
                     lowHashcode |= 0x01ul << pos;
@@ -206,7 +332,7 @@ namespace GameClasses.RuleTileDrawer {
                 }
             }
 
-            for (int i = 0; i < mustNot.Length; i++) {
+            for (int i = 0; i < mustNot.Count; i++) {
                 int pos = mustNot[i].ToPos();
                 if (pos < 64) {
                     lowHashcode |= 0b10ul << pos;
