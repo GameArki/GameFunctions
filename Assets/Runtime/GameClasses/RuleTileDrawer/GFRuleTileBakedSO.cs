@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using GameFunctions;
 
 #pragma warning disable 0660
 #pragma warning disable 0661
@@ -20,14 +21,14 @@ namespace GameClasses.RuleTileDrawer {
         public List<GFRuleTilePair> ruleList;
 
         // - 运行时
-        Dictionary<GFRuleTilePosRelation, int/*typeID*/> ruleDict;
+        Dictionary<GFRuleTilePosRelation, GFRuleTileSO> ruleDict;
 
         public void BakeDictionary() {
-            ruleDict = new Dictionary<GFRuleTilePosRelation, int>();
+            ruleDict = new Dictionary<GFRuleTilePosRelation, GFRuleTileSO>();
 
             for (int i = 0; i < ruleList.Count; i++) {
                 var pair = ruleList[i];
-                ruleDict.Add(pair.pos, pair.typeID);
+                ruleDict.Add(pair.pos, pair.tileSO);
             }
         }
 
@@ -35,8 +36,32 @@ namespace GameClasses.RuleTileDrawer {
             // 在该SO目录下生成 Tile
         }
 
-        public void Fill(Tilemap tilemap, Vector3Int pos) {
+        Vector2Int[] tempCells = new Vector2Int[49];
+        public void FillOneCell(Tilemap tilemap, Vector2Int pos) {
+            GFRuleTilePosRelation posRelation = new GFRuleTilePosRelation();
             // 根据 pos 位置填充 Tile
+            int len = GFGrid.RectCycle_GetCellsBySpirals(pos, 3, tempCells);
+            for (int i = 0; i < len; i++) {
+                var cell = tempCells[i];
+                var existTile = tilemap.GetTile<GFRuleTileSO>(new Vector3Int(cell.x, cell.y, 0));
+                if (existTile != null) {
+                    Vector2Int diff = cell - pos;
+                    GFVector2HalfSByte diffHalf;
+                    diffHalf.val = 0;
+                    diffHalf.x = (sbyte)diff.x;
+                    diffHalf.y = (sbyte)diff.y;
+                    int hashPos = diffHalf.ToPos();
+                    posRelation.AddExist(hashPos);
+                }
+            }
+
+            foreach (var kv in ruleDict) {
+                var condition = kv.Key;
+                if (condition.IsFit(posRelation)) {
+                    tilemap.SetTile(new Vector3Int(pos.x, pos.y, 0), kv.Value);
+                    break;
+                }
+            }
         }
 
     }
@@ -44,7 +69,7 @@ namespace GameClasses.RuleTileDrawer {
     [Serializable]
     public struct GFRuleTilePair {
         public GFRuleTilePosRelation pos;
-        public int typeID;
+        public GFRuleTileSO tileSO;
     }
 
     [Serializable]
@@ -189,6 +214,40 @@ namespace GameClasses.RuleTileDrawer {
                     highHashcode |= 0b10ul << (pos - 64);
                 }
             }
+        }
+
+        public void AddExist(int pos) {
+            if (pos < 64) {
+                lowHashcode |= 0x01ul << pos;
+            } else {
+                highHashcode |= 0x01ul << (pos - 64);
+            }
+        }
+
+        public bool IsFit(GFRuleTilePosRelation state) {
+
+            // this is condition
+
+            // `Must`
+            ulong mustLow = this.lowHashcode & 0x55_55_55_55_55_55_55_55ul;
+            ulong mustHigh = this.highHashcode & 0x55_55_55_55_55_55_55_55ul;
+            ulong stateLow = state.lowHashcode & mustLow;
+            ulong stateHigh = state.highHashcode & mustHigh;
+            if (stateLow != mustLow || stateHigh != mustHigh) {
+                return false;
+            }
+
+            // `MustNot`
+            ulong mustNotLow = this.lowHashcode & 0xAA_AA_AA_AA_AA_AA_AA_AAul;
+            ulong mustNotHigh = this.highHashcode & 0xAA_AA_AA_AA_AA_AA_AA_AAul;
+            ulong stateNotLow = (state.lowHashcode | 0xAA_AA_AA_AA_AA_AA_AA_AAul) & mustNotLow;
+            ulong stateNotHigh = (state.highHashcode | 0xAA_AA_AA_AA_AA_AA_AA_AAul) & mustNotHigh;
+            if (stateNotLow != mustNotLow || stateNotHigh != mustNotHigh) {
+                return false;
+            }
+
+            return true;
+
         }
 
         bool IEquatable<GFRuleTilePosRelation>.Equals(GFRuleTilePosRelation other) {
