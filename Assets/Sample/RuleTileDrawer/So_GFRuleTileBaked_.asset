@@ -14,118 +14,126 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tex_origin: {fileID: 2800000, guid: 131000617f3b5b647ae1f66fa58bac13, type: 3}
   perTileSize: 8
-  tile_default: {fileID: 11400000, guid: bda12cf116f71024e88b3558c1b0ab2a, type: 2}
+  tile_center: {fileID: 11400000, guid: bda12cf116f71024e88b3558c1b0ab2a, type: 2}
   gen_dir: Assets/Sample/RuleTileDrawer/Tiles/
   ruleList:
   - tileSO:
       list:
-      - {fileID: 11400000, guid: 3a66e37cc9c566348b9af8804ad90657, type: 2}
+      - {fileID: 11400000, guid: dd503f272a98117469d50e2b32cf20e6, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: ed5ed7c72b91600459cec997cb86d5ad, type: 2}
+      - {fileID: 11400000, guid: 82bea8a72276f53448ad8e73b01471ab, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: 50b4e0927871cec409a4eef31858e328, type: 2}
+      - {fileID: 11400000, guid: 9dabe674dad3d094e8832b06fd8c0174, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: 2ed8c2c740910f94d88923a4624305bc, type: 2}
+      - {fileID: 11400000, guid: 9b1312d9a9037864ca7d3c334a6e5788, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: 86245807df2a6f545be58a9a6217aa41, type: 2}
+      - {fileID: 11400000, guid: fdd15e84ed7709f4084df96863ca27b1, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: 1ed98712a89f890429cf2cb274e3a2d3, type: 2}
+      - {fileID: 11400000, guid: 991ff728d07d55e4db8fcd8a27b1297c, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: 492cbb13d721448468b3558a6fae18f3, type: 2}
+      - {fileID: 11400000, guid: c738777b9d2dd5e4f91d01026689067a, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: 0b1324b4fef34804296667dd23dc428d, type: 2}
+      - {fileID: 11400000, guid: 06ad69ee096faf7498f81962af8996c2, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: f016a47c56ffffb4bb07dfec6e4de7b1, type: 2}
+      - {fileID: 11400000, guid: 0992328a375c1964b894fa32fe78695c, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: b8e03a5f8f89f2c4db2df53bfa9e7e2d, type: 2}
+      - {fileID: 11400000, guid: 598fe1eb65198784c9a6e18d5bd01808, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: 2a79c5a1c88fac24bb8f7506658d2d7f, type: 2}
+      - {fileID: 11400000, guid: a3c17df29746da74994503dd7145243a, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: 607660a74ea90d6438ca207ce0a39954, type: 2}
+      - {fileID: 11400000, guid: 2f92164e4450f2d4087bb94f1974ed04, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: 3ae98d68e1d5a074a94c1c0390aa6841, type: 2}
+      - {fileID: 11400000, guid: 7822ca020baa7a74081a32a8333160bd, type: 2}
   - tileSO:
       list:
-      - {fileID: 0}
+      - {fileID: 11400000, guid: 909fcb32c068f4840ad3e635c5df5d61, type: 2}
   - tileSO:
       list:
-      - {fileID: 0}
+      - {fileID: 11400000, guid: 53f8d8bd0c6f24d479da7702fd14c9b4, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: f1414db739237a94881c36dc4eb545e1, type: 2}
+      - {fileID: 11400000, guid: 238f48e98a67d694cbd6abea98183331, type: 2}
   - tileSO:
       list:
-      - {fileID: 0}
+      - {fileID: 11400000, guid: aed4734e5c89e8d4d9cc74c9822fd02a, type: 2}
   - tileSO:
       list:
-      - {fileID: 0}
+      - {fileID: 11400000, guid: e29ca08b82fb71c45922feca99e9b11f, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: 533a1bf12e1ee3542a1c72b3929a7be7, type: 2}
+      - {fileID: 11400000, guid: c76aab3db02e74247815012ffc189415, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: 0be831031fd3e6f4daee53dca0fc285b, type: 2}
+      - {fileID: 11400000, guid: 0269816af27928e498ee9334087752ad, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: 611328f04af78604c96ca0de3d8fe4c5, type: 2}
+      - {fileID: 11400000, guid: e065bf779adabb740a769f7b922eda2d, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: 1d41e662d3e981d43af4b9a4a08f3c6c, type: 2}
+      - {fileID: 11400000, guid: 833e2185548404d47bfad92da560c1bb, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: 1533455036c90674996b79c08b9501c6, type: 2}
+      - {fileID: 11400000, guid: da0c9c4ffc3ac06468ce99bf079391b7, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: 53211c96cbca4044ab1b665941d7c7de, type: 2}
+      - {fileID: 11400000, guid: bf8b6b0596b44e44a81538bc8926ee46, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: c3155d74c9cf88844813942c75831ca1, type: 2}
-      - {fileID: 11400000, guid: 1cd5f939e94400a4abc5171a75152fa4, type: 2}
-      - {fileID: 11400000, guid: e86af87ca7bade64783d8fe53eccb156, type: 2}
-      - {fileID: 11400000, guid: 6ae10c9165143084dab82cf1d8990140, type: 2}
+      - {fileID: 11400000, guid: 38cdf84a8fcb59e4fa32b6578fa2e03d, type: 2}
+      - {fileID: 11400000, guid: a9c36bcec46c01d4b9a09577764cb992, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: 9eaadc1889d84744db88af8c8054a943, type: 2}
-      - {fileID: 11400000, guid: d8b98d69637c47b45a175d84979e452a, type: 2}
+      - {fileID: 11400000, guid: ebd103d1db0a0a94d9fb0f0ef5ef615c, type: 2}
+      - {fileID: 11400000, guid: 51124766dbe71b3418f2b7dc3e21d613, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: 637069bd7cda16042beaea3d2bedf3bb, type: 2}
-      - {fileID: 11400000, guid: 6110b04f0f4af014393f44ee08062761, type: 2}
-      - {fileID: 11400000, guid: f6ff51efaac36134bb5c4975081fa3dd, type: 2}
-      - {fileID: 11400000, guid: f2ca26a79bd813f448107dc9dfef5c23, type: 2}
+      - {fileID: 11400000, guid: d7a926f2c7979d0449ffa04be14b4c96, type: 2}
+      - {fileID: 11400000, guid: 2353423ec952e5e42a8e662d087e1eaa, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: 0c856b6c07f661049bf1aca9778f055f, type: 2}
-      - {fileID: 11400000, guid: 509de33f56faeaa4ca3e771a00d67223, type: 2}
+      - {fileID: 11400000, guid: 7efaafbff3c70a548ae8910afe5d29df, type: 2}
+      - {fileID: 11400000, guid: 069d5a72a04e690418a960fa8042ac15, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: 11820165563d5374cae153e6c8d8a72b, type: 2}
-      - {fileID: 11400000, guid: a95344b2bd911a140818b5791dd1fc5b, type: 2}
-      - {fileID: 11400000, guid: f40a0c85351a25943bb5297cea03eb7f, type: 2}
-      - {fileID: 11400000, guid: 516ed8828886a4c4a894d874316d4db4, type: 2}
+      - {fileID: 11400000, guid: 14f63df97ac8de246b668c9538297321, type: 2}
+      - {fileID: 11400000, guid: 4c4504d0d6c590f4b8915844363ef8bc, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: fd29de7f41c19b54289c2c779ef0b9f4, type: 2}
-      - {fileID: 11400000, guid: 6c6d81f53cadb2c4d9576a3369e50689, type: 2}
+      - {fileID: 11400000, guid: bbac789a85c475d43b55dd20672fa3e2, type: 2}
+      - {fileID: 11400000, guid: 0bfc2d99099389e4f992925d5f23bec1, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: d05307f6847b9624fb7036f4830c04ef, type: 2}
-      - {fileID: 11400000, guid: db3ee7bc65cf8c64fb95305b593a8ef7, type: 2}
-      - {fileID: 11400000, guid: 19c228128fc0ccd4087016655f6d62c5, type: 2}
-      - {fileID: 11400000, guid: 640f58ada3f2e0d48866b8389aab85e6, type: 2}
+      - {fileID: 11400000, guid: 803bffe5d96fb924a918268d15cd970a, type: 2}
+      - {fileID: 11400000, guid: 65d29b52589e93e4bad16d270395d7d9, type: 2}
   - tileSO:
       list:
-      - {fileID: 11400000, guid: ec90f647a3360be4ba47ea7f118471c6, type: 2}
-      - {fileID: 11400000, guid: 5efc814b04367ce4ca65a7515b259a0b, type: 2}
+      - {fileID: 11400000, guid: df908d39d1c738c4bafc1377df60c5a7, type: 2}
+      - {fileID: 11400000, guid: 5acc2abc8dbaab14ab14b20d01e46c50, type: 2}
+  - tileSO:
+      list:
+      - {fileID: 11400000, guid: 58f49c90695d9a84faf14b02fad69c9a, type: 2}
+      - {fileID: 11400000, guid: 580fc5f7a940f9846ab5dd04162a8436, type: 2}
+  - tileSO:
+      list:
+      - {fileID: 11400000, guid: 2accf81baed8f104793225004557acef, type: 2}
+      - {fileID: 11400000, guid: f53f2596e3fc86340aad96e62cdf3903, type: 2}
+  - tileSO:
+      list:
+      - {fileID: 11400000, guid: 62672781c4846634383342258d04eedf, type: 2}
+      - {fileID: 11400000, guid: a8bc28da435e69f4bb4d70ffde4d7886, type: 2}
+  - tileSO:
+      list:
+      - {fileID: 11400000, guid: b3b660d65923ac74e85fdb523fe908e7, type: 2}
+      - {fileID: 11400000, guid: 75498b27b6abbca42b28224e7b625c00, type: 2}

@@ -27,7 +27,7 @@ namespace GameClasses.RuleTileDrawer {
 
         [SerializeField] Texture2D tex_origin;
         [SerializeField] int perTileSize = 16;
-        [SerializeField] RuleTileSO tile_default;
+        [SerializeField] RuleTileSO tile_center;
 
         [SerializeField] string gen_dir = "Assets/Res_Runtime/RuleTileDrawer/";
 
@@ -37,13 +37,14 @@ namespace GameClasses.RuleTileDrawer {
 
         HashSet<Vector2Int> existTiles = new HashSet<Vector2Int>(1024);
 
+        int gen_id = 0;
         #region Runtime
         public void Init() {
             existTiles.Clear();
         }
 
         Vector2Int[] tempCells = new Vector2Int[49];
-        public void FillOneCell(Tilemap tilemap, Vector2Int pos, bool isRefresh) {
+        public void FillOneCell(Tilemap tilemap, Vector2Int pos, bool isRefreshExists) {
             RuleTileRelationDescription posRelation = new RuleTileRelationDescription();
             // 根据 pos 位置填充 Tile
             int len = GFGrid.RectCycle_GetCellsBySpirals(pos, 3, tempCells);
@@ -67,7 +68,7 @@ namespace GameClasses.RuleTileDrawer {
                 if (condition.IsFit(posRelation)) {
                     tilemap.SetTile(fillPos, kv.tileSO.Next());
                     existTiles.Add(pos);
-                    if (isRefresh) {
+                    if (isRefreshExists) {
                         RefreshExists(tilemap, pos);
                     }
                     return;
@@ -75,9 +76,9 @@ namespace GameClasses.RuleTileDrawer {
             }
 
             // fallback
-            tilemap.SetTile(fillPos, tile_default);
+            tilemap.SetTile(fillPos, tile_center);
             existTiles.Add(pos);
-            if (isRefresh) {
+            if (isRefreshExists) {
                 RefreshExists(tilemap, pos);
             }
         }
@@ -98,6 +99,8 @@ namespace GameClasses.RuleTileDrawer {
         #region Editor
         [ContextMenu("Generate")]
         void Generate() {
+
+            gen_id = 0;
 
             ruleList.Clear();
             UnityEditor.EditorUtility.SetDirty(this);
@@ -155,13 +158,17 @@ namespace GameClasses.RuleTileDrawer {
             UnityEditor.EditorUtility.SetDirty(this);
         }
 
-        static List<Vector2HalfSByte> tmp_mustList = new List<Vector2HalfSByte>();
-        static List<Vector2HalfSByte> tmp_mustNotList = new List<Vector2HalfSByte>();
+        static List<Vector2HalfSByte> tmp_mustList = new List<Vector2HalfSByte>(16);
+        static List<Vector2HalfSByte> tmp_mustNotList = new List<Vector2HalfSByte>(16);
         /*
             o-----
             -o----
             --o---
             ------
+
+             x
+            xo√
+             √
         */
         void ScanOutterCorner(Vector2Int start, Vector2Int end, Vector2Int scanDir, Vector2Int deepDir) {
             Vector2Int meetPos = Vector2Int.zero;
@@ -193,9 +200,10 @@ namespace GameClasses.RuleTileDrawer {
                 tmp_mustNotList.Add(new Vector2HalfSByte((sbyte)(-deepDir.x * (i + 1)), 0));
                 tmp_mustNotList.Add(new Vector2HalfSByte(0, (sbyte)(-deepDir.y * (i + 1))));
 
-                for (int j = 0; j < i; j += 1) {
-                    tmp_mustList.Add(new Vector2HalfSByte((sbyte)(-deepDir.x * (j + 1)), 0));
-                    tmp_mustList.Add(new Vector2HalfSByte(0, (sbyte)(-deepDir.y * (j + 1))));
+                for (int j = 1; j < i + 1; j += 1) {
+                    tmp_mustList.Add(new Vector2HalfSByte((sbyte)(-deepDir.x * j), 0));
+                    tmp_mustList.Add(new Vector2HalfSByte(0, (sbyte)(-deepDir.y * j)));
+                    tmp_mustList.Add(new Vector2HalfSByte((sbyte)(-deepDir.x * j), (sbyte)(-deepDir.y * j)));
                 }
 
                 const string prefix = "OutterCorner";
@@ -247,16 +255,21 @@ namespace GameClasses.RuleTileDrawer {
                 tmp_mustList.Clear();
                 tmp_mustNotList.Clear();
 
-                tmp_mustList.Add(new Vector2HalfSByte(0, 0));
-                tmp_mustList.Add(new Vector2HalfSByte((sbyte)(1), 0));
-                tmp_mustList.Add(new Vector2HalfSByte(0, (sbyte)(1)));
-                tmp_mustList.Add(new Vector2HalfSByte((sbyte)(-1), 0));
-                tmp_mustList.Add(new Vector2HalfSByte(0, (sbyte)(-1)));
+                for (int kx = -1; kx <= 1; kx += 1) {
+                    for (int ky = -1; ky <= 1; ky += 1) {
+                        if (i == 0 && kx == -deepDir.x && ky == -deepDir.y) {
+                            continue;
+                        }
+                        tmp_mustList.Add(new Vector2HalfSByte((sbyte)kx, (sbyte)ky));
+                    }
+                }
 
                 tmp_mustNotList.Add(new Vector2HalfSByte((sbyte)(-deepDir.x * (i + 1)), (sbyte)(-deepDir.y * (i + 1))));
 
-                for (int j = 0; j < i; j += 1) {
-                    tmp_mustList.Add(new Vector2HalfSByte((sbyte)(-deepDir.x * (j + 1)), (sbyte)(-deepDir.y * (j + 1))));
+                if (i > 0) {
+                    tmp_mustList.Add(new Vector2HalfSByte((sbyte)(-deepDir.x * i), (sbyte)(-deepDir.y * (i + 1))));
+                    tmp_mustList.Add(new Vector2HalfSByte((sbyte)(-deepDir.x * (i + 1)), (sbyte)(-deepDir.y * i)));
+                    tmp_mustList.Add(new Vector2HalfSByte((sbyte)(-deepDir.x * i), (sbyte)(-deepDir.y * i)));
                 }
 
                 const string prefix = "InnerCorner";
@@ -304,10 +317,12 @@ namespace GameClasses.RuleTileDrawer {
                     tmp_mustList.Add(new Vector2HalfSByte((sbyte)(1), 0));
                     tmp_mustList.Add(new Vector2HalfSByte(0, (sbyte)(deepDir.y)));
 
-                    tmp_mustNotList.Add(new Vector2HalfSByte(0, (sbyte)-deepDir.y));
+                    tmp_mustNotList.Add(new Vector2HalfSByte(0, (sbyte)(-deepDir.y * (i + 1))));
 
-                    for (int j = 0; j < i; j += 1) {
-                        tmp_mustList.Add(new Vector2HalfSByte(0, (sbyte)(deepDir.y * (j + 1))));
+                    for (int j = 1; j < i + 1; j += 1) {
+                        tmp_mustList.Add(new Vector2HalfSByte(-1, (sbyte)(-deepDir.y * j)));
+                        tmp_mustList.Add(new Vector2HalfSByte(0, (sbyte)(-deepDir.y * j)));
+                        tmp_mustList.Add(new Vector2HalfSByte(1, (sbyte)(-deepDir.y * j)));
                     }
 
                     string prefix = "HorizontalEdge";
@@ -357,10 +372,12 @@ namespace GameClasses.RuleTileDrawer {
                     tmp_mustList.Add(new Vector2HalfSByte(0, (sbyte)(1)));
                     tmp_mustList.Add(new Vector2HalfSByte((sbyte)(deepDir.x), 0));
 
-                    tmp_mustNotList.Add(new Vector2HalfSByte((sbyte)-deepDir.x, 0));
+                    tmp_mustNotList.Add(new Vector2HalfSByte((sbyte)(-deepDir.x * (i + 1)), 0));
 
-                    for (int j = 0; j < i; j += 1) {
-                        tmp_mustList.Add(new Vector2HalfSByte((sbyte)(deepDir.x * (j + 1)), 0));
+                    for (int j = 1; j < i + 1; j += 1) {
+                        tmp_mustList.Add(new Vector2HalfSByte((sbyte)(-deepDir.x * j), -1));
+                        tmp_mustList.Add(new Vector2HalfSByte((sbyte)(-deepDir.x * j), 0));
+                        tmp_mustList.Add(new Vector2HalfSByte((sbyte)(-deepDir.x * j), 1));
                     }
 
                     string prefix = "VerticalEdge";
@@ -377,13 +394,13 @@ namespace GameClasses.RuleTileDrawer {
             posRelation.CalculateHashCode(must, mustNot);
 
             var spr = Sprite.Create(tex_origin, new Rect(xGrid * perTileSize, yGrid * perTileSize, perTileSize, perTileSize), new Vector2(0.5f, 0.5f), perTileSize);
-            string sprFilePath = Path.Combine(gen_dir, $"Spr_{prefix}_{xGrid}_{yGrid}.asset");
+            string sprFilePath = Path.Combine(gen_dir, $"Spr_{prefix}_{xGrid}_{yGrid}_{gen_id}.asset");
             UnityEditor.AssetDatabase.CreateAsset(spr, sprFilePath);
             spr = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(sprFilePath);
 
             var tile = ScriptableObject.CreateInstance<RuleTileSO>();
             tile.typeID = typeID;
-            var fileFilePath = Path.Combine(gen_dir, $"Tile_{prefix}_{xGrid}_{yGrid}.asset");
+            var fileFilePath = Path.Combine(gen_dir, $"Tile_{prefix}_{xGrid}_{yGrid}_{gen_id}.asset");
             UnityEditor.AssetDatabase.CreateAsset(tile, fileFilePath);
 
             UnityEditor.AssetDatabase.SaveAssets();
@@ -404,6 +421,8 @@ namespace GameClasses.RuleTileDrawer {
                 });
             }
             tileList.Add(tile);
+
+            gen_id++;
 
             UnityEditor.EditorUtility.SetDirty(this);
 
