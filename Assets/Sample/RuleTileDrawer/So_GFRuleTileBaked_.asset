@@ -136,4 +136,3 @@ MonoBehaviour:
   - tileSO:
       list:
       - {fileID: 11400000, guid: b3b660d65923ac74e85fdb523fe908e7, type: 2}
-      - {fileID: 11400000, guid: 75498b27b6abbca42b28224e7b625c00, type: 2}

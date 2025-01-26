@@ -31,10 +31,12 @@ namespace GameClasses.RuleTileDrawer.Internal {
 
         public void SetX(int x) {
             this.x = (sbyte)x;
+            UnityEngine.Debug.Assert(this.x >= -3 && this.x <= 3, "Vector2HalfSByte.SetX()");
         }
 
         public void SetY(int y) {
             this.y = (sbyte)y;
+            UnityEngine.Debug.Assert(this.y >= -3 && this.y <= 3, "Vector2HalfSByte.SetY()");
         }
 
         public int ToPos() {
@@ -97,7 +99,11 @@ namespace GameClasses.RuleTileDrawer.Internal {
             //   2, 3 -> 47
             //   3, 3 -> 48, 右下角往上6行
 
-            return ((y + 3) * 7 + (x + 3)) * 2;
+            int pos = ((y + 3) * 7 + (x + 3)) * 2;
+            if (pos > 98 || pos < 0) {
+                UnityEngine.Debug.LogError("Vector2HalfSByte.ToPos()");
+            }
+            return pos;
 
         }
 

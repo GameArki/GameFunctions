@@ -9,9 +9,9 @@ namespace GameClasses.RuleTileDrawer.Internal {
 
     [Serializable]
     [StructLayout(LayoutKind.Explicit)]
-    public struct RuleTileRelationDescription : IEquatable<RuleTileRelationDescription> {
+    public struct RuleTileRelationDescription : IEquatable<RuleTileRelationDescription>, IComparable<RuleTileRelationDescription> {
 
-        // 128bit(实际只用了96bit)
+        // 128bit(实际只用了98bit)
         // |00| 每2bit表示一个Vector2HalfSByte, 00表示空, 01表示此位置必须有Tile, 10表示此位置必须没有Tile
         [FieldOffset(0)]
         public decimal hashcode;
@@ -21,6 +21,9 @@ namespace GameClasses.RuleTileDrawer.Internal {
 
         [FieldOffset(8)]
         ulong highHashcode;
+
+        [FieldOffset(16)]
+        byte conditionCount;
 
         public void CalculateHashCode(List<Vector2HalfSByte> must, List<Vector2HalfSByte> mustNot) {
             hashcode = 0;
@@ -42,6 +45,8 @@ namespace GameClasses.RuleTileDrawer.Internal {
                     highHashcode |= (0b10ul << (pos - 64));
                 }
             }
+
+            conditionCount = (byte)(must.Count + mustNot.Count);
         }
 
         public void AddExist(int pos) {
@@ -86,6 +91,10 @@ namespace GameClasses.RuleTileDrawer.Internal {
 
         bool IEquatable<RuleTileRelationDescription>.Equals(RuleTileRelationDescription other) {
             return hashcode == other.hashcode;
+        }
+
+        public int CompareTo(RuleTileRelationDescription other) {
+            return conditionCount.CompareTo(other.conditionCount);
         }
 
         public static bool operator ==(RuleTileRelationDescription a, RuleTileRelationDescription b) {

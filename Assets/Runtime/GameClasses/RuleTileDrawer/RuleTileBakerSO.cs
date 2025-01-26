@@ -41,6 +41,10 @@ namespace GameClasses.RuleTileDrawer {
         #region Runtime
         public void Init() {
             existTiles.Clear();
+
+            // ruleList.Sort((a, b) => {
+            //     return b.relation.CompareTo(a.relation);
+            // });
         }
 
         Vector2Int[] tempCells = new Vector2Int[49];
@@ -142,10 +146,10 @@ namespace GameClasses.RuleTileDrawer {
             ScanInnerCorner(new Vector2Int(maxXCount - 1, maxYCount - 1), new Vector2Int(0, 0), new Vector2Int(-1, -1), new Vector2Int(-1, -1));
 
             // ==== Horizontal Edges ====
-            // Top
+            // LeftBottom -> RightBottom
             ScanHorizontalEdge(new Vector2Int(0, 0), new Vector2Int(maxXCount - 1, 0), new Vector2Int(1, 0), new Vector2Int(0, 1));
 
-            // Bottom
+            // LeftTop -> RightTop
             ScanHorizontalEdge(new Vector2Int(0, maxYCount - 1), new Vector2Int(maxXCount - 1, maxYCount - 1), new Vector2Int(1, 0), new Vector2Int(0, -1));
 
             // ==== Vertical Edges ====
