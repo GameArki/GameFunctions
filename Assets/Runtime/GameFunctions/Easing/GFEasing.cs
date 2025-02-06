@@ -91,6 +91,15 @@ namespace GameFunctions {
             return startValue + (endValue - startValue) * valuePercent;
         }
 
+        public static Color EaseColor(GFEasingEnum type, float passTime, float duration, Color startValue, Color endValue) {
+            float timePercent = passTime / duration;
+            if (timePercent > 1) {
+                timePercent = 1;
+            }
+            float valuePercent = GetValuePercent(type, timePercent);
+            return Color.Lerp(startValue, endValue, valuePercent);
+        }
+
         /// <summary>
         /// 3D 球型环绕移动函数.
         /// <para>解释: 以中心点为球心, 球面上的起始点, 球面上的终点, (起始点-中心点).magnitude 为半径, 环绕移动.</para>
