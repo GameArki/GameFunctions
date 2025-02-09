@@ -1,5 +1,7 @@
 using System;
 
+#pragma warning disable 0660, 0661
+
 namespace GameFunctions {
 
     public struct SeriesBool {
@@ -56,6 +58,18 @@ namespace GameFunctions {
 
         public static explicit operator bool(SeriesBool me) {
             return me.IsOn();
+        }
+
+        public static bool operator !(SeriesBool me) {
+            return !me.IsOn();
+        }
+
+        public static bool operator ==(SeriesBool me, bool other) {
+            return me.IsOn() == other;
+        }
+
+        public static bool operator !=(SeriesBool me, bool other) {
+            return me.IsOn() != other;
         }
 
     }
