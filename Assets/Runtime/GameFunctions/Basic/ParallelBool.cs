@@ -1,18 +1,16 @@
-using System;
-
 #pragma warning disable 0660, 0661
 
 namespace GameFunctions {
 
     /// <summary>
-    /// 用于表示一组开关，只有全部打开时才算是开启; 单个关闭即算关闭
+    /// 用于表示一组开关，只要有一个打开就算是开启; 全部关闭才算关闭
     /// </summary>
-    public struct SeriesBool {
+    public struct ParallelBool {
 
         byte value_current;
         byte value_on;
 
-        public SeriesBool(params byte[] bits) {
+        public ParallelBool(params byte[] bits) {
             value_current = 0;
             value_on = 0;
             RegisterAll(bits);
@@ -56,22 +54,22 @@ namespace GameFunctions {
         }
 
         public bool IsOn() {
-            return value_current == value_on;
+            return (value_current & value_on) != 0;
         }
 
-        public static explicit operator bool(SeriesBool me) {
+        public static explicit operator bool(ParallelBool me) {
             return me.IsOn();
         }
 
-        public static bool operator !(SeriesBool me) {
+        public static bool operator !(ParallelBool me) {
             return !me.IsOn();
         }
 
-        public static bool operator ==(SeriesBool me, bool other) {
+        public static bool operator ==(ParallelBool me, bool other) {
             return me.IsOn() == other;
         }
 
-        public static bool operator !=(SeriesBool me, bool other) {
+        public static bool operator !=(ParallelBool me, bool other) {
             return me.IsOn() != other;
         }
 
