@@ -10,14 +10,26 @@ namespace GameFunctions {
         public SeriesBool(params byte[] bits) {
             value_current = 0;
             value_on = 0;
-            foreach (var bit in bits) {
-                Register(bit);
-            }
+            RegisterAll(bits);
         }
 
         // 哪些开关打开后，才算是开启
         public void Register(byte bitID) {
             value_on |= (byte)(1 << bitID);
+        }
+
+        public void RegisterAll(params byte[] bits) {
+            foreach (var bit in bits) {
+                Register(bit);
+            }
+        }
+
+        public void SetOn(byte bitID, bool on) {
+            if (on) {
+                On(bitID);
+            } else {
+                Off(bitID);
+            }
         }
 
         // 打开某开关
