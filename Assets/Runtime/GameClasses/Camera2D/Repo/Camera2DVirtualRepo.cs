@@ -19,7 +19,8 @@ namespace GameClasses.Camera2DLib.Internal {
         }
 
         public Camera2DVirtualEntity Get(int id) {
-            return all[id];
+            all.TryGetValue(id, out Camera2DVirtualEntity entity);
+            return entity;
         }
 
     }
