@@ -126,6 +126,16 @@ namespace GameClasses.Camera2DLib {
             shakeModel.duration = duration;
             shakeModel.timer = duration;
         }
+
+        public void Effect_Shake_Stop(int id) {
+            var entity = ctx.virtualRepo.Get(id);
+            if (entity == null) {
+                Debug.LogError($"CameraHandleID: {id} not found");
+                return;
+            }
+            Camera2DEffectShakeModel shakeModel = entity.shakeModel;
+            shakeModel.isEnable = false;
+        }
         #endregion
 
         #region Effect: ZoomIn
@@ -178,6 +188,16 @@ namespace GameClasses.Camera2DLib {
             zoomInModel.targetMultiply = 1;
             zoomInModel.duration = duration;
             zoomInModel.timer = duration;
+        }
+
+        public void Effect_ZoomIn_Stop(int id) {
+            var entity = ctx.virtualRepo.Get(id);
+            if (entity == null) {
+                Debug.LogError($"CameraHandleID: {id} not found");
+                return;
+            }
+            Camera2DEffectZoomInModel zoomInModel = entity.zoomInModel;
+            zoomInModel.isEnable = false;
         }
         #endregion
     }
