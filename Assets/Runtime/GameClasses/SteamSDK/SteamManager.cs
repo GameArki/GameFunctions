@@ -40,6 +40,7 @@ namespace GameClasses {
 
         SteamAPIWarningMessageHook_t m_SteamAPIWarningMessageHook;
         bool isInit;
+        bool isSteam;
 
         [AOT.MonoPInvokeCallback(typeof(SteamAPIWarningMessageHook_t))]
         static void SteamAPIDebugTextHook(int nSeverity, System.Text.StringBuilder pchDebugText) {
@@ -48,9 +49,15 @@ namespace GameClasses {
 
         public SteamManager() {
             isInit = false;
+            isSteam = false;
         }
 
-        public void Init(uint appID, bool isFailedToQuit) {
+        public void Init(uint appID, bool isSteam) {
+
+            this.isSteam = isSteam;
+            if (!isSteam) {
+                return;
+            }
 
             if (!Packsize.Test()) {
                 Debug.LogError("[Steamworks.NET] Packsize Test returned false, the wrong version of Steamworks.NET is being run in this platform.");
@@ -72,14 +79,14 @@ namespace GameClasses {
 
                 if (SteamAPI.RestartAppIfNecessary(new AppId_t(appID))) {
                     Debug.LogWarning("[Steamworks.NET] Shutting down because RestartAppIfNecessary returned true. Steam will restart the application.");
-                    if (isFailedToQuit) {
+                    if (isSteam) {
                         Application.Quit();
                     }
                     return;
                 }
             } catch (System.DllNotFoundException e) { // We catch this exception here, as it will be the first occurrence of it.
                 Debug.LogWarning("[Steamworks.NET] Could not load [lib]steam_api.dll/so/dylib. It's likely not in the correct location. Refer to the README for more details.\n" + e);
-                if (isFailedToQuit) {
+                if (isSteam) {
                     Application.Quit();
                 }
                 return;
@@ -97,7 +104,7 @@ namespace GameClasses {
             isInit = SteamAPI.Init();
             if (!isInit) {
                 Debug.LogWarning("[Steamworks.NET] SteamAPI_Init() failed. Refer to Valve's documentation or the comment above this line for more information.");
-                if (isFailedToQuit) {
+                if (isSteam) {
                     Application.Quit();
                 }
                 return;
@@ -114,6 +121,10 @@ namespace GameClasses {
             if (!isInit) {
                 return;
             }
+
+            if (!isSteam) {
+                return;
+            }
             SteamAPI.RunCallbacks();
         }
 
@@ -121,12 +132,18 @@ namespace GameClasses {
         // Because the SteamManager should be persistent and never disabled or destroyed we can shutdown the SteamAPI here.
         // Thus it is not recommended to perform any Steamworks work in other OnDestroy functions as the order of execution can not be garenteed upon Shutdown. Prefer OnDisable().
         public void TearDown() {
+            if (!isSteam) {
+                return;
+            }
             SteamAPI.Shutdown();
         }
 
         // 解锁成就
         public void Ach_Unlock(string achievementId) {
             if (!isInit) {
+                return;
+            }
+            if (!isSteam) {
                 return;
             }
             SteamUserStats.SetAchievement(achievementId);
@@ -136,6 +153,9 @@ namespace GameClasses {
         // 清空所有成就
         public void Ach_CleanAll() {
             if (!isInit) {
+                return;
+            }
+            if (!isSteam) {
                 return;
             }
             SteamUserStats.ResetAllStats(true);
