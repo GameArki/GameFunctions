@@ -8,33 +8,27 @@ namespace GameFunctions {
 
     public static class GFBufferEncoderReader {
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool ReadBool(byte[] src, ref int offset) {
             return ReadUInt8(src, ref offset) == 1;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static sbyte ReadInt8(byte[] src, ref int offset) {
             return (sbyte)ReadUInt8(src, ref offset);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte ReadUInt8(byte[] src, ref int offset) {
             return src[offset++];
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static char ReadChar(byte[] src, ref int offset) {
             char data = (char)ReadUInt16(src, ref offset);
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short ReadInt16(byte[] src, ref int offset) {
             return (short)ReadUInt16(src, ref offset);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ushort ReadUInt16(byte[] src, ref int offset) {
             Bit16 content = new Bit16();
             content.b0 = src[offset++];
@@ -42,12 +36,10 @@ namespace GameFunctions {
             return content.ushortValue;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int ReadInt32(byte[] src, ref int offset) {
             return (int)ReadUInt32(src, ref offset);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint ReadUInt32(byte[] src, ref int offset) {
             Bit32 content = new Bit32();
             content.b0 = src[offset++];
@@ -57,12 +49,10 @@ namespace GameFunctions {
             return content.uintValue;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long ReadInt64(byte[] src, ref int offset) {
             return (long)ReadUInt64(src, ref offset);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong ReadUInt64(byte[] src, ref int offset) {
             Bit64 content = new Bit64();
             content.b0 = src[offset++];
@@ -76,7 +66,6 @@ namespace GameFunctions {
             return content.ulongValue;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float ReadSingle(byte[] src, ref int offset) {
             Bit32 content = new Bit32();
             content.b0 = src[offset++];
@@ -86,7 +75,6 @@ namespace GameFunctions {
             return content.floatValue;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double ReadDouble(byte[] src, ref int offset) {
             Bit64 content = new Bit64();
             content.b0 = src[offset++];
@@ -100,7 +88,6 @@ namespace GameFunctions {
             return content.doubleValue;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static decimal ReadDecimal(byte[] src, ref int offset) {
             Bit128 content = new Bit128();
             content.b0 = src[offset++];
@@ -122,7 +109,6 @@ namespace GameFunctions {
             return content.decimalValue;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool[] ReadBoolArr(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             bool[] data = new bool[count];
@@ -131,7 +117,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static List<bool> ReadBoolList(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             List<bool> data = new List<bool>(count);
@@ -142,7 +127,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte[] ReadUInt8Arr(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             byte[] data = new byte[count];
@@ -151,7 +135,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static List<byte> ReadUInt8List(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             List<byte> data = new List<byte>(count);
@@ -162,7 +145,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static sbyte[] ReadInt8Arr(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             sbyte[] data = new sbyte[count];
@@ -171,7 +153,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static List<sbyte> ReadInt8List(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             List<sbyte> data = new List<sbyte>(count);
@@ -182,7 +163,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short[] ReadInt16Arr(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             short[] data = new short[count];
@@ -193,7 +173,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static List<short> ReadInt16List(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             List<short> data = new List<short>(count);
@@ -204,7 +183,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ushort[] ReadUInt16Arr(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             ushort[] data = new ushort[count];
@@ -215,7 +193,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static List<ushort> ReadUInt16List(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             List<ushort> data = new List<ushort>(count);
@@ -226,7 +203,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int[] ReadInt32Arr(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             int[] data = new int[count];
@@ -237,7 +213,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static List<int> ReadInt32List(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             List<int> data = new List<int>(count);
@@ -248,7 +223,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint[] ReadUInt32Arr(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             uint[] data = new uint[count];
@@ -259,7 +233,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static List<uint> ReadUInt32List(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             List<uint> data = new List<uint>(count);
@@ -270,7 +243,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long[] ReadInt64Arr(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             long[] data = new long[count];
@@ -281,7 +253,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static List<long> ReadInt64List(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             List<long> data = new List<long>(count);
@@ -292,7 +263,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong[] ReadUInt64Arr(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             ulong[] data = new ulong[count];
@@ -303,7 +273,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static List<ulong> ReadUInt64List(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             List<ulong> data = new List<ulong>(count);
@@ -314,7 +283,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float[] ReadSingleArr(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             float[] data = new float[count];
@@ -325,7 +293,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static List<float> ReadSingleList(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             List<float> data = new List<float>(count);
@@ -336,7 +303,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double[] ReadDoubleArr(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             double[] data = new double[count];
@@ -347,7 +313,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static List<double> ReadDoubleList(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             List<double> data = new List<double>(count);
@@ -358,7 +323,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static decimal[] ReadDecimalArr(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             decimal[] data = new decimal[count];
@@ -369,7 +333,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static List<decimal> ReadDecimalList(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             List<decimal> data = new List<decimal>(count);
@@ -380,7 +343,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ReadUTF8String(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             string data = Encoding.UTF8.GetString(src, offset, count);
@@ -388,7 +350,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string[] ReadUTF8StringArr(byte[] src, ref int offset) {
             ushort totalCount = ReadUInt16(src, ref offset);
             string[] data = new string[totalCount];
@@ -399,7 +360,6 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static List<string> ReadUTF8StringList(byte[] src, ref int offset) {
             ushort totalCount = ReadUInt16(src, ref offset);
             List<string> data = new List<string>(totalCount);
@@ -411,7 +371,6 @@ namespace GameFunctions {
         }
 
         // ==== VARINT ====
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong ReadVarint(byte[] src, ref int offset) {
             ulong data = 0;
             byte b = 0;
@@ -430,14 +389,12 @@ namespace GameFunctions {
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong ReadVarintWithZigZag(byte[] src, ref int offset) {
             ulong udata = (ulong)ReadVarint(src, ref offset);
             ulong data = ReadZigZag(udata);
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static ulong ReadZigZag(ulong value) {
             bool isNegative = value % 2 != 0;
             unchecked {
