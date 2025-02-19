@@ -221,9 +221,8 @@ namespace GameFunctions {
             if (data != null) {
                 ushort count = (ushort)data.Length;
                 WriteUInt16(dst, count, ref offset);
-                for (int i = 0; i < count; i += 1) {
-                    WriteInt16(dst, data[i], ref offset);
-                }
+                Buffer.BlockCopy(data, 0, dst, offset, count * 2);
+                offset += count * 2;
             } else {
                 WriteUInt16(dst, 0, ref offset);
             }
@@ -245,9 +244,8 @@ namespace GameFunctions {
             if (data != null) {
                 ushort count = (ushort)data.Length;
                 WriteUInt16(dst, count, ref offset);
-                for (int i = 0; i < count; i += 1) {
-                    WriteUInt16(dst, data[i], ref offset);
-                }
+                Buffer.BlockCopy(data, 0, dst, offset, count * 2);
+                offset += count * 2;
             } else {
                 WriteUInt16(dst, 0, ref offset);
             }
@@ -269,9 +267,8 @@ namespace GameFunctions {
             if (data != null) {
                 ushort count = (ushort)data.Length;
                 WriteUInt16(dst, count, ref offset);
-                for (int i = 0; i < count; i += 1) {
-                    WriteInt32(dst, data[i], ref offset);
-                }
+                Buffer.BlockCopy(data, 0, dst, offset, count * 4);
+                offset += count * 4;
             } else {
                 WriteUInt16(dst, 0, ref offset);
             }
@@ -293,9 +290,8 @@ namespace GameFunctions {
             if (data != null) {
                 ushort count = (ushort)data.Length;
                 WriteUInt16(dst, count, ref offset);
-                for (int i = 0; i < count; i += 1) {
-                    WriteUInt32(dst, data[i], ref offset);
-                }
+                Buffer.BlockCopy(data, 0, dst, offset, count * 4);
+                offset += count * 4;
             } else {
                 WriteUInt16(dst, 0, ref offset);
             }
@@ -317,9 +313,8 @@ namespace GameFunctions {
             if (data != null) {
                 ushort count = (ushort)data.Length;
                 WriteUInt16(dst, count, ref offset);
-                for (int i = 0; i < count; i += 1) {
-                    WriteSingle(dst, data[i], ref offset);
-                }
+                Buffer.BlockCopy(data, 0, dst, offset, count * 4);
+                offset += count * 4;
             } else {
                 WriteUInt16(dst, 0, ref offset);
             }
@@ -341,9 +336,8 @@ namespace GameFunctions {
             if (data != null) {
                 ushort count = (ushort)data.Length;
                 WriteUInt16(dst, count, ref offset);
-                for (int i = 0; i < count; i += 1) {
-                    WriteInt64(dst, data[i], ref offset);
-                }
+                Buffer.BlockCopy(data, 0, dst, offset, count * 8);
+                offset += count * 8;
             } else {
                 WriteUInt16(dst, 0, ref offset);
             }
@@ -365,9 +359,8 @@ namespace GameFunctions {
             if (data != null) {
                 ushort count = (ushort)data.Length;
                 WriteUInt16(dst, count, ref offset);
-                for (int i = 0; i < count; i += 1) {
-                    WriteUInt64(dst, data[i], ref offset);
-                }
+                Buffer.BlockCopy(data, 0, dst, offset, count * 8);
+                offset += count * 8;
             } else {
                 WriteUInt16(dst, 0, ref offset);
             }
@@ -389,9 +382,8 @@ namespace GameFunctions {
             if (data != null) {
                 ushort count = (ushort)data.Length;
                 WriteUInt16(dst, count, ref offset);
-                for (int i = 0; i < count; i += 1) {
-                    WriteDouble(dst, data[i], ref offset);
-                }
+                Buffer.BlockCopy(data, 0, dst, offset, count * 8);
+                offset += count * 8;
             } else {
                 WriteUInt16(dst, 0, ref offset);
             }
@@ -413,9 +405,8 @@ namespace GameFunctions {
             if (data != null) {
                 ushort count = (ushort)data.Length;
                 WriteUInt16(dst, count, ref offset);
-                for (int i = 0; i < count; i += 1) {
-                    WriteDecimal(dst, data[i], ref offset);
-                }
+                Buffer.BlockCopy(data, 0, dst, offset, count * 16);
+                offset += count * 16;
             } else {
                 WriteUInt16(dst, 0, ref offset);
             }

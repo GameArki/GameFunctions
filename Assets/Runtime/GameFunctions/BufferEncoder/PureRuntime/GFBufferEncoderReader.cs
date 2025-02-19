@@ -166,10 +166,8 @@ namespace GameFunctions {
         public static short[] ReadInt16Arr(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             short[] data = new short[count];
-            for (int i = 0; i < count; i += 1) {
-                short d = ReadInt16(src, ref offset);
-                data[i] = d;
-            }
+            Buffer.BlockCopy(src, offset, data, 0, count * 2);
+            offset += count * 2;
             return data;
         }
 
@@ -186,10 +184,8 @@ namespace GameFunctions {
         public static ushort[] ReadUInt16Arr(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             ushort[] data = new ushort[count];
-            for (int i = 0; i < count; i += 1) {
-                ushort d = ReadUInt16(src, ref offset);
-                data[i] = d;
-            }
+            Buffer.BlockCopy(src, offset, data, 0, count * 2);
+            offset += count * 2;
             return data;
         }
 
@@ -206,10 +202,8 @@ namespace GameFunctions {
         public static int[] ReadInt32Arr(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             int[] data = new int[count];
-            for (int i = 0; i < count; i += 1) {
-                int d = ReadInt32(src, ref offset);
-                data[i] = d;
-            }
+            Buffer.BlockCopy(src, offset, data, 0, count * 4);
+            offset += count * 4;
             return data;
         }
 
@@ -226,10 +220,8 @@ namespace GameFunctions {
         public static uint[] ReadUInt32Arr(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             uint[] data = new uint[count];
-            for (int i = 0; i < count; i += 1) {
-                uint d = ReadUInt32(src, ref offset);
-                data[i] = d;
-            }
+            Buffer.BlockCopy(src, offset, data, 0, count * 4);
+            offset += count * 4;
             return data;
         }
 
@@ -246,10 +238,8 @@ namespace GameFunctions {
         public static long[] ReadInt64Arr(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             long[] data = new long[count];
-            for (int i = 0; i < count; i += 1) {
-                long d = ReadInt64(src, ref offset);
-                data[i] = d;
-            }
+            Buffer.BlockCopy(src, offset, data, 0, count * 8);
+            offset += count * 8;
             return data;
         }
 
@@ -266,10 +256,8 @@ namespace GameFunctions {
         public static ulong[] ReadUInt64Arr(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             ulong[] data = new ulong[count];
-            for (int i = 0; i < count; i += 1) {
-                ulong d = ReadUInt64(src, ref offset);
-                data[i] = d;
-            }
+            Buffer.BlockCopy(src, offset, data, 0, count * 8);
+            offset += count * 8;
             return data;
         }
 
@@ -286,10 +274,8 @@ namespace GameFunctions {
         public static float[] ReadSingleArr(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             float[] data = new float[count];
-            for (int i = 0; i < count; i += 1) {
-                float d = ReadSingle(src, ref offset);
-                data[i] = d;
-            }
+            Buffer.BlockCopy(src, offset, data, 0, count * 4);
+            offset += count * 4;
             return data;
         }
 
@@ -306,10 +292,8 @@ namespace GameFunctions {
         public static double[] ReadDoubleArr(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             double[] data = new double[count];
-            for (int i = 0; i < count; i += 1) {
-                double d = ReadDouble(src, ref offset);
-                data[i] = d;
-            }
+            Buffer.BlockCopy(src, offset, data, 0, count * 8);
+            offset += count * 8;
             return data;
         }
 
@@ -326,10 +310,8 @@ namespace GameFunctions {
         public static decimal[] ReadDecimalArr(byte[] src, ref int offset) {
             ushort count = ReadUInt16(src, ref offset);
             decimal[] data = new decimal[count];
-            for (int i = 0; i < count; i += 1) {
-                decimal d = ReadDecimal(src, ref offset);
-                data[i] = d;
-            }
+            Buffer.BlockCopy(src, offset, data, 0, count * 16);
+            offset += count * 16;
             return data;
         }
 
