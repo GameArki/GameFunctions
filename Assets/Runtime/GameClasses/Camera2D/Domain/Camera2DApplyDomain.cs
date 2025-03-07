@@ -62,8 +62,6 @@ namespace GameClasses.Camera2DLib.Internal {
             }
 
             if (!isOverDeadSize) {
-                followModel.followDampingX = 0;
-                followModel.followDampingY = 0;
                 return truePos;
             }
 
