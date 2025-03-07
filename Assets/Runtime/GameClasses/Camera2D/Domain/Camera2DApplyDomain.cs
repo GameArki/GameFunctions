@@ -98,10 +98,10 @@ namespace GameClasses.Camera2DLib.Internal {
                 y = Mathf.Lerp(truePos.y, targetPos.y, percent);
             }
 
-            // if (Mathf.Approximately(x, truePos.x) && Mathf.Approximately(y, truePos.y)) {
-            //     followModel.followDampingX = 0;
-            //     followModel.followDampingY = 0;
-            // }
+            if (Mathf.Approximately(x, truePos.x) && Mathf.Approximately(y, truePos.y)) {
+                followModel.followDampingX = 0;
+                followModel.followDampingY = 0;
+            }
 
             return new Vector2(x, y);
 
