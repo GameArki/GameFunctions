@@ -73,13 +73,11 @@ namespace GameClasses.Camera2DLib.Internal {
                 xDamping = Mathf.Clamp(xDamping, 0, followModel.followDampingXOrigin);
                 float percent = xDamping / followModel.followDampingXOrigin;
                 x = Mathf.Lerp(xCenterPos, xTargetPos, percent);
-                Debug.Log("xDamping: " + x + " percent" + percent);
             }
 
             ref float xLastDir = ref followModel.followDampingLastDirX;
             if (xLastDir != xMoveDir) {
                 xDamping = 0;
-                Debug.Log("Reset");
             }
             xLastDir = xMoveDir;
             if (Math.Abs(x - xTargetPos) <= float.Epsilon) {
