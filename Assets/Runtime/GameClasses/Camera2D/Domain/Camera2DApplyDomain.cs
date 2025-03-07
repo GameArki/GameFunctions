@@ -49,7 +49,8 @@ namespace GameClasses.Camera2DLib.Internal {
             // x
             float xCenterPos = et.pos.x;
             float xTargetPos = followModel.followTargetPos.x;
-            float xMoveDir = Math.Sign(xTargetPos - followModel.lastFollowTargetPos.x);
+            float xMoveDiff = xTargetPos - followModel.lastFollowTargetPos.x;
+            float xMoveDir = Math.Sign(xMoveDiff);
             float xDiff = xTargetPos - xCenterPos;
             float xDeadHalfSize = followModel.deadZoneHalfSize.x;
             float xDiffAbs = Mathf.Abs(xDiff);
@@ -63,6 +64,10 @@ namespace GameClasses.Camera2DLib.Internal {
                     xTargetPos = xCenterPos;
                     xDamping = 0;
                 }
+            }
+
+            if (Mathf.Abs(xMoveDiff) > 1) {
+                xDamping = 0;
             }
 
             float x = xTargetPos;
@@ -87,7 +92,8 @@ namespace GameClasses.Camera2DLib.Internal {
             // y
             float yCenterPos = et.pos.y;
             float yTargetPos = followModel.followTargetPos.y;
-            float yMoveDir = Math.Sign(yTargetPos - followModel.lastFollowTargetPos.y);
+            float yMoveDiff = yTargetPos - followModel.lastFollowTargetPos.y;
+            float yMoveDir = Math.Sign(yMoveDiff);
             float yDiff = yTargetPos - yCenterPos;
             float yDeadHalfSize = followModel.deadZoneHalfSize.y;
             float yDiffAbs = Mathf.Abs(yDiff);
@@ -101,6 +107,10 @@ namespace GameClasses.Camera2DLib.Internal {
                     yTargetPos = yCenterPos;
                     yDamping = 0;
                 }
+            }
+
+            if (Mathf.Abs(yMoveDiff) > 1) {
+                yDamping = 0;
             }
 
             float y = yTargetPos;
