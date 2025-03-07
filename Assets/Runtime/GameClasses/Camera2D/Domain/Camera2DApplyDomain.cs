@@ -68,15 +68,19 @@ namespace GameClasses.Camera2DLib.Internal {
             targetPos = followPos + followModel.followOffset;
 
             float xDir = Mathf.Sign(targetPos.x - truePos.x);
-            if (followModel.lastDampingDirX == xDir && xDir != 0) {
-                followModel.lastDampingDirX = xDir;
-                followModel.followDampingX = followModel.followDampingXOrigin;
+            if (xDir != 0) {
+                if (followModel.lastDampingDirX != xDir) {
+                    followModel.lastDampingDirX = xDir;
+                    followModel.followDampingX = 0;
+                }
             }
 
             float yDir = Mathf.Sign(targetPos.y - truePos.y);
-            if (followModel.lastDampingDirY == yDir && yDir != 0) {
-                followModel.lastDampingDirY = yDir;
-                followModel.followDampingY = followModel.followDampingYOrigin;
+            if (yDir != 0) {
+                if (followModel.lastDampingDirY != yDir) {
+                    followModel.lastDampingDirY = yDir;
+                    followModel.followDampingY = 0;
+                }
             }
 
             // Damping
@@ -84,8 +88,10 @@ namespace GameClasses.Camera2DLib.Internal {
             if (followModel.followDampingXOrigin == 0) {
                 x = targetPos.x;
             } else {
-                followModel.followDampingX += dt;
-                float percent = followModel.followDampingX / followModel.followDampingXOrigin;
+                ref float xDamping = ref followModel.followDampingX;
+                xDamping += dt;
+                xDamping = Mathf.Min(xDamping, followModel.followDampingXOrigin);
+                float percent = xDamping / followModel.followDampingXOrigin;
                 x = Mathf.Lerp(truePos.x, targetPos.x, percent);
             }
 
@@ -93,14 +99,11 @@ namespace GameClasses.Camera2DLib.Internal {
             if (followModel.followDampingYOrigin == 0) {
                 y = targetPos.y;
             } else {
-                followModel.followDampingY += dt;
-                float percent = followModel.followDampingY / followModel.followDampingYOrigin;
+                ref float yDamping = ref followModel.followDampingY;
+                yDamping += dt;
+                yDamping = Mathf.Min(yDamping, followModel.followDampingYOrigin);
+                float percent = yDamping / followModel.followDampingYOrigin;
                 y = Mathf.Lerp(truePos.y, targetPos.y, percent);
-            }
-
-            if (Mathf.Approximately(x, truePos.x) && Mathf.Approximately(y, truePos.y)) {
-                followModel.followDampingX = 0;
-                followModel.followDampingY = 0;
             }
 
             return new Vector2(x, y);
