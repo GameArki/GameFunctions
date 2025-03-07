@@ -77,6 +77,17 @@ namespace GameClasses.Camera2DLib {
             followModel.followDampingY = 0;
             followModel.followDampingXOrigin = dampingX;
             followModel.followDampingYOrigin = dampingY;
+            followModel.deadZoneSize = Vector2.zero;
+        }
+
+        public void Follow_DeadZone_Set(int id, Vector2 size) {
+            var entity = ctx.virtualRepo.Get(id);
+            if (entity == null) {
+                Debug.LogError($"CameraHandleID: {id} not found");
+                return;
+            }
+            Camera2DFollowModel followModel = entity.followModel;
+            followModel.deadZoneSize = size;
         }
 
         public void Follow_Update(int id, Vector2 targetPos) {

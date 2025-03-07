@@ -46,7 +46,19 @@ namespace GameClasses.Camera2DLib.Internal {
                 return truePos;
             }
 
-            Vector2 targetPos = followModel.followTargetPos + followModel.followOffset;
+            // - DeadZone
+            Vector2 followPos = truePos;
+            Vector2 targetPos = followModel.followTargetPos;
+            Vector2 deadZoneSize = followModel.deadZoneSize;
+            Vector2 posDiff = targetPos - truePos;
+            if (posDiff.x > deadZoneSize.x || posDiff.x < -deadZoneSize.x) {
+                followPos.x = targetPos.x;
+            }
+            if (posDiff.y > deadZoneSize.y || posDiff.y < -deadZoneSize.y) {
+                followPos.y = targetPos.y;
+            }
+
+            targetPos = followPos + followModel.followOffset;
 
             // Damping
             float x;

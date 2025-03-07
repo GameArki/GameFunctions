@@ -29,6 +29,8 @@ namespace GameFunctions.Sample {
         [SerializeField] float zoomInRestoreDelaySec = 1f;
         [SerializeField] float zoomInRestoreDuration = 1f;
 
+        [SerializeField] Vector2 deadZoneSize = new Vector2(5f, 5f);
+
         void Awake() {
 
             role = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -47,6 +49,9 @@ namespace GameFunctions.Sample {
         }
 
         void Update() {
+
+            core.Follow_DeadZone_Set(handleID, deadZoneSize);
+
             float dt = Time.deltaTime;
 
             Vector2 input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));

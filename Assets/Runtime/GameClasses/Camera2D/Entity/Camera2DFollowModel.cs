@@ -15,6 +15,8 @@ namespace GameClasses.Camera2DLib.Internal {
         public Vector2 followTargetPos;
         public Vector2 followOffset;
 
+        public Vector2 deadZoneSize;
+
     }
 
 }
