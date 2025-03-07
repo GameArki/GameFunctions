@@ -52,11 +52,11 @@ namespace GameClasses.Camera2DLib.Internal {
             Vector2 deadZoneSize = followModel.deadZoneSize;
             Vector2 posDiff = targetPos - truePos;
             bool isOverDeadSize = false;
-            if (posDiff.x > deadZoneSize.x || posDiff.x < -deadZoneSize.x) {
+            if (posDiff.x >= deadZoneSize.x || posDiff.x <= -deadZoneSize.x) {
                 followPos.x = targetPos.x;
                 isOverDeadSize = true;
             }
-            if (posDiff.y > deadZoneSize.y || posDiff.y < -deadZoneSize.y) {
+            if (posDiff.y >= deadZoneSize.y || posDiff.y <= -deadZoneSize.y) {
                 followPos.y = targetPos.y;
                 isOverDeadSize = true;
             }
