@@ -74,6 +74,11 @@ namespace GameClasses.Camera2DLib.Internal {
             if (followModel.followDampingXOrigin == 0) {
                 x = targetPos.x;
             } else {
+                float dir = Mathf.Sign(targetPos.x - truePos.x);
+                if (followModel.lastDampingDirX != dir && dir != 0) {
+                    followModel.followDampingX = 0;
+                    followModel.lastDampingDirX = dir;
+                }
                 followModel.followDampingX += dt;
                 float percent = followModel.followDampingX / followModel.followDampingXOrigin;
                 x = Mathf.Lerp(truePos.x, targetPos.x, percent);
@@ -83,15 +88,20 @@ namespace GameClasses.Camera2DLib.Internal {
             if (followModel.followDampingYOrigin == 0) {
                 y = targetPos.y;
             } else {
+                float dir = Mathf.Sign(targetPos.y - truePos.y);
+                if (followModel.lastDampingDirY != dir && dir != 0) {
+                    followModel.followDampingY = 0;
+                    followModel.lastDampingDirY = dir;
+                }
                 followModel.followDampingY += dt;
                 float percent = followModel.followDampingY / followModel.followDampingYOrigin;
                 y = Mathf.Lerp(truePos.y, targetPos.y, percent);
             }
 
-            if (Mathf.Approximately(x, truePos.x) && Mathf.Approximately(y, truePos.y)) {
-                followModel.followDampingX = 0;
-                followModel.followDampingY = 0;
-            }
+            // if (Mathf.Approximately(x, truePos.x) && Mathf.Approximately(y, truePos.y)) {
+            //     followModel.followDampingX = 0;
+            //     followModel.followDampingY = 0;
+            // }
 
             return new Vector2(x, y);
 
