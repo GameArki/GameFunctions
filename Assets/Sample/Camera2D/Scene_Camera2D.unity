@@ -231,7 +231,7 @@ MonoBehaviour:
   cam: {fileID: 968224493}
   confinerMin: {x: -40, y: -40}
   confinerMax: {x: 30, y: 30}
-  moveSpeed: 30
+  moveSpeed: 10
   shakeAmplitude: {x: 0.1, y: 0.1}
   shakeDuration: 0.1
   shakeFrequency: 20
@@ -241,7 +241,8 @@ MonoBehaviour:
   zoomInRestoreEasingType: 1
   zoomInRestoreDelaySec: 1
   zoomInRestoreDuration: 1
-  deadZoneSize: {x: 10, y: 10}
+  followDamping: {x: 1, y: 1}
+  deadZoneSize: {x: 5, y: 5}
 --- !u!114 &968224496
 MonoBehaviour:
   m_ObjectHideFlags: 0

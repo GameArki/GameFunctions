@@ -9,16 +9,17 @@ namespace GameClasses.Camera2DLib.Internal {
 
         public float followDampingX;
         public float followDampingXOrigin;
-        public float lastDampingDirX;
+        public float followDampingLastDirX;
 
         public float followDampingY;
         public float followDampingYOrigin;
-        public float lastDampingDirY;
+        public float followDampingLastDirY;
 
         public Vector2 followTargetPos;
+        public Vector2 lastFollowTargetPos;
         public Vector2 followOffset;
 
-        public Vector2 deadZoneSize;
+        public Vector2 deadZoneHalfSize;
 
     }
 

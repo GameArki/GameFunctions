@@ -12,6 +12,7 @@ namespace GameFunctions.Sample {
 
         GameObject role;
 
+        [Header("Confiner")]
         [SerializeField] Vector2 confinerMin;
         [SerializeField] Vector2 confinerMax;
         [SerializeField] float moveSpeed;
@@ -29,6 +30,8 @@ namespace GameFunctions.Sample {
         [SerializeField] float zoomInRestoreDelaySec = 1f;
         [SerializeField] float zoomInRestoreDuration = 1f;
 
+        [Header("DeadZone")]
+        [SerializeField] Vector2 followDamping = new Vector2(1.5f, 2.5f);
         [SerializeField] Vector2 deadZoneSize = new Vector2(5f, 5f);
 
         void Awake() {
@@ -45,7 +48,7 @@ namespace GameFunctions.Sample {
             core.Confine_Set(handleID, confinerMin, confinerMax);
 
             core.Follow_Enable(handleID, true);
-            core.Follow_Set(handleID, role.transform.position, Vector2.zero, 1.5f, 2.5f);
+            core.Follow_Set(handleID, role.transform.position, Vector2.zero, followDamping.x, followDamping.y);
         }
 
         void Update() {
@@ -75,6 +78,9 @@ namespace GameFunctions.Sample {
         void OnDrawGizmos() {
             Gizmos.color = Color.red;
             Gizmos.DrawWireCube((confinerMin + confinerMax) / 2, confinerMax - confinerMin);
+
+            if (core == null) return;
+            core.Gizmos_Draw(handleID);
         }
 
     }

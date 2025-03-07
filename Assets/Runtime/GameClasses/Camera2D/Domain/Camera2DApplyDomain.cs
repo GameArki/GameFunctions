@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using GameFunctions;
 
@@ -41,69 +42,86 @@ namespace GameClasses.Camera2DLib.Internal {
         static Vector2 Follow_Process(Camera2DContext ctx, Camera2DVirtualEntity et, float dt) {
 
             Camera2DFollowModel followModel = et.followModel;
-            Vector2 truePos = et.pos;
             if (!followModel.isEnable) {
-                return truePos;
+                return et.pos;
             }
 
-            // - DeadZone
-            Vector2 followPos = truePos;
-            Vector2 targetPos = followModel.followTargetPos;
-            Vector2 deadZoneSize = followModel.deadZoneSize;
-            Vector2 posDiff = targetPos - truePos;
-            bool isOverDeadSize = false;
-            if (posDiff.x >= deadZoneSize.x || posDiff.x <= -deadZoneSize.x) {
-                followPos.x = targetPos.x;
-                isOverDeadSize = true;
-            }
-            if (posDiff.y >= deadZoneSize.y || posDiff.y <= -deadZoneSize.y) {
-                followPos.y = targetPos.y;
-                isOverDeadSize = true;
-            }
-
-            if (!isOverDeadSize) {
-                return truePos;
-            }
-
-            targetPos = followPos + followModel.followOffset;
-
-            float xDir = Mathf.Sign(targetPos.x - truePos.x);
-            if (xDir != 0) {
-                if (followModel.lastDampingDirX != xDir) {
-                    followModel.lastDampingDirX = xDir;
-                    followModel.followDampingX = 0;
+            // x
+            float xCenterPos = et.pos.x;
+            float xTargetPos = followModel.followTargetPos.x;
+            float xMoveDir = Math.Sign(xTargetPos - followModel.lastFollowTargetPos.x);
+            float xDiff = xTargetPos - xCenterPos;
+            float xDeadHalfSize = followModel.deadZoneHalfSize.x;
+            float xDiffAbs = Mathf.Abs(xDiff);
+            ref float xDamping = ref followModel.followDampingX;
+            if (xDeadHalfSize != 0) {
+                if (xDiff > xDeadHalfSize || xDiff < -xDeadHalfSize) {
+                    float xSign = Mathf.Sign(xDiff);
+                    float xCenterOffset = (xDiffAbs - xDeadHalfSize) * xSign;
+                    xTargetPos = xCenterPos + followModel.followOffset.x + xCenterOffset;
+                } else {
+                    xTargetPos = xCenterPos;
+                    xDamping = 0;
                 }
             }
 
-            float yDir = Mathf.Sign(targetPos.y - truePos.y);
-            if (yDir != 0) {
-                if (followModel.lastDampingDirY != yDir) {
-                    followModel.lastDampingDirY = yDir;
-                    followModel.followDampingY = 0;
-                }
-            }
-
-            // Damping
-            float x;
+            float x = xTargetPos;
             if (followModel.followDampingXOrigin == 0) {
-                x = targetPos.x;
+                x = xTargetPos;
             } else {
-                ref float xDamping = ref followModel.followDampingX;
                 xDamping += dt;
-                xDamping = Mathf.Min(xDamping, followModel.followDampingXOrigin);
+                xDamping = Mathf.Clamp(xDamping, 0, followModel.followDampingXOrigin);
                 float percent = xDamping / followModel.followDampingXOrigin;
-                x = Mathf.Lerp(truePos.x, targetPos.x, percent);
+                x = Mathf.Lerp(xCenterPos, xTargetPos, percent);
+                Debug.Log("xDamping: " + x + " percent" + percent);
             }
 
-            float y;
+            ref float xLastDir = ref followModel.followDampingLastDirX;
+            if (xLastDir != xMoveDir) {
+                xDamping = 0;
+                Debug.Log("Reset");
+            }
+            xLastDir = xMoveDir;
+            if (Math.Abs(x - xTargetPos) <= float.Epsilon) {
+
+            }
+
+            // y
+            float yCenterPos = et.pos.y;
+            float yTargetPos = followModel.followTargetPos.y;
+            float yMoveDir = Math.Sign(yTargetPos - followModel.lastFollowTargetPos.y);
+            float yDiff = yTargetPos - yCenterPos;
+            float yDeadHalfSize = followModel.deadZoneHalfSize.y;
+            float yDiffAbs = Mathf.Abs(yDiff);
+            ref float yDamping = ref followModel.followDampingY;
+            if (yDeadHalfSize != 0) {
+                if (yDiff > yDeadHalfSize || yDiff < -yDeadHalfSize) {
+                    float ySign = Mathf.Sign(yDiff);
+                    float yCenterOffset = (yDiffAbs - yDeadHalfSize) * ySign;
+                    yTargetPos = yCenterPos + followModel.followOffset.y + yCenterOffset;
+                } else {
+                    yTargetPos = yCenterPos;
+                    yDamping = 0;
+                }
+            }
+
+            float y = yTargetPos;
             if (followModel.followDampingYOrigin == 0) {
-                y = targetPos.y;
+                y = yTargetPos;
             } else {
-                ref float yDamping = ref followModel.followDampingY;
                 yDamping += dt;
-                yDamping = Mathf.Min(yDamping, followModel.followDampingYOrigin);
+                yDamping = Mathf.Clamp(yDamping, 0, followModel.followDampingYOrigin);
                 float percent = yDamping / followModel.followDampingYOrigin;
-                y = Mathf.Lerp(truePos.y, targetPos.y, percent);
+                y = Mathf.Lerp(yCenterPos, yTargetPos, percent);
+            }
+
+            ref float yLastDir = ref followModel.followDampingLastDirY;
+            if (yLastDir != yMoveDir) {
+                yDamping = 0;
+            }
+            yLastDir = yMoveDir;
+            if (Math.Abs(y - yTargetPos) <= float.Epsilon) {
+
             }
 
             return new Vector2(x, y);

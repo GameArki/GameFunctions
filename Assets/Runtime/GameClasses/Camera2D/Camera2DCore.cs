@@ -72,22 +72,22 @@ namespace GameClasses.Camera2DLib {
             }
             Camera2DFollowModel followModel = entity.followModel;
             followModel.followTargetPos = targetPos;
+            followModel.lastFollowTargetPos = targetPos;
             followModel.followOffset = offset;
             followModel.followDampingX = 0;
             followModel.followDampingY = 0;
             followModel.followDampingXOrigin = dampingX;
             followModel.followDampingYOrigin = dampingY;
-            followModel.deadZoneSize = Vector2.zero;
         }
 
-        public void Follow_DeadZone_Set(int id, Vector2 size) {
+        public void Follow_DeadZone_Set(int id, Vector2 halfSize) {
             var entity = ctx.virtualRepo.Get(id);
             if (entity == null) {
                 Debug.LogError($"CameraHandleID: {id} not found");
                 return;
             }
             Camera2DFollowModel followModel = entity.followModel;
-            followModel.deadZoneSize = size;
+            followModel.deadZoneHalfSize = halfSize;
         }
 
         public void Follow_Update(int id, Vector2 targetPos) {
@@ -97,6 +97,7 @@ namespace GameClasses.Camera2DLib {
                 return;
             }
             Camera2DFollowModel followModel = entity.followModel;
+            followModel.lastFollowTargetPos = followModel.followTargetPos;
             followModel.followTargetPos = targetPos;
         }
         #endregion
@@ -209,6 +210,33 @@ namespace GameClasses.Camera2DLib {
             }
             Camera2DEffectZoomInModel zoomInModel = entity.zoomInModel;
             zoomInModel.isEnable = false;
+        }
+        #endregion
+
+        #region Gizmos
+        public void Gizmos_Draw(int id) {
+            var entity = ctx.virtualRepo.Get(id);
+            if (entity == null) {
+                Debug.LogError($"CameraHandleID: {id} not found");
+                return;
+            }
+
+            Camera2DFollowModel followModel = entity.followModel;
+            if (followModel.isEnable) {
+                // DeadZone
+                Vector2 deadZoneHalfSize = followModel.deadZoneHalfSize;
+                Vector2 deadZonePos = entity.pos + followModel.followOffset;
+                Gizmos.color = Color.red;
+                Gizmos.DrawWireCube(deadZonePos, deadZoneHalfSize * 2);
+
+                // FollowTarget
+                Gizmos.color = Color.green;
+                Gizmos.DrawWireSphere(followModel.followTargetPos, 0.1f);
+
+                // TruePos
+                Gizmos.color = Color.blue;
+                Gizmos.DrawWireSphere(entity.pos, 0.1f);
+            }
         }
         #endregion
     }
