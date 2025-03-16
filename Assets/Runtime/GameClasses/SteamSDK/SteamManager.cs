@@ -138,6 +138,7 @@ namespace GameClasses {
             SteamAPI.Shutdown();
         }
 
+        #region Achievements
         // 解锁成就
         public void Ach_Unlock(string achievementId) {
             if (!isInit) {
@@ -161,6 +162,29 @@ namespace GameClasses {
             SteamUserStats.ResetAllStats(true);
             SteamUserStats.StoreStats();
         }
+        #endregion
+
+        #region RichPresence
+        public void RichPresence_Set(string key, string value) {
+            if (!isInit) {
+                return;
+            }
+            if (!isSteam) {
+                return;
+            }
+            SteamFriends.SetRichPresence(key, value);
+        }
+
+        public void RichPresence_Clear() {
+            if (!isInit) {
+                return;
+            }
+            if (!isSteam) {
+                return;
+            }
+            SteamFriends.ClearRichPresence();
+        }
+        #endregion
 
     }
 }
