@@ -138,6 +138,18 @@ namespace GameClasses {
             SteamAPI.Shutdown();
         }
 
+        #region Generic
+        public bool IsOverlayEnabled() {
+            if (!isInit) {
+                return false;
+            }
+            if (!isSteam) {
+                return false;
+            }
+            return SteamUtils.IsOverlayEnabled();
+        }
+        #endregion
+
         #region Achievements
         // 解锁成就
         public void Ach_Unlock(string achievementId) {
