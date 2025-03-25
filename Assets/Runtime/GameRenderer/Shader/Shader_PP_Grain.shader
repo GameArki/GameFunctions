@@ -3,8 +3,8 @@ Shader "NJM/Shader_PP_Grain"
     Properties
     {
         _MainTex ("Base (RGB)", 2D) = "white" {}
-        _GrainIntensity ("Grain Intensity", Range(0, 1)) = 0.1
-        _GrainSize ("Grain Size", Range(0.1, 10)) = 2.0
+        _GrainIntensity ("Grain Intensity", Range(0, 1)) = 0.03
+        _GrainSize ("Grain Size", Range(0.1, 10)) = 1.0
         _Interval ("Interval", Range(0, 1)) = 0.1
     }
     

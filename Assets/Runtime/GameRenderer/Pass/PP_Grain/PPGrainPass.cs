@@ -66,6 +66,8 @@ namespace GameRenderer {
             float interval = volume.interval.value;
             if (time >= interval) {
                 material.SetFloat("_Interval", interval * Time.time);
+                material.SetFloat("_GrainIntensity", volume.intensity.value);
+                material.SetFloat("_GrainSize", volume.size.value);
                 time -= interval;
             }
 

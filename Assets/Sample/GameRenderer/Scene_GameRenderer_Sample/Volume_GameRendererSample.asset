@@ -32,6 +32,15 @@ MonoBehaviour:
   isEnable:
     m_OverrideState: 1
     m_Value: 1
+  intensity:
+    m_OverrideState: 1
+    m_Value: 0.03
+  size:
+    m_OverrideState: 1
+    m_Value: 1
+  interval:
+    m_OverrideState: 1
+    m_Value: 0.083333336
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
