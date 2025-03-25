@@ -11,6 +11,7 @@ namespace GameRenderer {
         public PPShakeScreenPass pp_shakeScreen;
         public PPScanLinePass pp_scanLine;
         public PPFilmBorderPass pp_filmBorder;
+        public PPGrainPass pp_grain;
 
         public override void Create() {
             if (pp_shakeScreen == null) {
@@ -21,6 +22,9 @@ namespace GameRenderer {
             }
             if (pp_filmBorder == null) {
                 pp_filmBorder = new PPFilmBorderPass();
+            }
+            if (pp_grain == null) {
+                pp_grain = new PPGrainPass();
             }
         }
 
@@ -34,6 +38,9 @@ namespace GameRenderer {
             if (pp_filmBorder != null) {
                 renderer.EnqueuePass(pp_filmBorder);
             }
+            if (pp_grain != null) {
+                renderer.EnqueuePass(pp_grain);
+            }
         }
 
         public override void SetupRenderPasses(ScriptableRenderer renderer, in RenderingData renderingData) {
@@ -46,6 +53,9 @@ namespace GameRenderer {
             }
             if (pp_filmBorder != null) {
                 pp_filmBorder.Setup(renderer.cameraColorTargetHandle);
+            }
+            if (pp_grain != null) {
+                pp_grain.Setup(renderer.cameraColorTargetHandle);
             }
         }
 

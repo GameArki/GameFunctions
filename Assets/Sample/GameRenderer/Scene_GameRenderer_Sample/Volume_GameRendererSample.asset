@@ -12,6 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4ba430521c6e1448bc310a27644e1f3, type: 3}
   m_Name: NJMScanLineVomume
   m_EditorClassIdentifier: 
+  active: 0
+  isEnable:
+    m_OverrideState: 1
+    m_Value: 1
+--- !u!114 &-6179084395844439288
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9259b2f3ea686b44e8670d6841e517e6, type: 3}
+  m_Name: PPGrainVolume
+  m_EditorClassIdentifier: 
   active: 1
   isEnable:
     m_OverrideState: 1
@@ -32,6 +48,7 @@ MonoBehaviour:
   - {fileID: -8988978049573653588}
   - {fileID: 6073128275002831412}
   - {fileID: 2409720712729501105}
+  - {fileID: -6179084395844439288}
 --- !u!114 &2409720712729501105
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -44,7 +61,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa6b550524ecf93489695d202fa6ff83, type: 3}
   m_Name: PPFilmBorderVolume
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   isEnable:
     m_OverrideState: 1
     m_Value: 1
@@ -63,7 +80,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3bb930673ba85c49a0781ea194e278d, type: 3}
   m_Name: PPShakeScreenVolume
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   isEnable:
     m_OverrideState: 1
     m_Value: 0
