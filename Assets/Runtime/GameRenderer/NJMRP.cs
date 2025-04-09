@@ -14,6 +14,7 @@ namespace GameRenderer {
         public PPGrainPass pp_grain;
 
         public override void Create() {
+            name = "NJMRP";
             if (pp_shakeScreen == null) {
                 pp_shakeScreen = new PPShakeScreenPass();
             }
