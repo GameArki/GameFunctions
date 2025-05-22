@@ -10,17 +10,15 @@ namespace GameFunctions.GridGeneratorInternal {
         public RD random;
         public GridGenGridOption gridOption;
 
-        Dictionary<GridGenCellType, HashSet<int>> cellTypeValues;
-
         public int[] grid;
 
         Dictionary<int, GridGenAreaEntity> all;
-        Dictionary<int, GridGenAreaEntity> landAreas;
-        Dictionary<int, GridGenAreaEntity> seaAreas;
-        Dictionary<int, GridGenAreaEntity> lakeAreas;
-        Dictionary<int, GridGenAreaEntity> forestAreas;
+        GridGenAreaEntity[] tempArray;
 
-        public GridGenContext() { }
+        public GridGenContext() {
+            all = new Dictionary<int, GridGenAreaEntity>();
+            tempArray = new GridGenAreaEntity[0];
+        }
 
         public void Init(GridGenGridOption gridOption, params GridGenAreaOption[] options) {
 
@@ -31,45 +29,11 @@ namespace GameFunctions.GridGeneratorInternal {
                 random.Next();
             }
 
-            cellTypeValues = new Dictionary<GridGenCellType, HashSet<int>>();
             for (int i = 0; i < options.Length; i++) {
                 var option = options[i];
-                GridGenCellType type = option.cellType;
-                if (!cellTypeValues.ContainsKey(type)) {
-                    cellTypeValues.Add(type, new HashSet<int>());
-                }
-                cellTypeValues[type].Add(option.value);
-
-                GridGenCellType waterFlag = GridGenCellType.Water;
-                if (waterFlag.HasFlag(type)) {
-                    if (!cellTypeValues.ContainsKey(waterFlag)) {
-                        cellTypeValues.Add(waterFlag, new HashSet<int>());
-                    }
-                    cellTypeValues[waterFlag].Add(option.value);
-                }
-            }
-
-            all = new Dictionary<int, GridGenAreaEntity>();
-            landAreas = new Dictionary<int, GridGenAreaEntity>();
-            lakeAreas = new Dictionary<int, GridGenAreaEntity>();
-            seaAreas = new Dictionary<int, GridGenAreaEntity>();
-            forestAreas = new Dictionary<int, GridGenAreaEntity>();
-            for (int i = 0; i < options.Length; i++) {
-                var option = options[i];
-                GridGenCellType type = option.cellType;
-                GridGenAreaEntity entity = new GridGenAreaEntity(i, gridOption.width, gridOption.height, option);
-                if (type == GridGenCellType.Land) {
-                    landAreas.Add(i, entity);
-                } else if (type == GridGenCellType.Sea) {
-                    seaAreas.Add(i, entity);
-                } else if (type == GridGenCellType.Lake) {
-                    lakeAreas.Add(i, entity);
-                } else if (type == GridGenCellType.Forest) {
-                    forestAreas.Add(i, entity);
-                } else {
-                    throw new Exception("Unknown cell type: " + type);
-                }
-                all.Add(i, entity);
+                int typeID = option.typeID;
+                GridGenAreaEntity entity = new GridGenAreaEntity(typeID, gridOption.width, gridOption.height, option);
+                all.Add(typeID, entity);
             }
 
             if (grid == null || grid.Length < gridOption.width * gridOption.height) {
@@ -82,74 +46,52 @@ namespace GameFunctions.GridGeneratorInternal {
             grid[index] = value;
         }
 
-        public void Land_Remove(int index) {
-            foreach (var pair in landAreas) {
-                pair.Value.Remove(index);
+        public void Remove(int typeID, int index) {
+            if (all.TryGetValue(typeID, out GridGenAreaEntity area)) {
+                area.Remove(index);
             }
         }
 
-        public void Land_UpdateAll() {
-            foreach (var pair in landAreas) {
-                pair.Value.UpdateAll();
+        public int TakeAllArea(out GridGenAreaEntity[] results) {
+            int count = all.Count;
+            if (count > tempArray.Length) {
+                tempArray = new GridGenAreaEntity[count];
             }
+            all.Values.CopyTo(tempArray, 0);
+            results = tempArray;
+            return count;
         }
 
-        public void Land_Foreach(Action<GridGenAreaEntity> action) {
-            foreach (var pair in landAreas) {
-                action(pair.Value);
+        public bool TryGetArea(int typeID, out GridGenAreaEntity area) {
+            bool has = all.TryGetValue(typeID, out area);
+            if (!has) {
+                Debug.LogError($"GridGenContext: typeID {typeID} not found");
+                return false;
             }
+            return true;
         }
 
-        public void Sea_Foreach(Action<GridGenAreaEntity> action) {
-            foreach (var pair in seaAreas) {
-                action(pair.Value);
-            }
-        }
-
-        public void Lake_Foreach(Action<GridGenAreaEntity> action) {
-            foreach (var pair in lakeAreas) {
-                action(pair.Value);
-            }
-        }
-
-        public void Forest_Foreach(Action<GridGenAreaEntity> action) {
-            foreach (var pair in forestAreas) {
-                action(pair.Value);
-            }
-        }
-
-        public HashSet<int> GetCellTypeValues(GridGenCellType awayFromType) {
-            bool has = cellTypeValues.TryGetValue(awayFromType, out HashSet<int> values);
+        public HashSet<int> GetCellTypeValues(int typeID) {
+            bool has = all.TryGetValue(typeID, out var area);
             if (!has) {
                 return null;
             }
-            return values;
+            return area.set;
         }
 
-        public bool GetRandomCell(RD rd, GridGenCellType cellType, out int index) {
-            if (cellType == GridGenCellType.Land) {
-                return GetRandomCell(rd, landAreas, out index);
-            } else if (cellType == GridGenCellType.Sea) {
-                return GetRandomCell(rd, seaAreas, out index);
-            } else if (cellType == GridGenCellType.Lake) {
-                return GetRandomCell(rd, lakeAreas, out index);
-            } else if (cellType == GridGenCellType.Forest) {
-                return GetRandomCell(rd, forestAreas, out index);
-            } else {
+        public bool GetRandomCell(RD rd, int typeID, out int res) {
+            int failedTimes = 0;
+            int index = 0;
+            do {
                 index = rd.Next(0, grid.Length);
-                return true;
-            }
-        }
-
-        bool GetRandomCell(RD rd, Dictionary<int, GridGenAreaEntity> areas, out int index) {
-            foreach (var pair in areas) {
-                var area = pair.Value;
-                if (area.set.Count > 0) {
-                    index = area.indices[rd.Next(0, area.set.Count)];
+                if (grid[index] == typeID) {
+                    res = index;
                     return true;
                 }
-            }
-            index = -1;
+                failedTimes++;
+            } while (failedTimes < 100);
+
+            res = index;
             return false;
         }
 

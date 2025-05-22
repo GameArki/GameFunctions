@@ -6,19 +6,21 @@ namespace GameFunctions.GridGeneratorInternal {
     [Serializable]
     public struct GridGenAreaOption {
 
-        public GridGenCellType cellType;
+        public int typeID; // Value
+        public string areaName;
 
-        public int value;
         public int count;
         public int countMax;
 
+        // Start
         public GridGenStartType startType;
-        public GridGenCellType baseOnCellType;
+        public int baseOnCellTypeID;
         public int FROM_DIR;
 
-        public GridGenCellType closeToCellType;
+        public int closeToCellTypeID;
         public int closeToManhattanDis;
-        public GridGenCellType awayFromCellType;
+
+        public int awayFromCellTypeID;
         public int awayFromManhattanDis;
 
         // Loop

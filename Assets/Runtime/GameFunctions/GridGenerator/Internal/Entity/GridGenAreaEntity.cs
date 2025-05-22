@@ -5,16 +5,17 @@ namespace GameFunctions.GridGeneratorInternal {
 
     internal class GridGenAreaEntity {
 
-        public int id;
-        public int[] indices;
+        public int typeID;
+        public List<int> indices;
         public HashSet<int> set;
 
         public GridGenAreaOption option;
 
-        public GridGenAreaEntity(int id, int width, int height, GridGenAreaOption option) {
-            this.id = id;
-            indices = new int[width * height];
-            set = new HashSet<int>(indices.Length);
+        public GridGenAreaEntity(int typeID, int width, int height, GridGenAreaOption option) {
+            this.typeID = typeID;
+            int len = width * height;
+            indices = new List<int>(len);
+            set = new HashSet<int>(len);
             this.option = option;
             option.countMax = option.count;
         }
@@ -22,17 +23,14 @@ namespace GameFunctions.GridGeneratorInternal {
         public bool Add(int index) {
             bool succ = set.Add(index);
             if (succ) {
-                indices[set.Count - 1] = index;
+                indices.Add(index);
             }
             return succ;
         }
 
         public void Remove(int index) {
             set.Remove(index);
-        }
-
-        public void UpdateAll() {
-            set.CopyTo(indices);
+            indices.Remove(index);
         }
 
     }

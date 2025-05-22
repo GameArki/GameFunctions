@@ -30,7 +30,7 @@ namespace GameFunctions.GridGeneratorInternal {
         // 0 0 0 0 0 0  ==> 0 0 0 0 0 0 ==> 0 0 0 1 0 0
         // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 0 0 0
         // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 0 0 0
-        public static bool Alg_Erode_Loop(int[] cells, int[] indices, HashSet<int> sets, RD random, int width, int height, int erodeCount, int erodeRate, int erodeValue, int fromDir, HashSet<int> basedOnValues, HashSet<int> awayFromValues, Action<int> onErode) {
+        public static bool Alg_Erode_Loop(int[] cells, List<int> indices, HashSet<int> sets, RD random, int width, int height, int erodeCount, int erodeRate, int erodeValue, int fromDir, HashSet<int> basedOnValues, HashSet<int> awayFromValues, Action<int> onErode) {
 
             if (erodeCount >= cells.Length) {
                 return false;
@@ -72,9 +72,9 @@ namespace GameFunctions.GridGeneratorInternal {
             while (erodeCount > 0) {
                 int sets_count = sets.Count;
                 for (int i = 0; i < sets_count; ++i) {
-                    int seaIndex = indices[i];
-                    int x = seaIndex % width;
-                    int y = seaIndex / width;
+                    int index = indices[i];
+                    int x = index % width;
+                    int y = index / width;
 
                     // fill reverse direction
                     int reverseDirIndex = Index_GetByPos(x, y, width, height, dir_from);
@@ -119,7 +119,7 @@ namespace GameFunctions.GridGeneratorInternal {
         // 0 0 0 1 0 0  ==> 0 0 0 1 1 0 ==> 0 0 1 1 1 0
         // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 1 0 0
         // 0 0 0 0 0 0      0 0 0 0 0 0     0 0 0 0 0 0
-        public static bool Alg_Flood_Loop(int[] cells, int[] indices, HashSet<int> sets, RD random, int width, int height, int floodCount, int floodValue, HashSet<int> basedOnValues, HashSet<int> awayFromValues, Action<int> onFlood) {
+        public static bool Alg_Flood_Loop(int[] cells, List<int> indices, HashSet<int> sets, RD random, int width, int height, int floodCount, int floodValue, HashSet<int> basedOnValues, HashSet<int> awayFromValues, Action<int> onFlood) {
 
             int failedTimes = width * height * 100;
 
@@ -154,7 +154,7 @@ namespace GameFunctions.GridGeneratorInternal {
         }
 
         // 播种算法(Scatter):   0100    = 0101
-        public static bool Alg_Scatter_Loop(int[] cells, int[] indices, HashSet<int> sets, RD random, int width, int height, int scatterCount, int scatterValue, Vector2Int scatterMinMax, HashSet<int> basedOnValues, HashSet<int> awayFromValues, Action<int> onScatter) {
+        public static bool Alg_Scatter_Loop(int[] cells, List<int> indices, HashSet<int> sets, RD random, int width, int height, int scatterCount, int scatterValue, Vector2Int scatterMinMax, HashSet<int> basedOnValues, HashSet<int> awayFromValues, Action<int> onScatter) {
 
             int failedTimes = width * height * 100;
 

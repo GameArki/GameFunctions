@@ -25,60 +25,12 @@ namespace GameFunctions {
             CTX ctx = new CTX();
             ctx.Init(gridOption, options);
 
-            // Gen: Land
-            ctx.Land_Foreach(land => {
-                bool succ = Gen_Area(ctx, land);
-                if (!succ) {
-                    Debug.LogError("Gen Land failed");
-                }
-            });
-
-            // Gen: Sea
-            ctx.Sea_Foreach(sea => {
-
-                bool succ = Gen_Area(ctx, sea);
-                if (!succ) {
-                    Debug.LogError("Gen Sea failed");
-                }
-
-                // Cache Update: Land
-                // remove sea cells from land cells
-                for (int i = 0; i < sea.set.Count; i += 1) {
-                    int seaIndex = sea.indices[i];
-                    ctx.Land_Remove(seaIndex);
-                }
-                ctx.Land_UpdateAll();
-
-            });
-
-            // Gen: Lake
-            ctx.Lake_Foreach(lake => {
-
-                bool succ = Gen_Area(ctx, lake);
-                if (!succ) {
-                    Debug.LogError("Gen Lake failed");
-                }
-
-                // Cache Update: Land
-                // remove lake cells from land cells
-                for (int j = 0; j < lake.set.Count; j += 1) {
-                    int lakeIndex = lake.indices[j];
-                    ctx.Land_Remove(lakeIndex);
-                }
-                ctx.Land_UpdateAll();
-
-            });
-
-            // Gen: Forest
-            ctx.Forest_Foreach(forest => {
-                bool succ = Gen_Area(ctx, forest);
-                if (!succ) {
-                    Debug.LogError("Gen Forest failed");
-                }
-            });
+            int areaLen = ctx.TakeAllArea(out var areas);
+            foreach (var area in areas) {
+                Gen_Area(ctx, area);
+            }
 
             return ctx.grid;
-
         }
 
         // ==== Sea ====
@@ -119,7 +71,7 @@ namespace GameFunctions {
             ref var option = ref area.option;
             GridGenAlgorithm.Pos_GetRandomPointOnEdge(ctx.random, ctx.gridOption.width, ctx.gridOption.height, option.FROM_DIR, out int start_x, out int start_y);
             int startIndex = GridGenAlgorithm.Index_GetByPos(start_x, start_y, ctx.gridOption.width);
-            ctx.Grid_Set(startIndex, option.value);
+            ctx.Grid_Set(startIndex, option.typeID);
             area.Add(startIndex);
             --area.option.count;
             return true;
@@ -138,17 +90,17 @@ namespace GameFunctions {
             ref var option = ref area.option;
 
             area.Add(start_index);
-            ctx.Grid_Set(start_index, option.value);
+            ctx.Grid_Set(start_index, option.typeID);
             --option.count;
             return true;
-            
+
         }
 
         static bool Start_Random(CTX ctx, GridGenAreaEntity area) {
             // Scatter: start cell
             ref var option = ref area.option;
-            ctx.GetRandomCell(ctx.random, option.baseOnCellType, out int start_index);
-            ctx.Grid_Set(start_index, option.value);
+            ctx.GetRandomCell(ctx.random, option.baseOnCellTypeID, out int start_index);
+            ctx.Grid_Set(start_index, option.typeID);
             area.Add(start_index);
             --option.count;
             return true;
@@ -158,13 +110,13 @@ namespace GameFunctions {
 
             var option = area.option;
             Action<int> onHandle = (int index) => {
-                ctx.Grid_Set(index, option.value);
+                ctx.Grid_Set(index, option.typeID);
                 area.Add(index);
             };
 
             // Fill: Loop
             return GridGenAlgorithm.Alg_FillAll(ctx.grid,
-                                        option.value,
+                                        option.typeID,
                                         onHandle);
 
         }
@@ -172,11 +124,11 @@ namespace GameFunctions {
         static bool Loop_Erode(CTX ctx, GridGenAreaEntity area) {
 
             var option = area.option;
-            int value = option.value;
+            int value = option.typeID;
             int count = option.count;
 
             Action<int> onHandle = (int index) => {
-                ctx.Grid_Set(index, option.value);
+                ctx.Grid_Set(index, option.typeID);
                 area.Add(index);
             };
 
@@ -189,10 +141,10 @@ namespace GameFunctions {
                                         ctx.gridOption.height,
                                         option.count,
                                         option.erodeRate,
-                                        option.value,
+                                        option.typeID,
                                         option.FROM_DIR,
-                                        ctx.GetCellTypeValues(option.baseOnCellType),
-                                        ctx.GetCellTypeValues(option.awayFromCellType),
+                                        ctx.GetCellTypeValues(option.baseOnCellTypeID),
+                                        ctx.GetCellTypeValues(option.awayFromCellTypeID),
                                         onHandle);
 
         }
@@ -205,12 +157,15 @@ namespace GameFunctions {
 
             var option = area.option;
             int count = option.count;
-            int value = option.value;
+            int value = option.typeID;
 
             Action<int> onHandle = (int index) => {
                 area.Add(index);
-                ctx.Grid_Set(index, option.value);
+                ctx.Grid_Set(index, option.typeID);
             };
+
+            bool hasBaseOn = ctx.TryGetArea(option.baseOnCellTypeID, out GridGenAreaEntity baseOnArea);
+            bool hasAwayFrom = ctx.TryGetArea(option.awayFromCellTypeID, out GridGenAreaEntity awayFromArea);
 
             // Flood: loop
             return GridGenAlgorithm.Alg_Flood_Loop(ctx.grid,
@@ -221,8 +176,8 @@ namespace GameFunctions {
                                         height,
                                         count,
                                         value,
-                                        ctx.GetCellTypeValues(option.baseOnCellType),
-                                        ctx.GetCellTypeValues(option.awayFromCellType),
+                                        baseOnArea.set,
+                                        awayFromArea.set,
                                         onHandle);
 
         }
@@ -231,7 +186,7 @@ namespace GameFunctions {
 
             var option = area.option;
             int count = option.count;
-            int value = option.value;
+            int value = option.typeID;
             int width = ctx.gridOption.width;
             int height = ctx.gridOption.height;
             RD random = ctx.random;
@@ -242,6 +197,9 @@ namespace GameFunctions {
             };
 
             // Scatter: loop
+            bool hasBaseOn = ctx.TryGetArea(option.baseOnCellTypeID, out GridGenAreaEntity baseOnArea);
+            bool hasAwayFrom = ctx.TryGetArea(option.awayFromCellTypeID, out GridGenAreaEntity awayFromArea);
+
             return GridGenAlgorithm.Alg_Scatter_Loop(ctx.grid,
                                             area.indices,
                                             area.set,
@@ -249,10 +207,10 @@ namespace GameFunctions {
                                             width,
                                             height,
                                             count,
-                                            option.value,
+                                            option.typeID,
                                             option.scatterMinMax,
-                                            ctx.GetCellTypeValues(option.baseOnCellType),
-                                            ctx.GetCellTypeValues(option.awayFromCellType),
+                                            baseOnArea.set,
+                                            awayFromArea.set,
                                             onHandle);
 
         }
@@ -265,7 +223,10 @@ namespace GameFunctions {
             RD random = ctx.random;
 
             var option = area.option;
-            HashSet<int> awayFromValues = ctx.GetCellTypeValues(option.awayFromCellType);
+
+            bool hasAwayFrom = ctx.TryGetArea(option.awayFromCellTypeID, out GridGenAreaEntity awayFromArea);
+            HashSet<int> awayFromValues = awayFromArea.set;
+        
             GFVector4Int edgeOffset = new GFVector4Int();
             int start_x = 0;
             int start_y = 0;
@@ -279,7 +240,7 @@ namespace GameFunctions {
                 }
 
                 // Select a random land cell
-                ctx.GetRandomCell(random, option.baseOnCellType, out start_index);
+                ctx.GetRandomCell(random, option.baseOnCellTypeID, out start_index);
                 if (awayFromValues.Contains(ctx.grid[start_index])) {
                     continue;
                 }
@@ -292,7 +253,7 @@ namespace GameFunctions {
             } while (edgeOffset.Min() < option.awayFromManhattanDis);
 
             if (failedTimes <= 0) {
-                Debug.LogError("Gen_Land_Lake_Normal failed");
+                Debug.LogError("Pos_GetAwayFrom failed");
                 return false;
             }
             return true;
