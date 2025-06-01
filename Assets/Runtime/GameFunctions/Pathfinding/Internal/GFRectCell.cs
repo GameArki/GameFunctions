@@ -23,23 +23,19 @@ namespace GameFunctions.PathfindingInternal {
             return pos == other.pos;
         }
 
-        public override int GetHashCode() {
-            return pos.GetHashCode();
-        }
-
         int IComparable<GFRectCell>.CompareTo(GFRectCell other) {
 
             Bit128 fKey = new Bit128();
-            fKey.i32_0 = pos.y;
-            fKey.i32_1 = pos.x;
-            fKey.f32_2 = hCost;
-            fKey.f32_3 = fCost;
+            fKey.i0 = pos.y;
+            fKey.i1 = pos.x;
+            fKey.f2 = hCost;
+            fKey.f3 = fCost;
 
             Bit128 otherFKey = new Bit128();
-            otherFKey.i32_0 = other.pos.y;
-            otherFKey.i32_1 = other.pos.x;
-            otherFKey.f32_2 = other.hCost;
-            otherFKey.f32_3 = other.fCost;
+            otherFKey.i0 = other.pos.y;
+            otherFKey.i1 = other.pos.x;
+            otherFKey.f2 = other.hCost;
+            otherFKey.f3 = other.fCost;
 
             if (pos.x == other.pos.x && pos.y == other.pos.y) {
                 return 0;

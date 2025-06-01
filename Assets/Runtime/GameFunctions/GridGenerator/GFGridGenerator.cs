@@ -227,7 +227,7 @@ namespace GameFunctions {
             bool hasAwayFrom = ctx.TryGetArea(option.awayFromCellTypeID, out GridGenAreaEntity awayFromArea);
             HashSet<int> awayFromValues = awayFromArea.set;
         
-            GFVector4Int edgeOffset = new GFVector4Int();
+            Vector4Int edgeOffset = new Vector4Int();
             int start_x = 0;
             int start_y = 0;
             start_index = 0;
@@ -259,7 +259,7 @@ namespace GameFunctions {
             return true;
         }
 
-        static GFVector4Int Pos_DetectAwayFrom(int[] cells, int width, int height, int x, int y, HashSet<int> awayValues, int awayFromSize) {
+        static Vector4Int Pos_DetectAwayFrom(int[] cells, int width, int height, int x, int y, HashSet<int> awayValues, int awayFromSize) {
             // up down left right, walk awayFromSize steps
             // if found awayValue, return awayFromSize
             bool findLeft, findRight, findTop, findBottom;
@@ -267,7 +267,7 @@ namespace GameFunctions {
             findRight = false; // y
             findBottom = false; // w
             findLeft = false; // z
-            GFVector4Int edgeOffset = new GFVector4Int();
+            Vector4Int edgeOffset = new Vector4Int();
             for (int i = 0; i <= awayFromSize; i += 1) {
                 if (!findTop) {
                     int upIndex = GridGenAlgorithm.Index_GetByPos(x, y + i, width);

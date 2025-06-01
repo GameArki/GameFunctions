@@ -16,7 +16,7 @@ namespace GameFunctions {
             { 3, new Vector2Int(-1, 0) }, // Left
         };
 
-        /// <summary> returns -1 if limitedCount is exceeded </summary>
+        /// <summary> Djikstra returns -1 if limitedCount is exceeded </summary>
         public static int Process(Vector2Int startWalkable, int limitedCount, Predicate<Vector2Int> isWalkable, Vector2Int[] result) {
 
             // BFS
