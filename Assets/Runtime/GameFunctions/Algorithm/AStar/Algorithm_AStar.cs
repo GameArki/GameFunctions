@@ -25,14 +25,14 @@ public static class Algorithm_AStar {
     [BurstCompile]
     public struct Node : IEquatable<Node> {
         public int2 pos;
-        public float gCost; // Cost from start to this node
-        public float hCost; // Heuristic cost to target
+        public half gCost; // Cost from start to this node
+        public half hCost; // Heuristic cost to target
         public float fCost => gCost + hCost; // Total cost
         public int2 parent;
         public Node(int2 position, float g, float h, int2 parent) {
             pos = position;
-            gCost = g;
-            hCost = h;
+            gCost = new half(g);
+            hCost = new half(h);
             this.parent = parent;
         }
 
@@ -136,7 +136,7 @@ public static class Algorithm_AStar {
     }
 
     [BurstCompile]
-    static int ManhattenDis(in int2 start, in int2 end) {
+    static float ManhattenDis(in int2 start, in int2 end) {
         int2 diff = start - end;
         return math.abs(diff.x) + math.abs(diff.y);
     }
