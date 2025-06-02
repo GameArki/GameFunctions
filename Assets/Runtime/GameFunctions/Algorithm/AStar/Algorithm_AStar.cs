@@ -1,7 +1,23 @@
 using System;
+using System.Collections.Generic;
 using Unity.Mathematics;
 using Unity.Collections;
 using Unity.Burst;
+
+[BurstCompile]
+public class BlocksOrder : IComparer<int2> {
+    public int Compare(int2 x, int2 y) {
+        return CompareStatic(x, y);
+    }
+
+    [BurstCompile]
+    public static int CompareStatic(in int2 x, in int2 y) {
+        if (x.x == y.x) {
+            return x.y.CompareTo(y.y);
+        }
+        return x.x.CompareTo(y.x);
+    }
+}
 
 [BurstCompile]
 public static class Algorithm_AStar {
@@ -174,12 +190,22 @@ public static class Algorithm_AStar {
 
     [BurstCompile]
     static int Blocks_FindIndex(in int2 pos, in NativeArray<int2> blocks, in int blockCount) {
-        for (int i = 0; i < blockCount; i++) {
-            if (blocks[i].Equals(pos)) {
-                return i; // Return index if found
+        // Binary search for performance
+        int left = 0;
+        int right = blockCount - 1;
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            int comparison = BlocksOrder.CompareStatic(blocks[mid], pos);
+            if (comparison == 0) {
+                return mid; // Found
+            } else if (comparison < 0) {
+                left = mid + 1; // Search in the right half
+            } else {
+                right = mid - 1; // Search in the left half
             }
         }
-        return -1; // Not found
+        // If not found, return -1
+        return -1;
     }
 
     [BurstCompile]

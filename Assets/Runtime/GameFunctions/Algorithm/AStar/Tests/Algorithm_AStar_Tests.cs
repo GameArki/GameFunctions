@@ -10,7 +10,7 @@ namespace GameFunctions.Tests {
     public class Algorithm_AStar_Tests {
 
         [Test]
-        public void BenchMark([Random(int.MinValue, int.MaxValue, 50)] int seed, 
+        public void BenchMark([Random(int.MinValue, int.MaxValue, 50)] int seed,
                               [Random(0, 2000, 1)] int blockCount) {
             // Run benchmarks for both SIMD and non-SIMD implementations
             BenchMark_SIMD(seed, blockCount);
@@ -32,6 +32,8 @@ namespace GameFunctions.Tests {
             for (int i = 0; i < blockCount; i++) {
                 blocks[i] = new int2(rd.Next(0, width), rd.Next(0, height));
             }
+            // Sort blocks to ensure they are in a consistent order
+            blocks.Sort(new BlocksOrder());
             sw.Start();
             int pathCount = Algorithm_AStar.Go_8Dir_SIMD(start, end, edge, blocks, blocks.Length, out var path);
             Debug.Log($"SIMD Path Count: {pathCount}, Time: {sw.Elapsed.TotalMilliseconds} ms");
