@@ -10,8 +10,8 @@ namespace GameFunctions.Tests {
     public class Algorithm_AStar_Tests {
 
         [Test]
-        public void BenchMark([Random(int.MinValue, int.MaxValue, 50)] int seed,
-                              [Random(0, 2000, 1)] int blockCount) {
+        public void BenchMark([NUnit.Framework.Range(1, 10, 2)] int seed,
+                              [NUnit.Framework.Range(0, 2000, 200)] int blockCount) {
             // Run benchmarks for both SIMD and non-SIMD implementations
             BenchMark_SIMD(seed, blockCount);
             BenchMark_NoSIMD(seed, blockCount);

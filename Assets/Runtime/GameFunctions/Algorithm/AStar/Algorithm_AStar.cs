@@ -25,10 +25,10 @@ public static class Algorithm_AStar {
     [BurstCompile]
     public struct Node : IEquatable<Node> {
         public int2 pos;
+        public int2 parent;
         public half gCost; // Cost from start to this node
         public half hCost; // Heuristic cost to target
         public float fCost => gCost + hCost; // Total cost
-        public int2 parent;
         public Node(int2 position, float g, float h, int2 parent) {
             pos = position;
             gCost = new half(g);
