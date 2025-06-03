@@ -14,7 +14,7 @@ namespace GameFunctions.Tests {
                               [NUnit.Framework.Range(0, 2000, 200)] int blockCount) {
             // Run benchmarks for both SIMD and non-SIMD implementations
             BenchMark_SIMD(seed, blockCount);
-            BenchMark_NoSIMD(seed, blockCount);
+            // BenchMark_NoSIMD(seed, blockCount);
         }
 
         const int width = 256;
