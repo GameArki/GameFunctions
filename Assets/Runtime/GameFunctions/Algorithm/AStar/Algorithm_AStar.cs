@@ -89,9 +89,7 @@ public static class Algorithm_AStar {
         CloseSet_Clear(ref closeSet);
 
         while (openCount > 0) {
-            int lowestIndex = OpenSet_GetMinFCostIndex(in openSet, openCount, out Node lowestNode);
-
-            Array_GetValue(in openSet, lowestIndex, out Node currentNode);
+            int lowestIndex = OpenSet_GetMinFCostIndex(in openSet, openCount, out Node currentNode);
             OpenSet_RemoveAt(ref openSet, ref openCount, lowestIndex);
             CloseSet_Add(ref closeSet, edge.x, currentNode);
 
