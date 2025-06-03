@@ -101,7 +101,7 @@ public static class Algorithm_AStar {
                 pathCount = 0;
                 Node node = currentNode;
                 while (node.pos.x != start.x || node.pos.y != start.y) {
-                    path[pathCount++] = node.pos;
+                    Array_SetValue(ref path, pathCount++, node.pos); // Store the current node in the path
                     // Find parent in closed set
                     int parentIndex = node.parent.x + node.parent.y * edge.x; // Convert 2D position to 1D index
                     if (parentIndex < 0 || parentIndex >= closeSet.Length) {
@@ -114,7 +114,7 @@ public static class Algorithm_AStar {
                         break; // Parent not found
                     }
                 }
-                path[pathCount++] = start; // Add start position
+                Array_SetValue(ref path, pathCount++, start); // Store the current node in the path
                 return pathCount; // Return the number of nodes in the path
             }
 
@@ -140,7 +140,7 @@ public static class Algorithm_AStar {
                         // If this path is better, update it
                         // - their parent is different
                         if (gCost < existingNode.gCost) {
-                            openSet[existingIndex] = neighborNode;
+                            Array_SetValue(ref openSet, existingIndex, neighborNode);
                         }
                     } else {
                         OpenSet_Add(ref openSet, ref openCount, neighborNode);
@@ -162,7 +162,7 @@ public static class Algorithm_AStar {
     [BurstCompile]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void OpenSet_Add(ref NativeArray<Node> openSet, ref int openCount, in Node node) {
-        openSet[openCount++] = node;
+        Array_SetValue(ref openSet, openCount++, node); // Add the node to the open set
     }
 
     [BurstCompile]
@@ -209,7 +209,7 @@ public static class Algorithm_AStar {
     static void OpenSet_RemoveAt(ref NativeArray<Node> openSet, ref int openCount, int index) {
         openCount--;
         Array_GetValue(in openSet, openCount, out Node node);
-        openSet[index] = node; // Replace with last element
+        Array_SetValue(ref openSet, index, node); // Set the node at the calculated index
     }
 
     [BurstCompile]
@@ -219,14 +219,14 @@ public static class Algorithm_AStar {
         if (index < 0 || index >= closeSet.Length) {
             return;
         }
-        closeSet[index] = node;
+        Array_SetValue(ref closeSet, index, node); // Set the node at the calculated index
     }
 
     [BurstCompile]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void CloseSet_Clear(ref NativeArray<Node> closeSet) {
         for (int i = 0; i < closeSet.Length; i++) {
-            closeSet[i] = new Node() { pos = new int2(-1, -1) }; // Reset all nodes
+            Array_SetValue(ref closeSet, i, new Node() { pos = new int2(-1, -1) }); // Reset all nodes
         }
     }
 
@@ -246,7 +246,25 @@ public static class Algorithm_AStar {
     [BurstCompile]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     unsafe static void Array_GetValue(in NativeArray<Node> array, in int index, out Node value) {
-        value = Unsafe.Read<Node>((byte*)array.GetUnsafeReadOnlyPtr() + index * Node.Size());
+        value = Unsafe.Read<Node>((byte*)array.GetUnsafeReadOnlyPtr() + index * sizeof(Node));
+    }
+
+    [BurstCompile]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    unsafe static void Array_GetValue(in NativeArray<int2> array, in int index, out int2 value) {
+        value = Unsafe.Read<int2>((byte*)array.GetUnsafeReadOnlyPtr() + index * sizeof(int2));
+    }
+
+    [BurstCompile]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    unsafe static void Array_SetValue(ref NativeArray<Node> array, in int index, in Node value) {
+        Unsafe.Write((byte*)array.GetUnsafePtr() + index * sizeof(Node), value);
+    }
+
+    [BurstCompile]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    unsafe static void Array_SetValue(ref NativeArray<int2> array, in int index, in int2 value) {
+        Unsafe.Write((byte*)array.GetUnsafePtr() + index * sizeof(int2), value);
     }
 
     [BurstCompile]
@@ -256,7 +274,8 @@ public static class Algorithm_AStar {
         int right = blockCount - 1;
         while (left <= right) {
             int mid = left + (right - left) / 2;
-            int comparison = Comparer_int2.CompareStatic(blocks[mid], pos);
+            Array_GetValue(in blocks, mid, out int2 blockPos);
+            int comparison = Comparer_int2.CompareStatic(blockPos, pos);
             if (comparison == 0) {
                 return mid; // Found
             } else if (comparison < 0) {
