@@ -33,7 +33,7 @@ namespace GameFunctions.Tests {
                 blocks[i] = new int2(rd.Next(0, width), rd.Next(0, height));
             }
             // Sort blocks to ensure they are in a consistent order
-            blocks.Sort(new BlocksOrder());
+            blocks.Sort(new Comparer_int2());
             sw.Start();
             int pathCount = Algorithm_AStar.Go_8Dir_SIMD(start, end, edge, blocks, blocks.Length, out var path);
             Debug.Log($"SIMD Path Count: {pathCount}, Time: {sw.Elapsed.TotalMilliseconds} ms");

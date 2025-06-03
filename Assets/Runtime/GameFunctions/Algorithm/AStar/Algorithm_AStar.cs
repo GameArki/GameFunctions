@@ -6,7 +6,7 @@ using Unity.Collections;
 using Unity.Burst;
 
 [BurstCompile]
-public class BlocksOrder : IComparer<int2> {
+public class Comparer_int2 : IComparer<int2> {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int Compare(int2 x, int2 y) {
         return CompareStatic(x, y);
@@ -32,13 +32,16 @@ public static class Algorithm_AStar {
         public int2 parent;
         public half gCost; // Cost from start to this node
         public half hCost; // Heuristic cost to target
-        public float fCost => gCost + hCost; // Total cost
         public Node(int2 position, float g, float h, int2 parent) {
             pos = position;
             gCost = new half(g);
             hCost = new half(h);
             this.parent = parent;
         }
+
+        [BurstCompile]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public float FCost() => gCost + hCost; // Total cost
     }
 
     const int DefaultWidth = 256; // Initial width, can be resized
@@ -79,11 +82,10 @@ public static class Algorithm_AStar {
         CloseSet_Clear(ref closeSet);
 
         while (openCount > 0) {
-            // PERF 最小堆: Find the node with the lowest fCost
             int lowestIndex = OpenSet_GetMinFCostIndex(in openSet, openCount);
 
             Node currentNode = openSet[lowestIndex];
-            OpenSet_RemoveAtAndSort(ref openSet, ref openCount, lowestIndex);
+            OpenSet_RemoveAt(ref openSet, ref openCount, lowestIndex);
             CloseSet_Add(ref closeSet, edge.x, currentNode);
 
             // If we reached the target
@@ -159,7 +161,7 @@ public static class Algorithm_AStar {
     static int OpenSet_GetMinFCostIndex(in NativeArray<Node> openSet, in int openCount) {
         int minIndex = 0;
         for (int i = 1; i < openCount; i++) {
-            if (openSet[i].fCost < openSet[minIndex].fCost) {
+            if (openSet[i].FCost() < openSet[minIndex].FCost()) {
                 minIndex = i;
             }
         }
@@ -188,7 +190,7 @@ public static class Algorithm_AStar {
 
     [BurstCompile]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static void OpenSet_RemoveAtAndSort(ref NativeArray<Node> openSet, ref int openCount, int index) {
+    static void OpenSet_RemoveAt(ref NativeArray<Node> openSet, ref int openCount, int index) {
         openSet[index] = openSet[--openCount]; // Replace with last element
     }
 
@@ -229,7 +231,7 @@ public static class Algorithm_AStar {
         int right = blockCount - 1;
         while (left <= right) {
             int mid = left + (right - left) / 2;
-            int comparison = BlocksOrder.CompareStatic(blocks[mid], pos);
+            int comparison = Comparer_int2.CompareStatic(blocks[mid], pos);
             if (comparison == 0) {
                 return mid; // Found
             } else if (comparison < 0) {
