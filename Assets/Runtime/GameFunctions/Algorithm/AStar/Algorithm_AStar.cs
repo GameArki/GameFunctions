@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Burst;
 
 [BurstCompile]
@@ -42,6 +43,12 @@ public static class Algorithm_AStar {
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float FCost() => gCost + hCost; // Total cost
+
+        [BurstCompile]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int Size() {
+            return 20; // Size in bytes: 8 (int2) + 8 (int2) + 2 (half) + 2 (half)
+        }
     }
 
     const int DefaultWidth = 256; // Initial width, can be resized
@@ -82,9 +89,9 @@ public static class Algorithm_AStar {
         CloseSet_Clear(ref closeSet);
 
         while (openCount > 0) {
-            int lowestIndex = OpenSet_GetMinFCostIndex(in openSet, openCount);
+            int lowestIndex = OpenSet_GetMinFCostIndex(in openSet, openCount, out Node lowestNode);
 
-            Node currentNode = openSet[lowestIndex];
+            Array_GetValue(in openSet, lowestIndex, out Node currentNode);
             OpenSet_RemoveAt(ref openSet, ref openCount, lowestIndex);
             CloseSet_Add(ref closeSet, edge.x, currentNode);
 
@@ -100,8 +107,9 @@ public static class Algorithm_AStar {
                     if (parentIndex < 0 || parentIndex >= closeSet.Length) {
                         break; // Out of bounds
                     }
-                    if (closeSet[parentIndex].pos.x == node.parent.x && closeSet[parentIndex].pos.y == node.parent.y) {
-                        node = closeSet[parentIndex];
+                    Array_GetValue(in closeSet, parentIndex, out Node parent);
+                    if (parent.pos.x == node.parent.x && parent.pos.y == node.parent.y) {
+                        node = parent;
                     } else {
                         break; // Parent not found
                     }
@@ -127,11 +135,11 @@ public static class Algorithm_AStar {
                     Node neighborNode = new Node(neighborPos, gCost, hCost, currentNode.pos);
 
                     // Check if neighbor is in open set
-                    int existingIndex = OpenSet_FindIndex_Reverse(neighborPos, openSet, openCount);
+                    int existingIndex = OpenSet_FindIndex_Reverse(neighborPos, openSet, openCount, out Node existingNode);
                     if (existingIndex >= 0) {
                         // If this path is better, update it
                         // - their parent is different
-                        if (gCost < openSet[existingIndex].gCost) {
+                        if (gCost < existingNode.gCost) {
                             openSet[existingIndex] = neighborNode;
                         }
                     } else {
@@ -158,20 +166,25 @@ public static class Algorithm_AStar {
     }
 
     [BurstCompile]
-    static int OpenSet_GetMinFCostIndex(in NativeArray<Node> openSet, in int openCount) {
+    static int OpenSet_GetMinFCostIndex(in NativeArray<Node> openSet, in int openCount, out Node result) {
         int minIndex = 0;
+        Array_GetValue(in openSet, in minIndex, out Node minNode);
         for (int i = 1; i < openCount; i++) {
-            if (openSet[i].FCost() < openSet[minIndex].FCost()) {
+            Array_GetValue(in openSet, in i, out Node node);
+            Array_GetValue(in openSet, in minIndex, out minNode);
+            if (node.FCost() < minNode.FCost()) {
                 minIndex = i;
             }
         }
+        result = minNode;
         return minIndex; // Return index of the node with the lowest fCost
     }
 
     [BurstCompile]
     static int OpenSet_FindIndex(in int2 pos, in NativeArray<Node> openSet, in int openCount) {
         for (int i = 0; i < openCount; i++) {
-            if (openSet[i].pos.x == pos.x && openSet[i].pos.y == pos.y) {
+            Array_GetValue(in openSet, in i, out Node node);
+            if (node.pos.x == pos.x && node.pos.y == pos.y) {
                 return i; // Return index if found
             }
         }
@@ -179,19 +192,24 @@ public static class Algorithm_AStar {
     }
 
     [BurstCompile]
-    static int OpenSet_FindIndex_Reverse(in int2 pos, in NativeArray<Node> openSet, in int openCount) {
+    static int OpenSet_FindIndex_Reverse(in int2 pos, in NativeArray<Node> openSet, in int openCount, out Node result) {
         for (int i = openCount - 1; i >= 0; i--) {
-            if (openSet[i].pos.x == pos.x && openSet[i].pos.y == pos.y) {
+            Array_GetValue(in openSet, in i, out Node node);
+            if (node.pos.x == pos.x && node.pos.y == pos.y) {
+                result = node; // Return the found node
                 return i; // Return index if found
             }
         }
+        result = new Node(); // Default value if not found
         return -1; // Not found
     }
 
     [BurstCompile]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void OpenSet_RemoveAt(ref NativeArray<Node> openSet, ref int openCount, int index) {
-        openSet[index] = openSet[--openCount]; // Replace with last element
+        openCount--;
+        Array_GetValue(in openSet, openCount, out Node node);
+        openSet[index] = node; // Replace with last element
     }
 
     [BurstCompile]
@@ -213,15 +231,22 @@ public static class Algorithm_AStar {
     }
 
     [BurstCompile]
-    static int CloseSet_FindIndex(in int2 pos, in NativeArray<Node> closeSet, in int gridWidth) {
+    static unsafe int CloseSet_FindIndex(in int2 pos, in NativeArray<Node> closeSet, in int gridWidth) {
         int index = pos.x + pos.y * gridWidth; // Convert 2D position to 1D index
         if (index < 0 || index >= closeSet.Length) {
             return -1; // Out of bounds
         }
-        if (closeSet[index].pos.x == pos.x && closeSet[index].pos.y == pos.y) {
+        Array_GetValue(in closeSet, in index, out Node node);
+        if (node.pos.x == pos.x && node.pos.y == pos.y) {
             return index; // Return index if found
         }
         return -1; // Not found
+    }
+
+    [BurstCompile]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    unsafe static void Array_GetValue(in NativeArray<Node> array, in int index, out Node value) {
+        value = Unsafe.Read<Node>((byte*)array.GetUnsafeReadOnlyPtr() + index * Node.Size());
     }
 
     [BurstCompile]
