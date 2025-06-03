@@ -15,6 +15,7 @@ namespace GameFunctions.Tests {
             // Run benchmarks for both SIMD and non-SIMD implementations
             Algorithm_AStar.Init(width, height); // Initialize the algorithm with the grid size
             BenchMark_SIMD(seed, blockCount);
+            Algorithm_AStar.Dispose();
             // BenchMark_NoSIMD(seed, blockCount);
         }
 
