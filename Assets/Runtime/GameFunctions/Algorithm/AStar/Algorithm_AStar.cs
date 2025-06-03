@@ -123,8 +123,8 @@ public static class Algorithm_AStar {
                     int2 neighborPos = currentNode.pos + offset;
 
                     // Check if neighbor is a block or already in closed set
-                    if (Blocks_FindIndex(neighborPos, blocks, blockCount) != -1
-                        || (CloseSet_FindIndex(neighborPos, closeSet, edge.x) != -1)
+                    if (CloseSet_FindIndex(neighborPos, closeSet, edge.x) != -1
+                        || Blocks_FindIndex(neighborPos, blocks, blockCount) != -1
                         || IsOverEdge(neighborPos, edge)) {
                         continue;
                     }
