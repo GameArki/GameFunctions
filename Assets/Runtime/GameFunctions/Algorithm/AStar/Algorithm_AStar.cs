@@ -125,7 +125,7 @@ public static class Algorithm_AStar {
                     Node neighborNode = new Node(neighborPos, gCost, hCost, currentNode.pos);
 
                     // Check if neighbor is in open set
-                    int existingIndex = OpenSet_FindIndex(neighborPos, openSet, openCount);
+                    int existingIndex = OpenSet_FindIndex_Reverse(neighborPos, openSet, openCount);
                     if (existingIndex >= 0) {
                         // If this path is better, update it
                         // - their parent is different
@@ -145,8 +145,8 @@ public static class Algorithm_AStar {
     [BurstCompile]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static float ManhattenDis(in int2 start, in int2 end) {
-        int2 diff = start - end;
-        return math.abs(diff.x) + math.abs(diff.y);
+        int2 diff = math.abs(start - end);
+        return diff.x + diff.y; // Manhattan distance
     }
 
     [BurstCompile]
@@ -169,6 +169,16 @@ public static class Algorithm_AStar {
     [BurstCompile]
     static int OpenSet_FindIndex(in int2 pos, in NativeArray<Node> openSet, in int openCount) {
         for (int i = 0; i < openCount; i++) {
+            if (openSet[i].pos.x == pos.x && openSet[i].pos.y == pos.y) {
+                return i; // Return index if found
+            }
+        }
+        return -1; // Not found
+    }
+
+    [BurstCompile]
+    static int OpenSet_FindIndex_Reverse(in int2 pos, in NativeArray<Node> openSet, in int openCount) {
+        for (int i = openCount - 1; i >= 0; i--) {
             if (openSet[i].pos.x == pos.x && openSet[i].pos.y == pos.y) {
                 return i; // Return index if found
             }
