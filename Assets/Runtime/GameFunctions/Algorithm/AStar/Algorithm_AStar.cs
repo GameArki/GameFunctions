@@ -55,9 +55,29 @@ public static class Algorithm_AStar {
     const int DefaultHeight = 256; // Initial height, can be resized
     const int DefaultArea = DefaultWidth * DefaultHeight; // Initial size, can be resized
     const int DefaultPerimeter = (DefaultWidth + DefaultHeight) * 2 * 8; // Initial size, can be resized
-    [ThreadStatic] static NativeArray<Node> openSet = new NativeArray<Node>(DefaultPerimeter, Allocator.Persistent); // Initial size, can be resized
-    [ThreadStatic] static NativeArray<Node> closeSet = new NativeArray<Node>(DefaultArea, Allocator.Persistent); // Initial size, can be resized
-    [ThreadStatic] static NativeArray<int2> path = new NativeArray<int2>(DefaultArea, Allocator.Persistent); // Initial size, can be resized
+    [ThreadStatic] static NativeArray<Node> openSet;
+    [ThreadStatic] static NativeArray<Node> closeSet;
+    [ThreadStatic] static NativeArray<int2> path;
+    public static void Init(int width, int height) {
+        int area = width * height;
+        int perimeter = (width + height) * 2 * 8; // 周长
+        openSet = new NativeArray<Node>(perimeter, Allocator.Persistent);
+        closeSet = new NativeArray<Node>(area, Allocator.Persistent);
+        path = new NativeArray<int2>(area, Allocator.Persistent);
+    }
+
+    public static void Dispose() {
+        if (openSet.IsCreated) {
+            openSet.Dispose();
+        }
+        if (closeSet.IsCreated) {
+            closeSet.Dispose();
+        }
+        if (path.IsCreated) {
+            path.Dispose();
+        }
+    }
+
     public static int Go_8Dir_SIMD(in int2 start, in int2 end, in int2 edge, in NativeArray<int2> blocks, in int blockCount, out NativeArray<int2> result) {
         int area = edge.x * edge.y; // 面积
         int perimeter = (edge.x + edge.y) * 2 * 8; // 周长

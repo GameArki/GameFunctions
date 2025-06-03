@@ -13,6 +13,7 @@ namespace GameFunctions.Tests {
         public void BenchMark([NUnit.Framework.Range(1, 10, 2)] int seed,
                               [NUnit.Framework.Range(0, 2000, 200)] int blockCount) {
             // Run benchmarks for both SIMD and non-SIMD implementations
+            Algorithm_AStar.Init(width, height); // Initialize the algorithm with the grid size
             BenchMark_SIMD(seed, blockCount);
             // BenchMark_NoSIMD(seed, blockCount);
         }
