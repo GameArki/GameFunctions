@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 using Unity.Collections;
 using Unity.Burst;
@@ -11,11 +12,13 @@ public class BlocksOrder : IComparer<int2> {
     }
 
     [BurstCompile]
-    public static int CompareStatic(in int2 x, in int2 y) {
-        if (x.x == y.x) {
-            return x.y.CompareTo(y.y);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int CompareStatic(in int2 a, in int2 b) {
+        int res = a.x.CompareTo(b.x);
+        if (res == 0) {
+            res = a.y.CompareTo(b.y);
         }
-        return x.x.CompareTo(y.x);
+        return res;
     }
 }
 
@@ -23,7 +26,7 @@ public class BlocksOrder : IComparer<int2> {
 public static class Algorithm_AStar {
 
     [BurstCompile]
-    public struct Node : IEquatable<Node>, IComparable<Node> {
+    public struct Node {
         public int2 pos;
         public int2 parent;
         public half gCost; // Cost from start to this node
@@ -35,19 +38,6 @@ public static class Algorithm_AStar {
             hCost = new half(h);
             this.parent = parent;
         }
-
-        bool IEquatable<Node>.Equals(Node other) {
-            return pos.Equals(other.pos);
-        }
-
-        public int CompareTo(Node other) {
-            int res = pos.x.CompareTo(other.pos.x);
-            if (res == 0) {
-                res = pos.y.CompareTo(other.pos.y);
-            }
-            return res;
-        }
-
     }
 
     const int DefaultWidth = 256; // Initial width, can be resized
@@ -176,7 +166,7 @@ public static class Algorithm_AStar {
     [BurstCompile]
     static int OpenSet_FindIndex(in int2 pos, in NativeArray<Node> openSet, in int openCount) {
         for (int i = 0; i < openCount; i++) {
-            if (openSet[i].pos.Equals(pos)) {
+            if (openSet[i].pos.x == pos.x && openSet[i].pos.y == pos.y) {
                 return i; // Return index if found
             }
         }
