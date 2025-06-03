@@ -7,6 +7,7 @@ using Unity.Burst;
 
 [BurstCompile]
 public class BlocksOrder : IComparer<int2> {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int Compare(int2 x, int2 y) {
         return CompareStatic(x, y);
     }
@@ -142,12 +143,14 @@ public static class Algorithm_AStar {
     }
 
     [BurstCompile]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static float ManhattenDis(in int2 start, in int2 end) {
         int2 diff = start - end;
         return math.abs(diff.x) + math.abs(diff.y);
     }
 
     [BurstCompile]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void OpenSet_Add(ref NativeArray<Node> openSet, ref int openCount, in Node node) {
         openSet[openCount++] = node;
     }
@@ -174,11 +177,13 @@ public static class Algorithm_AStar {
     }
 
     [BurstCompile]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void OpenSet_RemoveAtAndSort(ref NativeArray<Node> openSet, ref int openCount, int index) {
         openSet[index] = openSet[--openCount]; // Replace with last element
     }
 
     [BurstCompile]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void CloseSet_Add(ref NativeArray<Node> closeSet, in int gridWidth, in Node node) {
         int index = node.pos.x + node.pos.y * gridWidth; // Convert 2D position to 1D index
         if (index < 0 || index >= closeSet.Length) {
@@ -188,6 +193,7 @@ public static class Algorithm_AStar {
     }
 
     [BurstCompile]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void CloseSet_Clear(ref NativeArray<Node> closeSet) {
         for (int i = 0; i < closeSet.Length; i++) {
             closeSet[i] = new Node() { pos = new int2(-1, -1) }; // Reset all nodes
@@ -227,6 +233,7 @@ public static class Algorithm_AStar {
     }
 
     [BurstCompile]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static bool IsOverEdge(in int2 pos, in int2 edge) {
         return pos.x < 0 || pos.y < 0 || pos.x >= edge.x || pos.y >= edge.y;
     }
