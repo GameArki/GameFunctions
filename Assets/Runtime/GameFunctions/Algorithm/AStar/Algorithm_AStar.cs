@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 using Unity.Collections;
@@ -28,12 +29,22 @@ public class Comparer_short2 : IComparer<short2> {
 public static class Algorithm_AStar {
 
     [BurstCompile]
+    [StructLayout(LayoutKind.Explicit)]
+    // Aligned: 16bytes, or 32/64 for SIMD
     public struct Node {
-        public short2 pos; // 4 
-        public short2 parent; // 4
+        [FieldOffset(0)]
         public float gCost; // 4 // Cost from start to this node
+
+        [FieldOffset(4)]
         public float hCost; // 4 // Heuristic cost to target
-        public Node(short2 position, float g, float h, short2 parent) {
+
+        [FieldOffset(8)]
+        public short2 pos; // 4 
+
+        [FieldOffset(16)]
+        public short2 parent; // 4
+
+        public Node(in short2 position, in float g, in float h, in short2 parent) {
             pos = position;
             gCost = g;
             hCost = h;
@@ -42,14 +53,10 @@ public static class Algorithm_AStar {
 
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float FCost() => gCost + hCost; // Total cost
+        public void FCost(out float fCost) => fCost = gCost + hCost; // Total cost
 
     }
 
-    const int DefaultWidth = 256; // Initial width, can be resized
-    const int DefaultHeight = 256; // Initial height, can be resized
-    const int DefaultArea = DefaultWidth * DefaultHeight; // Initial size, can be resized
-    const int DefaultPerimeter = (DefaultWidth + DefaultHeight) * 2 * 8; // Initial size, can be resized
     [ThreadStatic] static NativeArray<Node> openSet;
     [ThreadStatic] static NativeArray<Node> closeSet;
     [ThreadStatic] static NativeArray<short2> path;
@@ -185,7 +192,9 @@ public static class Algorithm_AStar {
         for (int i = 1; i < openCount; i++) {
             Array_GetValue(in openSet, in i, out Node node);
             Array_GetValue(in openSet, in minIndex, out minNode);
-            if (node.FCost() < minNode.FCost()) {
+            node.FCost(out float nodeFCost);
+            minNode.FCost(out float minFCost);
+            if (nodeFCost < minFCost) {
                 minIndex = i;
             }
         }
