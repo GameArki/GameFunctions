@@ -120,15 +120,15 @@ public struct OpenSet {
     }
 
     [BurstCompile]
-    public int FindIndexReverse_OutF(in short2 position, out float foundF) {
+    public int FindPosToGCost(in short2 position, out float foundG) {
         // 1. 
         for (int i = count - 1; i >= 0; i--) {
             if (posArr[i].x == position.x && posArr[i].y == position.y) {
-                foundF = gArr[i] + hArr[i]; // Calculate fCost
+                foundG = gArr[i]; // Get the g cost of the found position
                 return i; // Return index if found
             }
         }
-        foundF = float.MaxValue; // Default value if not found
+        foundG = float.MaxValue; // Default value if not found
         return -1; // Not found
     }
 
@@ -225,20 +225,20 @@ public static class Algorithm_AStar {
     [ThreadStatic] static NativeArray<short2> neighbors;
     public static void Init(int width, int height) {
         int area = width * height;
-        int perimeter = (width + height) * 2 * 16; // 周长
+        int perimeter = (width + height) * 2 * 8; // 周长
         openSet = new OpenSet(perimeter, Allocator.Persistent);
         closeSet = new CloseSet(area, Allocator.Persistent);
         path = new NativeArray<short2>(area, Allocator.Persistent);
 
         neighbors = new NativeArray<short2>(8, Allocator.Persistent);
         neighbors[0] = new short2(-1, 1); // L T
-        neighbors[1] = new short2(0, 1); // T
-        neighbors[2] = new short2(1, 1); // R T
-        neighbors[3] = new short2(-1, 0); // L
-        neighbors[4] = new short2(1, 0); // R
-        neighbors[5] = new short2(-1, -1); // L B
-        neighbors[6] = new short2(0, -1); // B
-        neighbors[7] = new short2(1, -1); // R B
+        neighbors[1] = new short2(1, 1); // R T
+        neighbors[2] = new short2(1, -1); // R B
+        neighbors[3] = new short2(-1, -1); // L B
+        neighbors[4] = new short2(0, 1); // T
+        neighbors[5] = new short2(-1, 0); // L
+        neighbors[6] = new short2(1, 0); // R
+        neighbors[7] = new short2(0, -1); // B
     }
 
     public static void Dispose() {
@@ -268,13 +268,13 @@ public static class Algorithm_AStar {
             path = new NativeArray<short2>(area, Allocator.Persistent);
         }
         result = path;
-        int pathCount = Go_8Dir_SIMD(in start, in end, in edge, blocks, blockCount, ref openSet, ref closeSet, ref result);
+        int pathCount = Go_8Dir_SIMD(in start, in end, in edge, neighbors, blocks, blockCount, ref openSet, ref closeSet, ref result);
         return pathCount; // Return the number of nodes in the path
     }
 
     // Call this method to find the path
     [BurstCompile]
-    static unsafe int Go_8Dir_SIMD(in short2 start, in short2 end, in short2 edge, in NativeArray<short2> blocks, in int blockCount, ref OpenSet openSet, ref CloseSet closeSet, ref NativeArray<short2> path) {
+    static unsafe int Go_8Dir_SIMD(in short2 start, in short2 end, in short2 edge, in NativeArray<short2> neighbors, in NativeArray<short2> blocks, in int blockCount, ref OpenSet openSet, ref CloseSet closeSet, ref NativeArray<short2> path) {
         int pathCount = -1;
 
         openSet.count = 0;
@@ -307,34 +307,31 @@ public static class Algorithm_AStar {
             }
 
             // 1. 
-            for (short2 offset = new short2(-1, -1); offset.x <= 1; offset.x++) {
-                for (offset.y = -1; offset.y <= 1; offset.y++) {
-                    short2.Add(cur_pos, offset, out short2 neighborPos);
+            for (int i = 0; i < neighbors.Length; i += 1) {
+                short2.Add(cur_pos, neighbors[i], out short2 neighborPos);
 
-                    // Check if neighbor is a block or already in closed set
-                    if (CloseSet_FindIndex(neighborPos, closeSet, edge.x) != -1
-                        || Blocks_FindIndex(neighborPos, blocks, blockCount) != -1
-                        || IsOverEdge(neighborPos, edge)) {
-                        continue;
+                // Check if neighbor is a block or already in closed set
+                if (CloseSet_FindIndex(neighborPos, closeSet, edge.x) != -1
+                    || Blocks_FindIndex(neighborPos, blocks, blockCount) != -1
+                    || IsOverEdge(neighborPos, edge)) {
+                    continue;
+                }
+
+                float gCost = cur_g + 1;
+                float hCost = ManhattenDis(neighborPos, end);
+
+                // Check if neighbor is in open set
+                int existingIndex = openSet.FindPosToGCost(neighborPos, out float existingG);
+                if (existingIndex >= 0) {
+                    // If this path is better, update it
+                    // - their parent is different
+                    if (gCost < existingG) {
+                        openSet.SetNode(existingIndex, neighborPos, gCost, hCost, cur_pos);
                     }
-
-                    float gCost = cur_g + 1;
-                    float hCost = ManhattenDis(neighborPos, end);
-
-                    // Check if neighbor is in open set
-                    int existingIndex = openSet.FindIndexReverse_OutF(neighborPos, out float existingF);
-                    if (existingIndex >= 0) {
-                        // If this path is better, update it
-                        // - their parent is different
-                        if ((gCost + hCost) < existingF) {
-                            openSet.SetNode(existingIndex, neighborPos, gCost, hCost, cur_pos);
-                        }
-                    } else {
-                        openSet.AddNode(neighborPos, gCost, hCost, cur_pos); // Add neighbor to open set
-                    }
+                } else {
+                    openSet.AddNode(neighborPos, gCost, hCost, cur_pos); // Add neighbor to open set
                 }
             }
-
         }
 
         return pathCount;
