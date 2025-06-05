@@ -6,6 +6,7 @@ using Unity.Burst;
 #pragma warning disable CS0660
 #pragma warning disable CS0661
 
+[Serializable]
 [BurstCompile]
 [StructLayout(LayoutKind.Explicit)]
 public struct short2 : IEquatable<short2> {

@@ -10,6 +10,9 @@ namespace GameFunctions.Sample {
         NativeArray<short2> path;
         int pathCount;
 
+        [SerializeField] short2 start;
+        [SerializeField] short2 end;
+
         [SerializeField] int seed = 0;
         [SerializeField] int width = 256;
         [SerializeField] int height = 256;
@@ -18,8 +21,6 @@ namespace GameFunctions.Sample {
         NativeArray<short2> blocks;
 
         void Awake() {
-            short2 start = new short2(0, 0);
-            short2 end = new short2(255, 255);
             short2 edge = new short2((short)width, (short)height);
 
             Algorithm_AStar.Init(width, height); // Initialize the algorithm with the grid size
@@ -52,22 +53,24 @@ namespace GameFunctions.Sample {
                 return;
             }
 
-            // Draw the path using Gizmos
-            Gizmos.color = Color.green;
-            for (int i = 0; i < pathCount - 1; i++) {
-                Gizmos.DrawLine(new Vector3(path[i].x, path[i].y, 0), new Vector3(path[i + 1].x, path[i + 1].y, 0));
-            }
-            // Optionally, draw the start and end points
-            Gizmos.color = Color.red;
-            Gizmos.DrawSphere(new Vector3(0, 0, 0), 0.5f); // Start point
-            Gizmos.color = Color.blue;
-            Gizmos.DrawSphere(new Vector3(255, 255, 0), 0.5f); // End point 
-
             // Draw blocks
             Gizmos.color = Color.yellow;
             for (int i = 0; i < blockCount; i++) {
-                Gizmos.DrawSphere(new Vector3(blocks[i].x, blocks[i].y, 0), 0.1f);
+                Gizmos.DrawCube(new Vector3(blocks[i].x, blocks[i].y, 0), Vector3.one);
             }
+
+            // Draw the path using Gizmos
+            Gizmos.color = Color.green;
+            for (int i = 0; i < pathCount - 1; i++) {
+                Gizmos.DrawCube(new Vector3(path[i].x, path[i].y, 0), Vector3.one);
+            }
+
+            // Optionally, draw the start and end points
+            Gizmos.color = Color.red;
+            Gizmos.DrawCube(new Vector3(start.x, start.y, 0), Vector3.one); // Start point
+            Gizmos.color = Color.blue;
+            Gizmos.DrawCube(new Vector3(end.x, end.y, 0), Vector3.one); // End point
+            
         }
 
     }

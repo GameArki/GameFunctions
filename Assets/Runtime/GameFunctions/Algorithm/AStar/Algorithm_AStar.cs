@@ -50,7 +50,7 @@ public struct CloseSet {
     }
 
     [BurstCompile]
-    public int SetNode(in short2 pos, in float g, in float h, in short2 parent, in int gridWidth) {
+    public int SetNode(in short2 pos, in short2 parent, in int gridWidth) {
         int index = pos.x + pos.y * gridWidth; // Convert 2D position to 1D index
         if (index < 0 || index >= length) {
             return -1; // Out of bounds
@@ -111,7 +111,7 @@ public struct OpenSet {
     [BurstCompile]
     public void GetNode(in int index, out short2 pos, out float g, out float h, out short2 parent) {
         if (index < 0 || index >= posArr.Length) {
-            throw new IndexOutOfRangeException("Index out of bounds for NodeSet.");
+            throw new IndexOutOfRangeException("Index out of bounds for OpenSet.");
         }
         pos = posArr[index];
         g = gArr[index];
@@ -120,15 +120,15 @@ public struct OpenSet {
     }
 
     [BurstCompile]
-    public int FindIndexReverse_OutG(in short2 position, out float foundG) {
+    public int FindIndexReverse_OutF(in short2 position, out float foundF) {
         // 1. 
         for (int i = count - 1; i >= 0; i--) {
             if (posArr[i].x == position.x && posArr[i].y == position.y) {
-                foundG = gArr[i]; // Return the g cost of the found node
+                foundF = gArr[i] + hArr[i]; // Calculate fCost
                 return i; // Return index if found
             }
         }
-        foundG = float.MaxValue; // Default value if not found
+        foundF = float.MaxValue; // Default value if not found
         return -1; // Not found
     }
 
@@ -186,6 +186,9 @@ public struct OpenSet {
 
     [BurstCompile]
     public void AddNode(in short2 position, in float gCost, in float hCost, in short2 parentPos) {
+        if (count >= length) {
+            throw new InvalidOperationException("OpenSet is full, cannot add more nodes.");
+        }
         posArr[count] = position;
         gArr[count] = gCost;
         hArr[count] = hCost;
@@ -222,7 +225,7 @@ public static class Algorithm_AStar {
     [ThreadStatic] static NativeArray<short2> neighbors;
     public static void Init(int width, int height) {
         int area = width * height;
-        int perimeter = (width + height) * 2 * 8; // 周长
+        int perimeter = (width + height) * 2 * 16; // 周长
         openSet = new OpenSet(perimeter, Allocator.Persistent);
         closeSet = new CloseSet(area, Allocator.Persistent);
         path = new NativeArray<short2>(area, Allocator.Persistent);
@@ -279,9 +282,9 @@ public static class Algorithm_AStar {
 
         while (openSet.count > 0) {
             int lowestIndex = openSet.GetMinFCostIndex();
-            openSet.RemoveAt(lowestIndex);
             openSet.GetNode(lowestIndex, out short2 cur_pos, out float cur_g, out float cur_h, out short2 cur_parent);
-            closeSet.SetNode(cur_pos, cur_g, cur_h, cur_parent, edge.x); // Add current node to closed set
+            openSet.RemoveAt(lowestIndex);
+            closeSet.SetNode(cur_pos, cur_parent, edge.x); // Add current node to closed set
 
             // If we reached the target
             if (ManhattenDis(cur_pos, end) < 2) {
@@ -314,15 +317,15 @@ public static class Algorithm_AStar {
                         continue;
                     }
 
-                    float gCost = cur_g + ManhattenDis(cur_pos, neighborPos);
+                    float gCost = cur_g + 1;
                     float hCost = ManhattenDis(neighborPos, end);
 
                     // Check if neighbor is in open set
-                    int existingIndex = openSet.FindIndexReverse_OutG(neighborPos, out float existingG);
+                    int existingIndex = openSet.FindIndexReverse_OutF(neighborPos, out float existingF);
                     if (existingIndex >= 0) {
                         // If this path is better, update it
                         // - their parent is different
-                        if (gCost < existingG) {
+                        if ((gCost + hCost) < existingF) {
                             openSet.SetNode(existingIndex, neighborPos, gCost, hCost, cur_pos);
                         }
                     } else {
