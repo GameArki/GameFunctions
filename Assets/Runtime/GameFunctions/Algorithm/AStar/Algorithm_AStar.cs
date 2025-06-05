@@ -277,6 +277,7 @@ public static class Algorithm_AStar {
     static unsafe int Go_8Dir_SIMD(in short2 start, in short2 end, in short2 edge, in NativeArray<short2> blocks, in int blockCount, ref OpenSet openSet, ref CloseSet closeSet, ref NativeArray<short2> path) {
         int pathCount = -1;
 
+        openSet.count = 0;
         openSet.AddNode(start, 0, ManhattenDis(start, end), start); // Add start node to open set
         closeSet.Clear(); // Clear closed set
 
