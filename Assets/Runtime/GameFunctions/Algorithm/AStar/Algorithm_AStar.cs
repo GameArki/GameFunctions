@@ -5,6 +5,7 @@ using Unity.Mathematics;
 using Unity.Collections;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Burst.CompilerServices;
 
 [BurstCompile]
 public struct CloseSet {
@@ -31,13 +32,12 @@ public struct CloseSet {
         //     posArr[i] = new short2(-1, -1); // Reset position to an invalid value
         // }
 
-        // 2.
+        // 2. 使用 SIMD 向量化处理
         int* ptr = (int*)posArr.GetUnsafePtr();
 
-        // 使用 SIMD 向量化处理
         int4 value = new int4(-1f);
         int simdLength = length / 4;
-        
+
         for (int i = 0; i < simdLength; i++) {
             Unsafe.Write(ptr + i * 4, value);
         }
@@ -109,26 +109,6 @@ public struct OpenSet {
     }
 
     [BurstCompile]
-    public void SetG(in int index, in float gCost) {
-        gArr[index] = gCost;
-    }
-
-    [BurstCompile]
-    public void SetH(in int index, in float hCost) {
-        hArr[index] = hCost;
-    }
-
-    [BurstCompile]
-    public void SetParent(in int index, in short2 parent) {
-        parentArr[index] = parent;
-    }
-
-    [BurstCompile]
-    public void SetPosition(in int index, in short2 pos) {
-        posArr[index] = pos;
-    }
-
-    [BurstCompile]
     public void GetNode(in int index, out short2 pos, out float g, out float h, out short2 parent) {
         if (index < 0 || index >= posArr.Length) {
             throw new IndexOutOfRangeException("Index out of bounds for NodeSet.");
@@ -141,6 +121,7 @@ public struct OpenSet {
 
     [BurstCompile]
     public int FindIndexReverse_OutG(in short2 position, out float foundG) {
+        // 1. 
         for (int i = count - 1; i >= 0; i--) {
             if (posArr[i].x == position.x && posArr[i].y == position.y) {
                 foundG = gArr[i]; // Return the g cost of the found node
@@ -153,9 +134,37 @@ public struct OpenSet {
 
     [BurstCompile]
     public int GetMinFCostIndex() {
+        // 1.
+        // int minIndex = 0;
+        // float minFCost = gArr[0] + hArr[0];
+        // for (int i = 1; i < count; i++) {
+        //     float fCost = gArr[i] + hArr[i];
+        //     if (fCost < minFCost) {
+        //         minFCost = fCost;
+        //         minIndex = i;
+        //     }
+        // }
+        // return minIndex; // Return index of the node with the lowest fCost
+
+        // 2. 基于 SIMD, Block的方式
         int minIndex = 0;
         float minFCost = gArr[0] + hArr[0];
-        for (int i = 1; i < count; i++) {
+        int simdLength = count / 4;
+        for (int i = 0; i < simdLength; i++) {
+            float4 gCosts = new float4(gArr[i * 4], gArr[i * 4 + 1], gArr[i * 4 + 2], gArr[i * 4 + 3]);
+            float4 hCosts = new float4(hArr[i * 4], hArr[i * 4 + 1], hArr[i * 4 + 2], hArr[i * 4 + 3]);
+            float4 fCosts = gCosts + hCosts;
+
+            // Find the minimum fCost in this block
+            for (int j = 0; j < 4; j++) {
+                if (fCosts[j] < minFCost) {
+                    minFCost = fCosts[j];
+                    minIndex = i * 4 + j;
+                }
+            }
+        }
+        // Handle remaining elements
+        for (int i = simdLength * 4; i < count; i++) {
             float fCost = gArr[i] + hArr[i];
             if (fCost < minFCost) {
                 minFCost = fCost;
@@ -184,21 +193,6 @@ public struct OpenSet {
         count++;
     }
 
-    [BurstCompile]
-    public float GetFCost(int index) {
-        return gArr[index] + hArr[index]; // Total cost
-    }
-
-    [BurstCompile]
-    public float GetGCost(int index) {
-        return gArr[index]; // Cost from start to this node
-    }
-
-    [BurstCompile]
-    public float GetHCost(int index) {
-        return hArr[index]; // Heuristic cost to target
-    }
-
 }
 
 [BurstCompile]
@@ -225,12 +219,23 @@ public static class Algorithm_AStar {
     [ThreadStatic] static OpenSet openSet;
     [ThreadStatic] static CloseSet closeSet;
     [ThreadStatic] static NativeArray<short2> path;
+    [ThreadStatic] static NativeArray<short2> neighbors;
     public static void Init(int width, int height) {
         int area = width * height;
         int perimeter = (width + height) * 2 * 8; // 周长
         openSet = new OpenSet(perimeter, Allocator.Persistent);
         closeSet = new CloseSet(area, Allocator.Persistent);
         path = new NativeArray<short2>(area, Allocator.Persistent);
+
+        neighbors = new NativeArray<short2>(8, Allocator.Persistent);
+        neighbors[0] = new short2(-1, 1); // L T
+        neighbors[1] = new short2(0, 1); // T
+        neighbors[2] = new short2(1, 1); // R T
+        neighbors[3] = new short2(-1, 0); // L
+        neighbors[4] = new short2(1, 0); // R
+        neighbors[5] = new short2(-1, -1); // L B
+        neighbors[6] = new short2(0, -1); // B
+        neighbors[7] = new short2(1, -1); // R B
     }
 
     public static void Dispose() {
@@ -238,6 +243,9 @@ public static class Algorithm_AStar {
         closeSet.Dispose();
         if (path.IsCreated) {
             path.Dispose();
+        }
+        if (neighbors.IsCreated) {
+            neighbors.Dispose();
         }
     }
 
@@ -263,7 +271,7 @@ public static class Algorithm_AStar {
 
     // Call this method to find the path
     [BurstCompile]
-    static int Go_8Dir_SIMD(in short2 start, in short2 end, in short2 edge, in NativeArray<short2> blocks, in int blockCount, ref OpenSet openSet, ref CloseSet closeSet, ref NativeArray<short2> path) {
+    static unsafe int Go_8Dir_SIMD(in short2 start, in short2 end, in short2 edge, in NativeArray<short2> blocks, in int blockCount, ref OpenSet openSet, ref CloseSet closeSet, ref NativeArray<short2> path) {
         int pathCount = -1;
 
         openSet.AddNode(start, 0, ManhattenDis(start, end), start); // Add start node to open set
@@ -294,7 +302,7 @@ public static class Algorithm_AStar {
                 return pathCount; // Return the number of nodes in the path
             }
 
-            // Check neighbors
+            // 1. 
             for (short2 offset = new short2(-1, -1); offset.x <= 1; offset.x++) {
                 for (offset.y = -1; offset.y <= 1; offset.y++) {
                     short2.Add(cur_pos, offset, out short2 neighborPos);
@@ -322,6 +330,7 @@ public static class Algorithm_AStar {
                     }
                 }
             }
+
         }
 
         return pathCount;

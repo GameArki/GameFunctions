@@ -45,6 +45,11 @@ public struct short2 : IEquatable<short2> {
     }
 
     [BurstCompile]
+    public static void Add(in short2 a, in int2 b, out short2 result) {
+        result = new short2((short)(a.x + b.x), (short)(a.y + b.y));
+    }
+
+    [BurstCompile]
     public static void Minus(in short2 a, in short2 b, out short2 result) {
         result = new short2((short)(a.x - b.x), (short)(a.y - b.y));
     }
