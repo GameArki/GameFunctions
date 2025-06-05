@@ -1,14 +1,81 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
 using Unity.Burst;
+using Unity.Collections.LowLevel.Unsafe;
 
 [BurstCompile]
-public struct NodeSet {
+public struct CloseSet {
+
+    public NativeArray<short2> posArr;
+    public NativeArray<short2> parentArr;
+    public int length;
+
+    public CloseSet(int size, Allocator allocator) {
+        posArr = new NativeArray<short2>(size, allocator);
+        parentArr = new NativeArray<short2>(size, allocator);
+        length = size;
+    }
+
+    public void Dispose() {
+        if (posArr.IsCreated) posArr.Dispose();
+        if (parentArr.IsCreated) parentArr.Dispose();
+    }
+
+    [BurstCompile]
+    public unsafe void Clear() {
+        // 1.
+        // for (int i = 0; i < length; i++) {
+        //     posArr[i] = new short2(-1, -1); // Reset position to an invalid value
+        // }
+
+        // 2.
+        int* ptr = (int*)posArr.GetUnsafePtr();
+
+        // 使用 SIMD 向量化处理
+        int4 value = new int4(-1f);
+        int simdLength = length / 4;
+        
+        for (int i = 0; i < simdLength; i++) {
+            Unsafe.Write(ptr + i * 4, value);
+        }
+
+        // 处理剩余元素
+        for (int i = simdLength * 4; i < length; i++) {
+            ptr[i] = -1;
+        }
+
+    }
+
+    [BurstCompile]
+    public int SetNode(in short2 pos, in float g, in float h, in short2 parent, in int gridWidth) {
+        int index = pos.x + pos.y * gridWidth; // Convert 2D position to 1D index
+        if (index < 0 || index >= length) {
+            return -1; // Out of bounds
+        }
+        posArr[index] = pos;
+        parentArr[index] = parent;
+        return index; // Return the index where the node was added
+    }
+
+    [BurstCompile]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void GetPosition(int index, out short2 position) {
+        position = posArr[index]; // Get the position of the node
+    }
+
+    [BurstCompile]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void GetParent(int index, out short2 parentPos) {
+        parentPos = parentArr[index]; // Get the parent position of the node
+    }
+
+}
+
+[BurstCompile]
+public struct OpenSet {
 
     public NativeArray<float> gArr;
     public NativeArray<float> hArr;
@@ -17,7 +84,7 @@ public struct NodeSet {
     public int count;
     public int length;
 
-    public NodeSet(int size, Allocator allocator) {
+    public OpenSet(int size, Allocator allocator) {
         gArr = new NativeArray<float>(size, allocator);
         hArr = new NativeArray<float>(size, allocator);
         posArr = new NativeArray<short2>(size, allocator);
@@ -34,17 +101,7 @@ public struct NodeSet {
     }
 
     [BurstCompile]
-    public void Clear() {
-        for (int i = 0; i < length; i++) {
-            posArr[i] = new short2(-1, -1); // Reset position to an invalid value
-        }
-    }
-
-    [BurstCompile]
     public void SetNode(in int index, in short2 pos, in float g, in float h, in short2 parent) {
-        if (index < 0 || index >= posArr.Length) {
-            throw new IndexOutOfRangeException("Index out of bounds for NodeSet.");
-        }
         posArr[index] = pos;
         gArr[index] = g;
         hArr[index] = h;
@@ -110,9 +167,6 @@ public struct NodeSet {
 
     [BurstCompile]
     public void RemoveAt(int index) {
-        if (index < 0 || index >= posArr.Length) {
-            throw new IndexOutOfRangeException("Index out of bounds for NodeSet.");
-        }
         int lastIndex = count - 1;
         posArr[index] = posArr[lastIndex];
         gArr[index] = gArr[lastIndex];
@@ -145,16 +199,6 @@ public struct NodeSet {
         return hArr[index]; // Heuristic cost to target
     }
 
-    [BurstCompile]
-    public void GetPosition(int index, out short2 position) {
-        position = posArr[index]; // Get the position of the node
-    }
-
-    [BurstCompile]
-    public void GetParent(int index, out short2 parentPos) {
-        parentPos = parentArr[index]; // Get the parent position of the node
-    }
-
 }
 
 [BurstCompile]
@@ -178,14 +222,14 @@ public class Comparer_short2 : IComparer<short2> {
 [BurstCompile]
 public static class Algorithm_AStar {
 
-    [ThreadStatic] static NodeSet openSet;
-    [ThreadStatic] static NodeSet closeSet;
+    [ThreadStatic] static OpenSet openSet;
+    [ThreadStatic] static CloseSet closeSet;
     [ThreadStatic] static NativeArray<short2> path;
     public static void Init(int width, int height) {
         int area = width * height;
         int perimeter = (width + height) * 2 * 8; // 周长
-        openSet = new NodeSet(perimeter, Allocator.Persistent);
-        closeSet = new NodeSet(area, Allocator.Persistent);
+        openSet = new OpenSet(perimeter, Allocator.Persistent);
+        closeSet = new CloseSet(area, Allocator.Persistent);
         path = new NativeArray<short2>(area, Allocator.Persistent);
     }
 
@@ -202,11 +246,11 @@ public static class Algorithm_AStar {
         int perimeter = (edge.x + edge.y) * 2 * 8; // 周长
         if (openSet.length < perimeter) {
             openSet.Dispose();
-            openSet = new NodeSet(perimeter, Allocator.Persistent);
+            openSet = new OpenSet(perimeter, Allocator.Persistent);
         }
         if (closeSet.length < area) {
             closeSet.Dispose();
-            closeSet = new NodeSet(area, Allocator.Persistent);
+            closeSet = new CloseSet(area, Allocator.Persistent);
         }
         if (path.Length < area) {
             path.Dispose();
@@ -219,17 +263,17 @@ public static class Algorithm_AStar {
 
     // Call this method to find the path
     [BurstCompile]
-    static int Go_8Dir_SIMD(in short2 start, in short2 end, in short2 edge, in NativeArray<short2> blocks, in int blockCount, ref NodeSet openSet, ref NodeSet closeSet, ref NativeArray<short2> path) {
+    static int Go_8Dir_SIMD(in short2 start, in short2 end, in short2 edge, in NativeArray<short2> blocks, in int blockCount, ref OpenSet openSet, ref CloseSet closeSet, ref NativeArray<short2> path) {
         int pathCount = -1;
 
         openSet.AddNode(start, 0, ManhattenDis(start, end), start); // Add start node to open set
-        closeSet.Clear();
+        closeSet.Clear(); // Clear closed set
 
         while (openSet.count > 0) {
             int lowestIndex = openSet.GetMinFCostIndex();
             openSet.RemoveAt(lowestIndex);
             openSet.GetNode(lowestIndex, out short2 cur_pos, out float cur_g, out float cur_h, out short2 cur_parent);
-            CloseSet_SetNode(ref closeSet, cur_pos, cur_g, cur_h, cur_parent, edge.x); // Add current node to closed set
+            closeSet.SetNode(cur_pos, cur_g, cur_h, cur_parent, edge.x); // Add current node to closed set
 
             // If we reached the target
             if (ManhattenDis(cur_pos, end) < 2) {
@@ -291,17 +335,7 @@ public static class Algorithm_AStar {
     }
 
     [BurstCompile]
-    static unsafe int CloseSet_SetNode(ref NodeSet closeSet, in short2 pos, in float g, in float h, in short2 parent, in int gridWidth) {
-        int index = pos.x + pos.y * gridWidth; // Convert 2D position to 1D index
-        if (index < 0 || index >= closeSet.length) {
-            return -1; // Out of bounds
-        }
-        closeSet.SetNode(index, pos, g, h, parent); // Set the node in the close set
-        return index; // Return the index where the node was added
-    }
-
-    [BurstCompile]
-    static unsafe int CloseSet_FindIndex(in short2 pos, in NodeSet closeSet, in int gridWidth) {
+    static unsafe int CloseSet_FindIndex(in short2 pos, in CloseSet closeSet, in int gridWidth) {
         int index = pos.x + pos.y * gridWidth; // Convert 2D position to 1D index
         if (index < 0 || index >= closeSet.length) {
             return -1; // Out of bounds
