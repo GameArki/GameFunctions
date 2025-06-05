@@ -7,15 +7,15 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Burst;
 
 [BurstCompile]
-public class Comparer_int2 : IComparer<int2> {
+public class Comparer_short2 : IComparer<short2> {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int Compare(int2 x, int2 y) {
+    public int Compare(short2 x, short2 y) {
         return CompareStatic(x, y);
     }
 
     [BurstCompile]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int CompareStatic(in int2 a, in int2 b) {
+    public static int CompareStatic(in short2 a, in short2 b) {
         int res = a.x.CompareTo(b.x);
         if (res == 0) {
             res = a.y.CompareTo(b.y);
@@ -29,14 +29,14 @@ public static class Algorithm_AStar {
 
     [BurstCompile]
     public struct Node {
-        public int2 pos;
-        public int2 parent;
-        public half gCost; // Cost from start to this node
-        public half hCost; // Heuristic cost to target
-        public Node(int2 position, float g, float h, int2 parent) {
+        public short2 pos; // 4 
+        public short2 parent; // 4
+        public float gCost; // 4 // Cost from start to this node
+        public float hCost; // 4 // Heuristic cost to target
+        public Node(short2 position, float g, float h, short2 parent) {
             pos = position;
-            gCost = new half(g);
-            hCost = new half(h);
+            gCost = g;
+            hCost = h;
             this.parent = parent;
         }
 
@@ -44,11 +44,6 @@ public static class Algorithm_AStar {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float FCost() => gCost + hCost; // Total cost
 
-        [BurstCompile]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int Size() {
-            return 20; // Size in bytes: 8 (int2) + 8 (int2) + 2 (half) + 2 (half)
-        }
     }
 
     const int DefaultWidth = 256; // Initial width, can be resized
@@ -57,13 +52,13 @@ public static class Algorithm_AStar {
     const int DefaultPerimeter = (DefaultWidth + DefaultHeight) * 2 * 8; // Initial size, can be resized
     [ThreadStatic] static NativeArray<Node> openSet;
     [ThreadStatic] static NativeArray<Node> closeSet;
-    [ThreadStatic] static NativeArray<int2> path;
+    [ThreadStatic] static NativeArray<short2> path;
     public static void Init(int width, int height) {
         int area = width * height;
         int perimeter = (width + height) * 2 * 8; // 周长
         openSet = new NativeArray<Node>(perimeter, Allocator.Persistent);
         closeSet = new NativeArray<Node>(area, Allocator.Persistent);
-        path = new NativeArray<int2>(area, Allocator.Persistent);
+        path = new NativeArray<short2>(area, Allocator.Persistent);
     }
 
     public static void Dispose() {
@@ -78,7 +73,7 @@ public static class Algorithm_AStar {
         }
     }
 
-    public static int Go_8Dir_SIMD(in int2 start, in int2 end, in int2 edge, in NativeArray<int2> blocks, in int blockCount, out NativeArray<int2> result) {
+    public static int Go_8Dir_SIMD(in short2 start, in short2 end, in short2 edge, in NativeArray<short2> blocks, in int blockCount, out NativeArray<short2> result) {
         int area = edge.x * edge.y; // 面积
         int perimeter = (edge.x + edge.y) * 2 * 8; // 周长
         if (openSet.Length < perimeter) {
@@ -91,7 +86,7 @@ public static class Algorithm_AStar {
         }
         if (path.Length < area) {
             path.Dispose();
-            path = new NativeArray<int2>(area, Allocator.Persistent);
+            path = new NativeArray<short2>(area, Allocator.Persistent);
         }
         result = path;
         int pathCount = Go_8Dir_SIMD(in start, in end, in edge, blocks, blockCount, ref openSet, ref closeSet, ref result);
@@ -100,7 +95,7 @@ public static class Algorithm_AStar {
 
     // Call this method to find the path
     [BurstCompile]
-    static int Go_8Dir_SIMD(in int2 start, in int2 end, in int2 edge, in NativeArray<int2> blocks, in int blockCount, ref NativeArray<Node> openSet, ref NativeArray<Node> closeSet, ref NativeArray<int2> path) {
+    static int Go_8Dir_SIMD(in short2 start, in short2 end, in short2 edge, in NativeArray<short2> blocks, in int blockCount, ref NativeArray<Node> openSet, ref NativeArray<Node> closeSet, ref NativeArray<short2> path) {
         int pathCount = -1;
         int openCount = 0;
 
@@ -137,9 +132,9 @@ public static class Algorithm_AStar {
             }
 
             // Check neighbors
-            for (int2 offset = new int2(-1, -1); offset.x <= 1; offset.x++) {
+            for (short2 offset = new short2(-1, -1); offset.x <= 1; offset.x++) {
                 for (offset.y = -1; offset.y <= 1; offset.y++) {
-                    int2 neighborPos = currentNode.pos + offset;
+                    short2.Add(currentNode.pos, offset, out short2 neighborPos);
 
                     // Check if neighbor is a block or already in closed set
                     if (CloseSet_FindIndex(neighborPos, closeSet, edge.x) != -1
@@ -172,9 +167,9 @@ public static class Algorithm_AStar {
 
     [BurstCompile]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static float ManhattenDis(in int2 start, in int2 end) {
-        int2 diff = math.abs(start - end);
-        return diff.x + diff.y; // Manhattan distance
+    static float ManhattenDis(in short2 start, in short2 end) {
+        short2.Minus(in start, in end, out short2 diff);
+        return math.abs(diff.x) + math.abs(diff.y); // Manhattan distance
     }
 
     [BurstCompile]
@@ -199,7 +194,7 @@ public static class Algorithm_AStar {
     }
 
     [BurstCompile]
-    static int OpenSet_FindIndex(in int2 pos, in NativeArray<Node> openSet, in int openCount) {
+    static int OpenSet_FindIndex(in short2 pos, in NativeArray<Node> openSet, in int openCount) {
         for (int i = 0; i < openCount; i++) {
             Array_GetValue(in openSet, in i, out Node node);
             if (node.pos.x == pos.x && node.pos.y == pos.y) {
@@ -210,7 +205,7 @@ public static class Algorithm_AStar {
     }
 
     [BurstCompile]
-    static int OpenSet_FindIndex_Reverse(in int2 pos, in NativeArray<Node> openSet, in int openCount, out Node result) {
+    static int OpenSet_FindIndex_Reverse(in short2 pos, in NativeArray<Node> openSet, in int openCount, out Node result) {
         for (int i = openCount - 1; i >= 0; i--) {
             Array_GetValue(in openSet, in i, out Node node);
             if (node.pos.x == pos.x && node.pos.y == pos.y) {
@@ -244,12 +239,12 @@ public static class Algorithm_AStar {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void CloseSet_Clear(ref NativeArray<Node> closeSet) {
         for (int i = 0; i < closeSet.Length; i++) {
-            Array_SetValue(ref closeSet, i, new Node() { pos = new int2(-1, -1) }); // Reset all nodes
+            Array_SetValue(ref closeSet, i, new Node() { pos = new short2(-1, -1) }); // Reset all nodes
         }
     }
 
     [BurstCompile]
-    static unsafe int CloseSet_FindIndex(in int2 pos, in NativeArray<Node> closeSet, in int gridWidth) {
+    static unsafe int CloseSet_FindIndex(in short2 pos, in NativeArray<Node> closeSet, in int gridWidth) {
         int index = pos.x + pos.y * gridWidth; // Convert 2D position to 1D index
         if (index < 0 || index >= closeSet.Length) {
             return -1; // Out of bounds
@@ -269,8 +264,8 @@ public static class Algorithm_AStar {
 
     [BurstCompile]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    unsafe static void Array_GetValue(in NativeArray<int2> array, in int index, out int2 value) {
-        value = Unsafe.Read<int2>((byte*)array.GetUnsafeReadOnlyPtr() + index * sizeof(int2));
+    unsafe static void Array_GetValue(in NativeArray<short2> array, in int index, out short2 value) {
+        value = Unsafe.Read<short2>((byte*)array.GetUnsafeReadOnlyPtr() + index * sizeof(short2));
     }
 
     [BurstCompile]
@@ -281,19 +276,19 @@ public static class Algorithm_AStar {
 
     [BurstCompile]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    unsafe static void Array_SetValue(ref NativeArray<int2> array, in int index, in int2 value) {
-        Unsafe.Write((byte*)array.GetUnsafePtr() + index * sizeof(int2), value);
+    unsafe static void Array_SetValue(ref NativeArray<short2> array, in int index, in short2 value) {
+        Unsafe.Write((byte*)array.GetUnsafePtr() + index * sizeof(short2), value);
     }
 
     [BurstCompile]
-    static int Blocks_FindIndex(in int2 pos, in NativeArray<int2> blocks, in int blockCount) {
+    static int Blocks_FindIndex(in short2 pos, in NativeArray<short2> blocks, in int blockCount) {
         // Binary search for performance
         int left = 0;
         int right = blockCount - 1;
         while (left <= right) {
             int mid = left + (right - left) / 2;
-            Array_GetValue(in blocks, mid, out int2 blockPos);
-            int comparison = Comparer_int2.CompareStatic(blockPos, pos);
+            Array_GetValue(in blocks, mid, out short2 blockPos);
+            int comparison = Comparer_short2.CompareStatic(blockPos, pos);
             if (comparison == 0) {
                 return mid; // Found
             } else if (comparison < 0) {
@@ -308,7 +303,7 @@ public static class Algorithm_AStar {
 
     [BurstCompile]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool IsOverEdge(in int2 pos, in int2 edge) {
+    static bool IsOverEdge(in short2 pos, in short2 edge) {
         return pos.x < 0 || pos.y < 0 || pos.x >= edge.x || pos.y >= edge.y;
     }
 

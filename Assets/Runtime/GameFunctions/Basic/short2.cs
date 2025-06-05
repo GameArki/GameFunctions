@@ -1,10 +1,12 @@
 using System;
 using System.Runtime.InteropServices;
 using Unity.Mathematics;
+using Unity.Burst;
 
 #pragma warning disable CS0660
 #pragma warning disable CS0661
 
+[BurstCompile]
 [StructLayout(LayoutKind.Explicit)]
 public struct short2 : IEquatable<short2> {
 
@@ -27,20 +29,24 @@ public struct short2 : IEquatable<short2> {
         return value == other.value;
     }
 
-    public static bool operator ==(short2 a, short2 b) {
-        return a.Equals(b);
+    [BurstCompile]
+    public static bool operator ==(in short2 a, in short2 b) {
+        return a.value == b.value;
     }
 
-    public static bool operator !=(short2 a, short2 b) {
-        return !a.Equals(b);
+    [BurstCompile]
+    public static bool operator !=(in short2 a, in short2 b) {
+        return a.value != b.value;
     }
 
-    public static short2 operator +(short2 a, short2 b) {
-        return new short2((short)(a.x + b.x), (short)(a.y + b.y));
+    [BurstCompile]
+    public static void Add(in short2 a, in short2 b, out short2 result) {
+        result = new short2((short)(a.x + b.x), (short)(a.y + b.y));
     }
 
-    public static short2 operator -(short2 a, short2 b) {
-        return new short2((short)(a.x - b.x), (short)(a.y - b.y));
+    [BurstCompile]
+    public static void Minus(in short2 a, in short2 b, out short2 result) {
+        result = new short2((short)(a.x - b.x), (short)(a.y - b.y));
     }
 
 }

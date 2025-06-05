@@ -25,17 +25,17 @@ namespace GameFunctions.Tests {
         void BenchMark_SIMD(int seed, int blockCount) {
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             // SIMD
-            int2 start = new int2(0, 0);
-            int2 end = new int2(255, 255);
-            int2 edge = new int2(width, height);
-            NativeArray<int2> blocks = new NativeArray<int2>(blockCount, Allocator.Temp);
+            short2 start = new short2(0, 0);
+            short2 end = new short2(255, 255);
+            short2 edge = new short2(width, height);
+            NativeArray<short2> blocks = new NativeArray<short2>(blockCount, Allocator.Temp);
             // Fill blocks with some random positions
             System.Random rd = new System.Random(seed);
             for (int i = 0; i < blockCount; i++) {
-                blocks[i] = new int2(rd.Next(0, width), rd.Next(0, height));
+                blocks[i] = new short2((short)rd.Next(0, width), (short)rd.Next(0, height));
             }
             // Sort blocks to ensure they are in a consistent order
-            blocks.Sort(new Comparer_int2());
+            blocks.Sort(new Comparer_short2());
             sw.Start();
             int pathCount = Algorithm_AStar.Go_8Dir_SIMD(start, end, edge, blocks, blocks.Length, out var path);
             Debug.Log($"SIMD Path Count: {pathCount}, Time: {sw.Elapsed.TotalMilliseconds} ms");
