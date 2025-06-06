@@ -303,6 +303,7 @@ public static class Algorithm_AStar {
                     closeSet.GetPosition(parentIndex, out nodePos); // Get the position of the parent node
                     closeSet.GetParent(parentIndex, out nodeParent); // Get the parent position
                 }
+                path[pathCount++] = start; // Add the start node to the path
                 return pathCount; // Return the number of nodes in the path
             }
 
